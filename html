@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Template Markov Paragraph</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div id="app">
+    <h2>Predictive Paragraph Demo</h2>
+
+    <p>
+      As a <span id="role" contenteditable="true" placeholder="role">student</span>, I feel 
+      <span id="feeling" contenteditable="true" placeholder="feeling">pressured to be perfect</span>.
+    </p>
+
+    <div id="generated" class="paragraph"></div>
+
+    <button id="generate">Generate Paragraph</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
