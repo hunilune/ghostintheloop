@@ -1,45 +1,87 @@
-// Sample corpus (replace with larger text for better results)
-const corpus = `
-I often feel overwhelmed by expectations
-Sometimes I wish I could take a break
-Everyone seems to judge me
-I try my best but it never feels enough
-The pressure keeps building day by day
-`;
+const corpora = {
+  pressure: `
+    obligation responsibility burden expectation duty compliance
+    systems demand performance evaluation structure hierarchy
+    measured outcomes standardized behavior monitored compliance
+  `,
+  identity: `
+    self becoming reflection naming belonging memory difference
+    voice interior narrative experience ambiguity transition
+  `,
+  default: `
+    language moves forward thought follows pattern repetition
+цвет
+    anticipation continuation momentum habit
+  `
+};
 
-// Build Markov chain
-const words = corpus.split(/\s+/);
-const markov = {};
-for (let i = 0; i < words.length - 1; i++) {
-  const word = words[i].toLowerCase();
-  const next = words[i + 1].toLowerCase();
-  if (!markov[word]) markov[word] = [];
-  markov[word].push(next);
-}
+function buildMarkov(text) {
+  const words = text.trim().split(/\s+/);
+  const chain = {};
 
-function predictNext(lastWord) {
-  const options = markov[lastWord.toLowerCase()];
-  if (!options) return null;
-  return options[Math.floor(Math.random() * options.length)];
-}
-
-// DOM
-const roleEl = document.getElementById("role");
-const feelingEl = document.getElementById("feeling");
-const generatedEl = document.getElementById("generated");
-const generateBtn = document.getElementById("generate");
-
-generateBtn.addEventListener("click", () => {
-  let text = `As a ${roleEl.innerText.trim()}, I feel ${feelingEl.innerText.trim()}`;
-  
-  let lastWord = feelingEl.innerText.trim().split(/\s+/).pop();
-  
-  for (let i = 0; i < 50; i++) { // append 50 words for paragraph
-    const next = predictNext(lastWord);
-    if (!next) break;
-    text += " " + next;
-    lastWord = next;
+  for (let i = 0; i < words.length - 1; i++) {
+    const w = words[i];
+    const next = words[i + 1];
+    if (!chain[w]) chain[w] = [];
+    chain[w].push(next);
   }
-  
-  generatedEl.innerText = text + ".";
+  return chain;
+}
+
+function generate(chain, length = 6) {
+  const keys = Object.keys(chain);
+  let word = keys[Math.floor(Math.random() * keys.length)];
+  let result = [word];
+
+  for (let i = 0; i < length; i++) {
+    const nexts = chain[word];
+    if (!nexts) break;
+    word = nexts[Math.floor(Math.random() * nexts.length)];
+    result.push(word);
+  }
+  return " " + result.join(" ");
+}
+
+const keywords = {
+  pressure: ["pressure", "expected", "burden", "responsibility"],
+  identity: ["identity", "self", "role"]
+};
+
+function detectTheme(text) {
+  for (let theme in keywords) {
+    if (keywords[theme].some(w => text.includes(w))) return theme;
+  }
+  return "default";
+}
+
+let lockedTheme = null;
+let markovChain = null;
+const usedSlots = new Set();
+
+document.querySelectorAll(".editable").forEach(editable => {
+  editable.addEventListener("keydown", e => {
+    if (e.key !== "Enter") return;
+    e.preventDefault();
+
+    const slot = editable.dataset.slot;
+    if (usedSlots.has(slot)) return;
+
+    const text = editable.innerText.trim().toLowerCase();
+    if (!text) return;
+
+    // LOCK ON FIRST ENTER
+    if (!lockedTheme) {
+      lockedTheme = detectTheme(text);
+      markovChain = buildMarkov(corpora[lockedTheme]);
+    }
+
+    const prediction = generate(markovChain);
+
+    const predEl = document.querySelector(
+      `.predicted[data-slot="${slot}"]`
+    );
+    predEl.textContent = prediction;
+
+    usedSlots.add(slot);
+  });
 });
