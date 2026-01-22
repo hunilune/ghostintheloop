@@ -115,3 +115,14 @@ hr {
   border-width: 1px;
   opacity: 0.45;
 }
+
+
+.mode-masc .editable {
+  outline: 2px solid rgba(0, 80, 255, 0.4);
+}
+
+.mode-fem .editable {
+  outline: 2px solid rgba(255, 0, 80, 0.4);
+  opacity: 0.85;
+}
+
