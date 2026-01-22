@@ -2,8 +2,8 @@
 const STYLE_LIMITS = { masc: 300, fem: 60 };
 let lockedStyle = null;
 let markovChain = null;
-const usedSlots = new Set();
 let redditCorpus = null;
+const usedSlots = new Set();
 
 // ================= STYLE DETECTION =================
 function detectStyle(text) {
@@ -18,7 +18,7 @@ function detectStyle(text) {
   return masc >= fem ? "masc" : "fem";
 }
 
-// Apply style to document & set max character per input
+// Apply style to document & set max characters per input
 function applyStyle(style) {
   document.documentElement.classList.add(`mode-${style}`);
   document.querySelectorAll(".editable").forEach(el => {
@@ -64,8 +64,10 @@ function generate(chain, length = 6) {
   return " " + result.join(" ");
 }
 
-// ================= FETCH LOCAL JSON =================
-fetch("https://hunilune.github.io/ghostintheloop/redditSample.json")
+// ================= FETCH HOSTED JSON =================
+const jsonUrl = "https://hunilune.github.io/ghostintheloop/redditSample.json";
+
+fetch(jsonUrl)
   .then(res => res.json())
   .then(data => {
     const posts = data.data.children;
@@ -75,6 +77,8 @@ fetch("https://hunilune.github.io/ghostintheloop/redditSample.json")
       .toLowerCase()
       .replace(/https?:\/\/\S+/g, "")
       .replace(/[^\p{L}\p{N}\s]/gu, "");
+
+    markovChain = buildMarkov(redditCorpus);
 
     console.log("Reddit corpus loaded");
     console.log("Sample:", redditCorpus.slice(0, 200));
@@ -99,19 +103,24 @@ document.querySelectorAll(".editable").forEach(editable => {
     if (e.key !== "Enter") return;
     e.preventDefault();
 
+    if (!markovChain) {
+      console.log("Waiting for corpus to load...");
+      return;
+    }
+
     const slot = editable.dataset.slot;
     if (usedSlots.has(slot)) return;
 
     const text = editable.innerText.trim().toLowerCase();
     if (!text) return;
 
-    // Lock style and build Markov on first Enter
+    // Lock style on first Enter
     if (!lockedStyle) {
       lockedStyle = detectStyle(text);
       applyStyle(lockedStyle);
-      markovChain = redditCorpus ? buildMarkov(redditCorpus) : buildMarkov("default fallback text");
     }
 
+    // Generate prediction
     const prediction = generate(markovChain);
 
     const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
