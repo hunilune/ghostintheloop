@@ -1,4 +1,5 @@
-const corpora = {
+document.addEventListener("DOMContentLoaded", function() {
+  const corpora = {
   pressure: `
     obligation responsibility burden expectation duty compliance
     systems demand performance evaluation structure hierarchy
@@ -83,5 +84,10 @@ document.querySelectorAll(".editable").forEach(editable => {
     predEl.textContent = prediction;
 
     usedSlots.add(slot);
+  });
+});
+
+  document.querySelectorAll(".editable").forEach(editable => {
+    // ...
   });
 });
