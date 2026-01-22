@@ -19,14 +19,14 @@ body {
   font-family: serif;
   background: #FFFFFF;
   padding: 28px;
-  padding-bottom: 2rem;
+  padding-bottom: 1rem;
   line-height: 1.1;
 }
 
 h1 {
   font-family: Cigars, serif;
   font-weight: normal;
-  font-size: 4.5rem;
+  font-size: 2.6rem;
   padding-top: 60px;
   padding-left: 80px;
 }
@@ -34,14 +34,14 @@ h1 {
 h2 {
   font-family: Cigars, serif;
   font-weight: normal;
-  font-size: 2.5rem;
+  font-size: 2rem;
   padding-left: 80px;
 }
 
 h6 {
   font-family: Social, sans-serif;
   font-weight: normal;
-  font-size: 1.15rem;
+  font-size: 0.9rem;
   padding-left: 88px;
 }
 
@@ -49,7 +49,7 @@ h6 {
 .paragraph {
   font-family: Social;
   max-width: 900px;
-  font-size: 1.5rem;
+  font-size: 1rem;
   padding-top: 4rem;
   padding-bottom: 2rem;
   padding-left: 88px;
@@ -74,7 +74,7 @@ h6 {
 .note {
   font-family: Social;
   margin-top: 3rem;
-  font-size: 1.15rem;
+  font-size: 0.9rem;
   opacity: 0.6;
   padding-left: 80px;
   padding-bottom: 80px;
@@ -84,7 +84,7 @@ h6 {
   font-family: PT Mono;
   max-width: 900px;
   margin-top: 3rem;
-  font-size: 0.8rem;
+  font-size: 0.5rem;
   text-align: right;
   opacity: 0.6;
   padding-left: 80px;
