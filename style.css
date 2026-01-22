@@ -53,6 +53,7 @@ h6 {
   padding-top: 4rem;
   padding-bottom: 2rem;
   padding-left: 88px;
+  text-wrap: pretty;
 }
 
 .editable {
