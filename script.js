@@ -1,4 +1,6 @@
-// Config
+document.addEventListener("DOMContentLoaded", function() {
+  
+  // Config
 const STYLE_LIMITS = { masc: 300, fem: 60 };
 let lockedStyle = null;
 let markovChain = null;
