@@ -1,11 +1,11 @@
-// ================= CONFIG =================
+// Config
 const STYLE_LIMITS = { masc: 300, fem: 60 };
 let lockedStyle = null;
 let markovChain = null;
 let redditCorpus = null;
 const usedSlots = new Set();
 
-// ================= STYLE DETECTION =================
+// Gender detection
 function detectStyle(text) {
   let masc = 0, fem = 0;
 
@@ -37,7 +37,7 @@ function placeCaretAtEnd(el) {
   sel.addRange(range);
 }
 
-// ================= MARKOV FUNCTIONS =================
+// Markov
 function buildMarkov(text) {
   const words = text.trim().split(/\s+/);
   const chain = {};
@@ -64,7 +64,7 @@ function generate(chain, length = 6) {
   return " " + result.join(" ");
 }
 
-// ================= FETCH HOSTED JSON =================
+// Fetch JSON
 const jsonUrl = "https://hunilune.github.io/ghostintheloop/redditSample.json";
 
 fetch(jsonUrl)
@@ -86,7 +86,7 @@ fetch(jsonUrl)
   })
   .catch(err => console.error("FETCH ERROR:", err));
 
-// ================= INPUT HANDLING =================
+// Input handling
 document.querySelectorAll(".editable").forEach(editable => {
   // Enforce character limit while typing
   editable.addEventListener("input", () => {
