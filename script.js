@@ -65,7 +65,7 @@ function generate(chain, length = 6) {
 }
 
 // ================= FETCH LOCAL JSON =================
-fetch("redditSample.json")
+fetch("https://hunilune.github.io/ghostintheloop/redditSample.json")
   .then(res => res.json())
   .then(data => {
     const posts = data.data.children;
