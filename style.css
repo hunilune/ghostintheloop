@@ -3,6 +3,11 @@
       src: url('ABCSocialCyrillic-Regular-Trial.otf') format('opentype');
     }
 
+@font-face {
+      font-family: 'Cigars';
+      src: url('HW Cigars Trial Regular.otf') format('opentype');
+    }
+
 .inter-<uniquifier> {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
@@ -19,7 +24,7 @@ body {
 }
 
 h1 {
-  font-family: EB Garamond, serif;
+  font-family: Cigars, serif;
   font-weight: normal;
   font-size: 4.5rem;
   padding-top: 60px;
@@ -27,7 +32,7 @@ h1 {
 }
 
 h2 {
-  font-family: EB Garamond, serif;
+  font-family: Cigars, serif;
   font-weight: normal;
   font-size: 2.5rem;
   padding-left: 80px;
