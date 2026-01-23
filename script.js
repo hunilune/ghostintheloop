@@ -41,42 +41,48 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.addRange(range);
   }
 
-  // ================= MARKOV (3-GRAM) =================
-  function buildMarkov(text) {
-    const words = text.split(/\s+/).filter(Boolean);
+  // ================= MARKOV (4-GRAM, sentence-aware) =================
+  function buildMarkov(text, n = 4) {
+    const sentences = text
+      .split(/(?<=[.!?])/g)        // split into sentences
+      .map(s => s.trim())
+      .filter(s => s.length > 0);
+    
     const chain = {};
-
-    for (let i = 0; i < words.length - 3; i++) {
-      const key = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
-      const next = words[i + 3];
-      if (!chain[key]) chain[key] = [];
-      chain[key].push(next);
-    }
+    sentences.forEach(sentence => {
+      const words = sentence.split(/\s+/).filter(Boolean);
+      for (let i = 0; i <= words.length - n; i++) {
+        const key = words.slice(i, i + n - 1).join(" ");
+        const next = words[i + n - 1];
+        if (!chain[key]) chain[key] = [];
+        chain[key].push(next);
+      }
+    });
     return chain;
   }
 
-  function pickStartingKey(chain, seedText) {
+  function pickStartingKey(chain, seedText, n = 4) {
     const keys = Object.keys(chain);
     if (!keys.length) return null;
 
     const seedWords = seedText.split(/\s+/);
-    for (let i = 0; i < seedWords.length - 2; i++) {
-      const key = `${seedWords[i]} ${seedWords[i + 1]} ${seedWords[i + 2]}`;
+    for (let i = 0; i <= seedWords.length - (n - 1); i++) {
+      const key = seedWords.slice(i, i + n - 1).join(" ");
       if (chain[key]) return key;
     }
 
     return keys[Math.floor(Math.random() * keys.length)];
   }
 
-  function generateWords(chain, seedText, maxLength = 24) {
+  function generateWords(chain, seedText, maxLength = 50, n = 4) {
     if (!chain) return [];
 
-    let key = pickStartingKey(chain, seedText);
+    let key = pickStartingKey(chain, seedText, n);
     if (!key) return [];
 
     let parts = key.split(" ");
     const result = [...parts];
-    const maxLoopCheck = 6; // Number of words to check for repetition
+    const maxLoopCheck = 6;
 
     for (let i = 0; i < maxLength; i++) {
       const nexts = chain[key];
@@ -85,14 +91,14 @@ document.addEventListener("DOMContentLoaded", function () {
       const next = nexts[Math.floor(Math.random() * nexts.length)];
       result.push(next);
 
-      // Stop at sentence end
+      // stop at sentence end
       if (/[.!?]$/.test(next)) break;
 
-      // Update key for next iteration
-      parts = [parts[1], parts[2], next];
+      // update key
+      parts = parts.slice(1).concat(next);
       key = parts.join(" ");
 
-      // Prevent simple looping
+      // loop breaker
       const recent = result.slice(-maxLoopCheck).join(" ");
       const prev = result.slice(-maxLoopCheck * 2, -maxLoopCheck).join(" ");
       if (recent === prev) break;
@@ -101,7 +107,7 @@ document.addEventListener("DOMContentLoaded", function () {
     return result;
   }
 
-  // ================= FETCH CORPORA =================
+  // ================= FETCH & CLEAN CORPORA =================
   function cleanCorpus(posts) {
     return posts
       .map(p => {
@@ -112,7 +118,9 @@ document.addEventListener("DOMContentLoaded", function () {
         text &&
         text.length > 60 &&
         !text.includes("[removed]") &&
-        !text.includes("[deleted]")
+        !text.includes("[deleted]") &&
+        !text.toLowerCase().includes("mod") &&
+        !text.toLowerCase().includes("rules")
       )
       .join(" ")
       .toLowerCase()
@@ -131,7 +139,7 @@ document.addEventListener("DOMContentLoaded", function () {
       })
       .then(data => {
         const corpus = cleanCorpus(data.data?.children || data);
-        markovChains[style] = buildMarkov(corpus);
+        markovChains[style] = buildMarkov(corpus, 4);
         console.log(`${style} corpus loaded (${corpus.split(/\s+/).length} words)`);
       })
       .catch(err => console.error("FETCH ERROR:", err));
@@ -171,7 +179,7 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Locked style:", lockedStyle);
       }
 
-      const chain = markovChains[lockedStyle]; // ← declare before using
+      const chain = markovChains[lockedStyle];
       if (!chain) return;
 
       console.log("Chain keys:", Object.keys(chain).length);
@@ -179,7 +187,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
 
-      const words = generateWords(chain, text);
+      const words = generateWords(chain, text, 50, 4);
       predEl.textContent = "";
 
       let i = 0;
