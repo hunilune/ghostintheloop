@@ -6,6 +6,7 @@ document.addEventListener("DOMContentLoaded", function() {
   let markovChain = null;
   let redditCorpus = null;
   const usedSlots = new Set();
+  let isStreaming = false;
 
   // ================= STYLE DETECTION =================
   function detectStyle(text) {
@@ -50,18 +51,40 @@ document.addEventListener("DOMContentLoaded", function() {
     return chain;
   }
 
-  function generate(chain, length = 6) {
+  function generateWords(chain, length = 14) {
     const keys = Object.keys(chain);
-    if (!keys.length) return "";
+    if (!keys.length) return [];
+
     let word = keys[Math.floor(Math.random() * keys.length)];
     let result = [word];
+
     for (let i = 0; i < length; i++) {
       const nexts = chain[word];
       if (!nexts) break;
       word = nexts[Math.floor(Math.random() * nexts.length)];
       result.push(word);
     }
-    return " " + result.join(" ");
+    return result;
+  }
+
+  function streamWords(words, el, delay = 120) {
+    if (isStreaming) return;
+    isStreaming = true;
+
+    el.textContent = "";
+    let i = 0;
+
+    function tick() {
+      if (i >= words.length) {
+        isStreaming = false;
+        return;
+      }
+      el.textContent += (i === 0 ? "" : " ") + words[i];
+      i++;
+      setTimeout(tick, delay);
+    }
+
+    tick();
   }
 
   // ================= FETCH JSON =================
@@ -106,12 +129,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (!markovChain) return;
 
       const slot = editable.dataset.slot;
-      if (!slot) {
-        console.warn("Editable missing data-slot", editable);
-        return;
-      }
-
-      if (usedSlots.has(slot)) return;
+      if (!slot || usedSlots.has(slot)) return;
 
       const text = editable.innerText.trim().toLowerCase();
       if (!text) return;
@@ -121,17 +139,15 @@ document.addEventListener("DOMContentLoaded", function() {
         applyStyle(lockedStyle);
       }
 
-      const prediction = generate(markovChain);
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
+      if (!predEl) return;
 
-      if (!predEl) {
-        console.warn("Missing predicted element for slot", slot);
-        return;
-      }
+      const words = generateWords(markovChain, 14);
+      const speed = lockedStyle === "masc" ? 80 : 150;
 
-      predEl.textContent = prediction;
+      streamWords(words, predEl, speed);
       usedSlots.add(slot);
     });
   });
 
-}); 
+});
