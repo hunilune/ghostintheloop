@@ -1,4 +1,4 @@
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
 
   // ================= CONFIG =================
   const STYLE_LIMITS = { masc: 300, fem: 60 };
@@ -6,7 +6,6 @@ document.addEventListener("DOMContentLoaded", function() {
   let markovChain = null;
   let redditCorpus = null;
   const usedSlots = new Set();
-  let isStreaming = false;
 
   // ================= STYLE DETECTION =================
   function detectStyle(text) {
@@ -38,53 +37,61 @@ document.addEventListener("DOMContentLoaded", function() {
     sel.addRange(range);
   }
 
-  // ================= MARKOV =================
+  // ================= MARKOV (2-GRAM) =================
   function buildMarkov(text) {
-    const words = text.trim().split(/\s+/);
+    const words = text.split(/\s+/);
     const chain = {};
-    for (let i = 0; i < words.length - 1; i++) {
-      const w = words[i];
-      const next = words[i + 1];
-      if (!chain[w]) chain[w] = [];
-      chain[w].push(next);
+
+    for (let i = 0; i < words.length - 2; i++) {
+      const key = words[i] + " " + words[i + 1];
+      const next = words[i + 2];
+
+      if (!chain[key]) chain[key] = [];
+      chain[key].push(next);
     }
     return chain;
   }
 
-  function generateWords(chain, length = 14) {
+  function pickStartingKey(chain, seedText) {
+    const keys = Object.keys(chain);
+    const words = seedText.split(/\s+/);
+
+    for (let i = 0; i < words.length - 1; i++) {
+      const candidate = words[i] + " " + words[i + 1];
+      if (chain[candidate]) return candidate;
+    }
+
+    return keys[Math.floor(Math.random() * keys.length)];
+  }
+
+  function generateWords(chain, seedText, maxLength = 20) {
     const keys = Object.keys(chain);
     if (!keys.length) return [];
 
-    let word = keys[Math.floor(Math.random() * keys.length)];
-    let result = [word];
+    let key = pickStartingKey(chain, seedText);
+    let [w1, w2] = key.split(" ");
+    let result = [w1, w2];
 
-    for (let i = 0; i < length; i++) {
-      const nexts = chain[word];
+    for (let i = 0; i < maxLength; i++) {
+      const nexts = chain[key];
       if (!nexts) break;
-      word = nexts[Math.floor(Math.random() * nexts.length)];
-      result.push(word);
+
+      const next = nexts[Math.floor(Math.random() * nexts.length)];
+      result.push(next);
+
+      if (/[.!?]$/.test(next)) break;
+
+      key = w2 + " " + next;
+      w2 = next;
+
+      // stop looping
+      if (
+        result.slice(-4).join(" ") ===
+        result.slice(-8, -4).join(" ")
+      ) break;
     }
+
     return result;
-  }
-
-  function streamWords(words, el, delay = 120) {
-    if (isStreaming) return;
-    isStreaming = true;
-
-    el.textContent = "";
-    let i = 0;
-
-    function tick() {
-      if (i >= words.length) {
-        isStreaming = false;
-        return;
-      }
-      el.textContent += (i === 0 ? "" : " ") + words[i];
-      i++;
-      setTimeout(tick, delay);
-    }
-
-    tick();
   }
 
   // ================= FETCH JSON =================
@@ -94,12 +101,22 @@ document.addEventListener("DOMContentLoaded", function() {
     .then(res => res.json())
     .then(data => {
       const posts = data.data.children;
+
       redditCorpus = posts
         .map(p => `${p.data.title} ${p.data.selftext}`)
+        .filter(text =>
+          text &&
+          text.length > 50 &&
+          !text.includes("[removed]") &&
+          !text.includes("[deleted]")
+        )
         .join(" ")
         .toLowerCase()
         .replace(/https?:\/\/\S+/g, "")
-        .replace(/[^\p{L}\p{N}\s]/gu, "");
+        .replace(/\b(edit|tl;dr|op)\b/g, "")
+        .replace(/\n+/g, " ")
+        .replace(/\s+/g, " ")
+        .replace(/[^\p{L}\p{N}\s.,?!]/gu, "");
 
       markovChain = buildMarkov(redditCorpus);
 
@@ -116,6 +133,7 @@ document.addEventListener("DOMContentLoaded", function() {
       if (!lockedStyle) return;
       const max = parseInt(editable.dataset.max, 10);
       if (!max) return;
+
       if (editable.innerText.length > max) {
         editable.innerText = editable.innerText.slice(0, max);
         placeCaretAtEnd(editable);
@@ -142,10 +160,19 @@ document.addEventListener("DOMContentLoaded", function() {
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
 
-      const words = generateWords(markovChain, 14);
-      const speed = lockedStyle === "masc" ? 80 : 150;
+      const words = generateWords(markovChain, text);
+      predEl.textContent = "";
 
-      streamWords(words, predEl, speed);
+      let i = 0;
+      const interval = setInterval(() => {
+        if (i >= words.length) {
+          clearInterval(interval);
+          return;
+        }
+        predEl.textContent += words[i] + " ";
+        i++;
+      }, 120);
+
       usedSlots.add(slot);
     });
   });
