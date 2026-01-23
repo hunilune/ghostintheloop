@@ -3,8 +3,8 @@ document.addEventListener("DOMContentLoaded", function () {
   // ================= CONFIG =================
   const STYLE_LIMITS = { masc: 300, fem: 60 };
   const CORPUS_URLS = {
-    masc: "https://hunilune.github.io/ghostintheloop/redditMasc.json",
-    fem:  "https://hunilune.github.io/ghostintheloop/redditFem.json"
+    masc: "https://hunilune.github.io/ghostintheloop/AskMen.json",
+    fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
   };
 
   let lockedStyle = null;
