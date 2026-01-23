@@ -43,7 +43,7 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ================= MARKOV (3-GRAM) =================
   function buildMarkov(text) {
-    const words = text.split(/\s+/);
+    const words = text.split(/\s+/).filter(Boolean);
     const chain = {};
 
     for (let i = 0; i < words.length - 3; i++) {
@@ -57,8 +57,9 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function pickStartingKey(chain, seedText) {
     const keys = Object.keys(chain);
-    const seedWords = seedText.split(/\s+/);
+    if (!keys.length) return null;
 
+    const seedWords = seedText.split(/\s+/);
     for (let i = 0; i < seedWords.length - 2; i++) {
       const key = `${seedWords[i]} ${seedWords[i + 1]} ${seedWords[i + 2]}`;
       if (chain[key]) return key;
@@ -68,30 +69,33 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function generateWords(chain, seedText, maxLength = 24) {
-    const keys = Object.keys(chain);
-    if (!keys.length) return [];
+    if (!chain) return [];
 
     let key = pickStartingKey(chain, seedText);
+    if (!key) return [];
+
     let parts = key.split(" ");
-    let result = [...parts];
+    const result = [...parts];
+    const maxLoopCheck = 6; // Number of words to check for repetition
 
     for (let i = 0; i < maxLength; i++) {
       const nexts = chain[key];
-      if (!nexts) break;
+      if (!nexts || !nexts.length) break;
 
       const next = nexts[Math.floor(Math.random() * nexts.length)];
       result.push(next);
 
+      // Stop at sentence end
       if (/[.!?]$/.test(next)) break;
 
-      key = `${parts[1]} ${parts[2]} ${next}`;
-      parts = key.split(" ");
+      // Update key for next iteration
+      parts = [parts[1], parts[2], next];
+      key = parts.join(" ");
 
-      // loop breaker
-      if (
-        result.slice(-6).join(" ") ===
-        result.slice(-12, -6).join(" ")
-      ) break;
+      // Prevent simple looping
+      const recent = result.slice(-maxLoopCheck).join(" ");
+      const prev = result.slice(-maxLoopCheck * 2, -maxLoopCheck).join(" ");
+      if (recent === prev) break;
     }
 
     return result;
@@ -100,7 +104,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // ================= FETCH CORPORA =================
   function cleanCorpus(posts) {
     return posts
-      .map(p => `${p.data.title} ${p.data.selftext}`)
+      .map(p => {
+        if (p.data) return `${p.data.title || ""} ${p.data.selftext || ""}`;
+        return p;
+      })
       .filter(text =>
         text &&
         text.length > 60 &&
@@ -118,17 +125,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function loadCorpus(style) {
     return fetch(CORPUS_URLS[style])
-      .then(res => res.json())
+      .then(res => {
+        if (!res.ok) throw new Error(`HTTP ${res.status} for ${style}`);
+        return res.json();
+      })
       .then(data => {
-        const corpus = cleanCorpus(data.data.children);
+        const corpus = cleanCorpus(data.data?.children || data);
         markovChains[style] = buildMarkov(corpus);
         console.log(`${style} corpus loaded (${corpus.split(/\s+/).length} words)`);
-      });
+      })
+      .catch(err => console.error("FETCH ERROR:", err));
   }
 
   Promise.all([loadCorpus("masc"), loadCorpus("fem")])
-    .then(() => console.log("All corpora ready"))
-    .catch(err => console.error("FETCH ERROR:", err));
+    .then(() => console.log("All corpora ready"));
 
   // ================= INPUT HANDLING =================
   document.querySelectorAll(".editable").forEach(editable => {
@@ -157,15 +167,14 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!lockedStyle) {
         lockedStyle = detectStyle(text);
         applyStyle(lockedStyle);
-
         console.log("ENTER pressed");
-console.log("Locked style:", lockedStyle);
-console.log("Chain keys:", Object.keys(chain).length);
-
+        console.log("Locked style:", lockedStyle);
       }
 
-      const chain = markovChains[lockedStyle];
+      const chain = markovChains[lockedStyle]; // ← declare before using
       if (!chain) return;
+
+      console.log("Chain keys:", Object.keys(chain).length);
 
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
