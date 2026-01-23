@@ -2,9 +2,13 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ================= CONFIG =================
   const STYLE_LIMITS = { masc: 300, fem: 60 };
+  const CORPUS_URLS = {
+    masc: "https://hunilune.github.io/ghostintheloop/redditMasc.json",
+    fem:  "https://hunilune.github.io/ghostintheloop/redditFem.json"
+  };
+
   let lockedStyle = null;
-  let markovChain = null;
-  let redditCorpus = null;
+  let markovChains = { masc: null, fem: null };
   const usedSlots = new Set();
 
   // ================= STYLE DETECTION =================
@@ -37,15 +41,14 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.addRange(range);
   }
 
-  // ================= MARKOV (2-GRAM) =================
+  // ================= MARKOV (3-GRAM) =================
   function buildMarkov(text) {
     const words = text.split(/\s+/);
     const chain = {};
 
-    for (let i = 0; i < words.length - 2; i++) {
-      const key = words[i] + " " + words[i + 1];
-      const next = words[i + 2];
-
+    for (let i = 0; i < words.length - 3; i++) {
+      const key = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
+      const next = words[i + 3];
       if (!chain[key]) chain[key] = [];
       chain[key].push(next);
     }
@@ -54,23 +57,23 @@ document.addEventListener("DOMContentLoaded", function () {
 
   function pickStartingKey(chain, seedText) {
     const keys = Object.keys(chain);
-    const words = seedText.split(/\s+/);
+    const seedWords = seedText.split(/\s+/);
 
-    for (let i = 0; i < words.length - 1; i++) {
-      const candidate = words[i] + " " + words[i + 1];
-      if (chain[candidate]) return candidate;
+    for (let i = 0; i < seedWords.length - 2; i++) {
+      const key = `${seedWords[i]} ${seedWords[i + 1]} ${seedWords[i + 2]}`;
+      if (chain[key]) return key;
     }
 
     return keys[Math.floor(Math.random() * keys.length)];
   }
 
-  function generateWords(chain, seedText, maxLength = 20) {
+  function generateWords(chain, seedText, maxLength = 24) {
     const keys = Object.keys(chain);
     if (!keys.length) return [];
 
     let key = pickStartingKey(chain, seedText);
-    let [w1, w2] = key.split(" ");
-    let result = [w1, w2];
+    let parts = key.split(" ");
+    let result = [...parts];
 
     for (let i = 0; i < maxLength; i++) {
       const nexts = chain[key];
@@ -81,49 +84,50 @@ document.addEventListener("DOMContentLoaded", function () {
 
       if (/[.!?]$/.test(next)) break;
 
-      key = w2 + " " + next;
-      w2 = next;
+      key = `${parts[1]} ${parts[2]} ${next}`;
+      parts = key.split(" ");
 
-      // stop looping
+      // loop breaker
       if (
-        result.slice(-4).join(" ") ===
-        result.slice(-8, -4).join(" ")
+        result.slice(-6).join(" ") ===
+        result.slice(-12, -6).join(" ")
       ) break;
     }
 
     return result;
   }
 
-  // ================= FETCH JSON =================
-  const jsonUrl = "https://hunilune.github.io/ghostintheloop/redditSample.json";
+  // ================= FETCH CORPORA =================
+  function cleanCorpus(posts) {
+    return posts
+      .map(p => `${p.data.title} ${p.data.selftext}`)
+      .filter(text =>
+        text &&
+        text.length > 60 &&
+        !text.includes("[removed]") &&
+        !text.includes("[deleted]")
+      )
+      .join(" ")
+      .toLowerCase()
+      .replace(/https?:\/\/\S+/g, "")
+      .replace(/\b(edit|tl;dr|op)\b/g, "")
+      .replace(/\n+/g, " ")
+      .replace(/\s+/g, " ")
+      .replace(/[^\p{L}\p{N}\s.,?!]/gu, "");
+  }
 
-  fetch(jsonUrl)
-    .then(res => res.json())
-    .then(data => {
-      const posts = data.data.children;
+  function loadCorpus(style) {
+    return fetch(CORPUS_URLS[style])
+      .then(res => res.json())
+      .then(data => {
+        const corpus = cleanCorpus(data.data.children);
+        markovChains[style] = buildMarkov(corpus);
+        console.log(`${style} corpus loaded (${corpus.split(/\s+/).length} words)`);
+      });
+  }
 
-      redditCorpus = posts
-        .map(p => `${p.data.title} ${p.data.selftext}`)
-        .filter(text =>
-          text &&
-          text.length > 50 &&
-          !text.includes("[removed]") &&
-          !text.includes("[deleted]")
-        )
-        .join(" ")
-        .toLowerCase()
-        .replace(/https?:\/\/\S+/g, "")
-        .replace(/\b(edit|tl;dr|op)\b/g, "")
-        .replace(/\n+/g, " ")
-        .replace(/\s+/g, " ")
-        .replace(/[^\p{L}\p{N}\s.,?!]/gu, "");
-
-      markovChain = buildMarkov(redditCorpus);
-
-      console.log("Reddit corpus loaded");
-      console.log("Sample:", redditCorpus.slice(0, 200));
-      console.log("Word count:", redditCorpus.split(/\s+/).length);
-    })
+  Promise.all([loadCorpus("masc"), loadCorpus("fem")])
+    .then(() => console.log("All corpora ready"))
     .catch(err => console.error("FETCH ERROR:", err));
 
   // ================= INPUT HANDLING =================
@@ -144,8 +148,6 @@ document.addEventListener("DOMContentLoaded", function () {
       if (e.key !== "Enter") return;
       e.preventDefault();
 
-      if (!markovChain) return;
-
       const slot = editable.dataset.slot;
       if (!slot || usedSlots.has(slot)) return;
 
@@ -157,10 +159,13 @@ document.addEventListener("DOMContentLoaded", function () {
         applyStyle(lockedStyle);
       }
 
+      const chain = markovChains[lockedStyle];
+      if (!chain) return;
+
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
 
-      const words = generateWords(markovChain, text);
+      const words = generateWords(chain, text);
       predEl.textContent = "";
 
       let i = 0;
@@ -171,7 +176,7 @@ document.addEventListener("DOMContentLoaded", function () {
         }
         predEl.textContent += words[i] + " ";
         i++;
-      }, 120);
+      }, 110);
 
       usedSlots.add(slot);
     });
