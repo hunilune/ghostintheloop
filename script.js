@@ -157,6 +157,11 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!lockedStyle) {
         lockedStyle = detectStyle(text);
         applyStyle(lockedStyle);
+
+        console.log("ENTER pressed");
+console.log("Locked style:", lockedStyle);
+console.log("Chain keys:", Object.keys(chain).length);
+
       }
 
       const chain = markovChains[lockedStyle];
