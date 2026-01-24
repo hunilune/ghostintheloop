@@ -29,6 +29,7 @@ document.addEventListener("DOMContentLoaded", function () {
   let markovChains = { masc: null, fem: null };
   const usedSlots = new Set();
 
+  // ================= STYLE DETECTION =================
   function detectStyle(text) {
     let masc = 0, fem = 0;
     if (text.match(/\b(must|should|fix|obvious|why)\b/)) masc += 2;
@@ -53,6 +54,7 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.addRange(range);
   }
 
+  // ================= MARKOV + PREFIX =================
   function buildMarkov(text) {
     const words = text.split(/\s+/);
     const chain = {};
@@ -155,8 +157,13 @@ document.addEventListener("DOMContentLoaded", function () {
       const slot = editable.dataset.slot;
       if (!slot || usedSlots.has(slot)) return;
 
-      const text = editable.innerText.trim().toLowerCase();
+      let text = editable.innerText.trim().toLowerCase();
       if (!text) return;
+
+      // ===== PREPEND "I feel" FOR SHORT INPUTS =====
+      if (text.split(/\s+/).length < 3) {
+        text = "i feel " + text;
+      }
 
       if (!lockedStyle) {
         lockedStyle = detectStyle(text);
@@ -181,8 +188,6 @@ document.addEventListener("DOMContentLoaded", function () {
         const hint = document.createElement("div");
         hint.className = "suggestion";
         hint.textContent = "click to explore alternative phrasing or add cause/context";
-
-        // clickable: fill input
         hint.style.cursor = "pointer";
         hint.addEventListener("click", () => {
           editable.innerText += " ...";
