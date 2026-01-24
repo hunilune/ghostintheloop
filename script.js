@@ -15,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let lockedStyle = null;
-  let markovChains = { masc: {}, fem: {} };
+  let markovChains = { masc: null, fem: null };
   const usedSlots = new Set();
 
   // ================= STYLE DETECTION =================
@@ -48,37 +48,61 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.addRange(range);
   }
 
-  // ================= MARKOV (3-GRAM CHAIN) =================
+  // ================= MARKOV + PREFIX INDEX =================
   function buildMarkov(text) {
     const words = text.split(/\s+/);
     const chain = {};
+    const prefixIndex = {};
 
     for (let i = 0; i < words.length - 3; i++) {
       const key = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
       const next = words[i + 3];
+
       if (!chain[key]) chain[key] = [];
       chain[key].push(next);
+
+      // prefix indexing (for starting only)
+      const p2 = `${words[i + 1]} ${words[i + 2]}`;
+      const p1 = words[i + 2];
+
+      if (!prefixIndex[p2]) prefixIndex[p2] = [];
+      if (!prefixIndex[p1]) prefixIndex[p1] = [];
+
+      prefixIndex[p2].push(key);
+      prefixIndex[p1].push(key);
     }
-    return chain;
+
+    return { chain, prefixIndex };
   }
 
-  // ================= CONTROLLED BACKOFF PICKER =================
-  function pickStartingKeyBackoff(chain, seedText) {
+  // ================= BACKOFF PICKER =================
+  function pickStartingKeyBackoff(markov, seedText) {
+    const { chain, prefixIndex } = markov;
     const words = seedText.split(/\s+/);
 
-    // Try 3-word → 2-word suffixes
+    // Exact suffix match (best)
     for (let n = 3; n >= 2; n--) {
       if (words.length < n) continue;
       const key = words.slice(-n).join(" ");
       if (chain[key]) return key;
     }
 
-    return null; // clean failure
+    // Prefix-backed fallback (still anchored)
+    for (let n = 2; n >= 1; n--) {
+      if (words.length < n) continue;
+      const suffix = words.slice(-n).join(" ");
+      const options = prefixIndex[suffix];
+      if (options && options.length) {
+        return options[Math.floor(Math.random() * options.length)];
+      }
+    }
+
+    return null;
   }
 
   // ================= GENERATION =================
-  function generateWords(chain, seedText, maxLength = 30) {
-    const startKey = pickStartingKeyBackoff(chain, seedText);
+  function generateWords(markov, seedText, maxLength = 30) {
+    const startKey = pickStartingKeyBackoff(markov, seedText);
     if (!startKey) return [];
 
     let parts = startKey.split(" ");
@@ -86,7 +110,7 @@ document.addEventListener("DOMContentLoaded", function () {
     let key = startKey;
 
     for (let i = 0; i < maxLength; i++) {
-      const nexts = chain[key];
+      const nexts = markov.chain[key];
       if (!nexts) break;
 
       const next = nexts[Math.floor(Math.random() * nexts.length)];
@@ -144,6 +168,7 @@ document.addEventListener("DOMContentLoaded", function () {
       });
 
       markovChains[style] = buildMarkov(combinedText);
+
       console.log(
         `${style} corpus ready — ${combinedText.split(/\s+/).length} words`
       );
@@ -184,18 +209,16 @@ document.addEventListener("DOMContentLoaded", function () {
         console.log("Locked style:", lockedStyle);
       }
 
-      const chain = markovChains[lockedStyle];
-      if (!chain) return;
+      const markov = markovChains[lockedStyle];
+      if (!markov) return;
 
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
 
-      const words = generateWords(chain, text);
+      const words = generateWords(markov, text);
       predEl.textContent = "";
 
-      // Clean failure = empty parentheses
       if (!words.length) {
-        predEl.textContent = "";
         usedSlots.add(slot);
         return;
       }
