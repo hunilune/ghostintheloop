@@ -12,21 +12,12 @@ document.addEventListener("DOMContentLoaded", function () {
     ]
   };
 
-  const NO_SUPPORT_MESSAGES = {
-    masc: [
-      "this phrasing is uncommon in this voice",
-      "language tends to turn away at this point",
-      "this sentiment rarely continues here"
-    ],
-    fem: [
-      "this thought is usually expanded differently",
-      "language often softens or contextualizes here",
-      "this phrasing tends to invite elaboration"
-    ]
-  };
+  const NO_SUPPORT_MESSAGE = "Phrase blocked in current voice.";
+  const CROSS_THRESHOLD = 2; // threshold for cross-corpus suppression
 
   let lockedStyle = null;
   let markovChains = { masc: null, fem: null };
+  let freqMaps = { masc: null, fem: null };
   const usedSlots = new Set();
 
   // ================= STYLE DETECTION =================
@@ -64,6 +55,7 @@ document.addEventListener("DOMContentLoaded", function () {
       const next = words[i + 3];
       if (!chain[key]) chain[key] = [];
       chain[key].push(next);
+
       const p2 = `${words[i + 1]} ${words[i + 2]}`;
       const p1 = words[i + 2];
       if (!prefixIndex[p2]) prefixIndex[p2] = [];
@@ -72,6 +64,15 @@ document.addEventListener("DOMContentLoaded", function () {
       prefixIndex[p1].push(key);
     }
     return { chain, prefixIndex, allKeys: Object.keys(chain) };
+  }
+
+  function buildFrequencyMap(text) {
+    const map = {};
+    text.split(/\s+/).forEach(word => {
+      if (!map[word]) map[word] = 0;
+      map[word]++;
+    });
+    return map;
   }
 
   function pickStartingKeyApprox(markov, seedText) {
@@ -141,12 +142,22 @@ document.addEventListener("DOMContentLoaded", function () {
         else if (data?.data?.children) combinedText += " " + cleanCorpus(data.data.children);
       });
       markovChains[style] = buildMarkov(combinedText);
+      freqMaps[style] = buildFrequencyMap(combinedText);
       console.log(`${style} corpus ready`);
     });
   }
 
   Promise.all([loadCorpus("masc"), loadCorpus("fem")])
     .then(() => console.log("All corpora loaded"));
+
+  function crossCorpusScore(words, style) {
+    const other = style === "masc" ? freqMaps.fem : freqMaps.masc;
+    let score = 0;
+    words.forEach(w => {
+      if (other[w]) score += other[w];
+    });
+    return score;
+  }
 
   document.querySelectorAll(".editable").forEach(editable => {
 
@@ -160,9 +171,8 @@ document.addEventListener("DOMContentLoaded", function () {
       let text = editable.innerText.trim().toLowerCase();
       if (!text) return;
 
-      // ===== PREPEND "I feel" FOR SHORT INPUTS =====
       if (text.split(/\s+/).length < 3) {
-        text = "i feel " + text;
+        text = "i feel " + text; // prepending short phrases
       }
 
       if (!lockedStyle) {
@@ -176,33 +186,37 @@ document.addEventListener("DOMContentLoaded", function () {
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
 
-      predEl.classList.remove("no-support");
+      predEl.classList.remove("no-support", "cross");
       predEl.textContent = "";
 
-      const words = generateWords(markov, text);
+      const wordsArray = generateWords(markov, text);
 
-      if (!words.length) {
+      // cross-corpus scoring
+      const crossScore = crossCorpusScore(text.split(/\s+/), lockedStyle);
+
+      if (!wordsArray.length || crossScore >= CROSS_THRESHOLD) {
         predEl.classList.add("no-support");
-        predEl.textContent = NO_SUPPORT_MESSAGES[lockedStyle][Math.floor(Math.random() * NO_SUPPORT_MESSAGES[lockedStyle].length)];
+        if (crossScore >= CROSS_THRESHOLD) predEl.classList.add("cross");
+        predEl.textContent = NO_SUPPORT_MESSAGE;
 
         const hint = document.createElement("div");
         hint.className = "suggestion";
-        hint.textContent = "click to explore alternative phrasing or add cause/context";
+        hint.textContent = "click to explore alternative phrasing";
         hint.style.cursor = "pointer";
         hint.addEventListener("click", () => {
-          editable.innerText += " ...";
-          placeCaretAtEnd(editable);
+          // optional: could focus a new editable or show example continuations
+          editable.focus();
         });
-
         predEl.appendChild(hint);
+
         usedSlots.add(slot);
         return;
       }
 
       let i = 0;
       const interval = setInterval(() => {
-        if (i >= words.length) { clearInterval(interval); return; }
-        predEl.textContent += words[i] + " ";
+        if (i >= wordsArray.length) { clearInterval(interval); return; }
+        predEl.textContent += wordsArray[i] + " ";
         i++;
       }, 110);
 
