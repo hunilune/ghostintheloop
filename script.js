@@ -1,6 +1,8 @@
 document.addEventListener("DOMContentLoaded", function () {
 
+  // ================= CONFIG =================
   const STYLE_LIMITS = { masc: 300, fem: 60 };
+
   const CORPUS_URLS = {
     masc: [
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
@@ -12,27 +14,28 @@ document.addEventListener("DOMContentLoaded", function () {
     ]
   };
 
-  const NO_SUPPORT_MESSAGE = "Phrase blocked in current voice.";
-  const CROSS_THRESHOLD = 2; // threshold for cross-corpus suppression
-
   let lockedStyle = null;
   let markovChains = { masc: null, fem: null };
-  let freqMaps = { masc: null, fem: null };
   const usedSlots = new Set();
 
   // ================= STYLE DETECTION =================
   function detectStyle(text) {
     let masc = 0, fem = 0;
+
     if (text.match(/\b(must|should|fix|obvious|why)\b/)) masc += 2;
     if (text.match(/\b(maybe|i think|i feel|sorry|just)\b/)) fem += 2;
+
     if (text.includes("!")) masc++;
     if (text.includes("?") || text.includes("...")) fem++;
+
     return masc >= fem ? "masc" : "fem";
   }
 
   function applyStyle(style) {
     document.documentElement.classList.add(`mode-${style}`);
-    document.querySelectorAll(".editable").forEach(el => el.dataset.max = STYLE_LIMITS[style]);
+    document.querySelectorAll(".editable").forEach(el => {
+      el.dataset.max = STYLE_LIMITS[style];
+    });
   }
 
   function placeCaretAtEnd(el) {
@@ -45,84 +48,93 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.addRange(range);
   }
 
-  // ================= MARKOV + PREFIX =================
+  // ================= MARKOV + PREFIX INDEX =================
   function buildMarkov(text) {
     const words = text.split(/\s+/);
     const chain = {};
     const prefixIndex = {};
+
     for (let i = 0; i < words.length - 3; i++) {
       const key = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
       const next = words[i + 3];
+
       if (!chain[key]) chain[key] = [];
       chain[key].push(next);
 
+      // prefix indexing (for starting only)
       const p2 = `${words[i + 1]} ${words[i + 2]}`;
       const p1 = words[i + 2];
+
       if (!prefixIndex[p2]) prefixIndex[p2] = [];
       if (!prefixIndex[p1]) prefixIndex[p1] = [];
+
       prefixIndex[p2].push(key);
       prefixIndex[p1].push(key);
     }
-    return { chain, prefixIndex, allKeys: Object.keys(chain) };
+
+    return { chain, prefixIndex };
   }
 
-  function buildFrequencyMap(text) {
-    const map = {};
-    text.split(/\s+/).forEach(word => {
-      if (!map[word]) map[word] = 0;
-      map[word]++;
-    });
-    return map;
-  }
-
-  function pickStartingKeyApprox(markov, seedText) {
-    const { chain, prefixIndex, allKeys } = markov;
+  // ================= BACKOFF PICKER =================
+  function pickStartingKeyBackoff(markov, seedText) {
+    const { chain, prefixIndex } = markov;
     const words = seedText.split(/\s+/);
 
-    // Exact suffix match
+    // Exact suffix match (best)
     for (let n = 3; n >= 2; n--) {
       if (words.length < n) continue;
       const key = words.slice(-n).join(" ");
       if (chain[key]) return key;
     }
 
-    // Prefix fallback
+    // Prefix-backed fallback (still anchored)
     for (let n = 2; n >= 1; n--) {
       if (words.length < n) continue;
       const suffix = words.slice(-n).join(" ");
       const options = prefixIndex[suffix];
-      if (options && options.length) return options[Math.floor(Math.random() * options.length)];
+      if (options && options.length) {
+        return options[Math.floor(Math.random() * options.length)];
+      }
     }
-
-    // Approximate semantic: pick a key sharing any word
-    const approx = allKeys.filter(k => words.some(w => k.includes(w)));
-    if (approx.length) return approx[Math.floor(Math.random() * approx.length)];
 
     return null;
   }
 
+  // ================= GENERATION =================
   function generateWords(markov, seedText, maxLength = 30) {
-    const startKey = pickStartingKeyApprox(markov, seedText);
+    const startKey = pickStartingKeyBackoff(markov, seedText);
     if (!startKey) return [];
+
     let parts = startKey.split(" ");
     let result = [];
     let key = startKey;
+
     for (let i = 0; i < maxLength; i++) {
       const nexts = markov.chain[key];
       if (!nexts) break;
+
       const next = nexts[Math.floor(Math.random() * nexts.length)];
       result.push(next);
+
       if (/[.!?]$/.test(next)) break;
+
       parts = parts.slice(1).concat(next);
       key = parts.join(" ");
     }
+
     return result;
   }
 
+  // ================= CORPUS CLEANING =================
   function cleanCorpus(posts) {
     return posts
       .map(p => `${p.data?.title || ""} ${p.data?.selftext || ""}`)
-      .filter(text => text && text.length > 60 && !text.includes("[removed]") && !text.includes("[deleted]"))
+      .filter(text =>
+        text &&
+        text.length > 60 &&
+        !text.includes("[removed]") &&
+        !text.includes("[deleted]")
+      )
       .join(" ")
       .toLowerCase()
       .replace(/https?:\/\/\S+/g, "")
@@ -132,34 +144,54 @@ document.addEventListener("DOMContentLoaded", function () {
       .replace(/[^\p{L}\p{N}\s.,?!]/gu, "");
   }
 
+  // ================= LOAD MULTIPLE JSONs =================
   function loadCorpus(style) {
+    const urls = CORPUS_URLS[style];
+
     return Promise.all(
-      CORPUS_URLS[style].map(url => fetch(url).then(res => res.json()))
+      urls.map(url =>
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          })
+      )
     ).then(allData => {
       let combinedText = "";
+
       allData.forEach(data => {
-        if (Array.isArray(data)) combinedText += " " + data.join(" ");
-        else if (data?.data?.children) combinedText += " " + cleanCorpus(data.data.children);
+        if (Array.isArray(data)) {
+          combinedText += " " + data.join(" ");
+        } else if (data?.data?.children) {
+          combinedText += " " + cleanCorpus(data.data.children);
+        }
       });
+
       markovChains[style] = buildMarkov(combinedText);
-      freqMaps[style] = buildFrequencyMap(combinedText);
-      console.log(`${style} corpus ready`);
+
+      console.log(
+        `${style} corpus ready — ${combinedText.split(/\s+/).length} words`
+      );
     });
   }
 
   Promise.all([loadCorpus("masc"), loadCorpus("fem")])
-    .then(() => console.log("All corpora loaded"));
+    .then(() => console.log("All corpora loaded"))
+    .catch(err => console.error("FETCH ERROR:", err));
 
-  function crossCorpusScore(words, style) {
-    const other = style === "masc" ? freqMaps.fem : freqMaps.masc;
-    let score = 0;
-    words.forEach(w => {
-      if (other[w]) score += other[w];
-    });
-    return score;
-  }
-
+  // ================= INPUT HANDLING =================
   document.querySelectorAll(".editable").forEach(editable => {
+
+    editable.addEventListener("input", () => {
+      if (!lockedStyle) return;
+      const max = parseInt(editable.dataset.max, 10);
+      if (!max) return;
+
+      if (editable.innerText.length > max) {
+        editable.innerText = editable.innerText.slice(0, max);
+        placeCaretAtEnd(editable);
+      }
+    });
 
     editable.addEventListener("keydown", e => {
       if (e.key !== "Enter") return;
@@ -168,16 +200,13 @@ document.addEventListener("DOMContentLoaded", function () {
       const slot = editable.dataset.slot;
       if (!slot || usedSlots.has(slot)) return;
 
-      let text = editable.innerText.trim().toLowerCase();
+      const text = editable.innerText.trim().toLowerCase();
       if (!text) return;
-
-      if (text.split(/\s+/).length < 3) {
-        text = "i feel " + text; // prepending short phrases
-      }
 
       if (!lockedStyle) {
         lockedStyle = detectStyle(text);
         applyStyle(lockedStyle);
+        console.log("Locked style:", lockedStyle);
       }
 
       const markov = markovChains[lockedStyle];
@@ -186,37 +215,21 @@ document.addEventListener("DOMContentLoaded", function () {
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
 
-      predEl.classList.remove("no-support", "cross");
+      const words = generateWords(markov, text);
       predEl.textContent = "";
 
-      const wordsArray = generateWords(markov, text);
-
-      // cross-corpus scoring
-      const crossScore = crossCorpusScore(text.split(/\s+/), lockedStyle);
-
-      if (!wordsArray.length || crossScore >= CROSS_THRESHOLD) {
-        predEl.classList.add("no-support");
-        if (crossScore >= CROSS_THRESHOLD) predEl.classList.add("cross");
-        predEl.textContent = NO_SUPPORT_MESSAGE;
-
-        const hint = document.createElement("div");
-        hint.className = "suggestion";
-        hint.textContent = "click to explore alternative phrasing";
-        hint.style.cursor = "pointer";
-        hint.addEventListener("click", () => {
-          // optional: could focus a new editable or show example continuations
-          editable.focus();
-        });
-        predEl.appendChild(hint);
-
+      if (!words.length) {
         usedSlots.add(slot);
         return;
       }
 
       let i = 0;
       const interval = setInterval(() => {
-        if (i >= wordsArray.length) { clearInterval(interval); return; }
-        predEl.textContent += wordsArray[i] + " ";
+        if (i >= words.length) {
+          clearInterval(interval);
+          return;
+        }
+        predEl.textContent += words[i] + " ";
         i++;
       }, 110);
 
