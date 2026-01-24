@@ -71,6 +71,13 @@ h6 {
   margin-left: 4px;
 }
 
+.predicted.no-support {
+  color: #c44;           /* red-ish to indicate absence */
+  font-style: italic;     /* subtle visual cue */
+  opacity: 0.8;           /* slightly faded */
+  transition: opacity 0.5s;
+}
+
 .note {
   font-family: Social;
   margin-top: 3rem;
