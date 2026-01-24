@@ -3,7 +3,6 @@ document.addEventListener("DOMContentLoaded", function () {
   // ================= CONFIG =================
   const STYLE_LIMITS = { masc: 300, fem: 60 };
 
-  // Multiple JSON sources per style
   const CORPUS_URLS = {
     masc: [
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
@@ -16,7 +15,7 @@ document.addEventListener("DOMContentLoaded", function () {
   };
 
   let lockedStyle = null;
-  let markovChains = { masc: null, fem: null };
+  let markovChains = { masc: {}, fem: {} };
   const usedSlots = new Set();
 
   // ================= STYLE DETECTION =================
@@ -49,52 +48,46 @@ document.addEventListener("DOMContentLoaded", function () {
     sel.addRange(range);
   }
 
-  // ================= MARKOV (4-GRAM, sentence-aware) =================
-  function buildMarkov(text, n = 4) {
-    const sentences = text
-      .split(/(?<=[.!?])/g)
-      .map(s => s.trim())
-      .filter(s => s.length > 0);
-
+  // ================= MARKOV (3-GRAM CHAIN) =================
+  function buildMarkov(text) {
+    const words = text.split(/\s+/);
     const chain = {};
-    sentences.forEach(sentence => {
-      const words = sentence.split(/\s+/).filter(Boolean);
-      for (let i = 0; i <= words.length - n; i++) {
-        const key = words.slice(i, i + n - 1).join(" ");
-        const next = words[i + n - 1];
-        if (!chain[key]) chain[key] = [];
-        chain[key].push(next);
-      }
-    });
+
+    for (let i = 0; i < words.length - 3; i++) {
+      const key = `${words[i]} ${words[i + 1]} ${words[i + 2]}`;
+      const next = words[i + 3];
+      if (!chain[key]) chain[key] = [];
+      chain[key].push(next);
+    }
     return chain;
   }
 
-  function pickStartingKey(chain, seedText, n = 4) {
-    const keys = Object.keys(chain);
-    if (!keys.length) return null;
+  // ================= CONTROLLED BACKOFF PICKER =================
+  function pickStartingKeyBackoff(chain, seedText) {
+    const words = seedText.split(/\s+/);
 
-    const seedWords = seedText.split(/\s+/);
-    for (let i = 0; i <= seedWords.length - (n - 1); i++) {
-      const key = seedWords.slice(i, i + n - 1).join(" ");
+    // Try 3-word → 2-word suffixes
+    for (let n = 3; n >= 2; n--) {
+      if (words.length < n) continue;
+      const key = words.slice(-n).join(" ");
       if (chain[key]) return key;
     }
 
-    return keys[Math.floor(Math.random() * keys.length)];
+    return null; // clean failure
   }
 
-  function generateWords(chain, seedText, maxLength = 50, n = 4) {
-    if (!chain) return [];
+  // ================= GENERATION =================
+  function generateWords(chain, seedText, maxLength = 30) {
+    const startKey = pickStartingKeyBackoff(chain, seedText);
+    if (!startKey) return [];
 
-    let key = pickStartingKey(chain, seedText, n);
-    if (!key) return [];
-
-    let parts = key.split(" ");
-    const result = [...parts];
-    const maxLoopCheck = 6;
+    let parts = startKey.split(" ");
+    let result = [];
+    let key = startKey;
 
     for (let i = 0; i < maxLength; i++) {
       const nexts = chain[key];
-      if (!nexts || !nexts.length) break;
+      if (!nexts) break;
 
       const next = nexts[Math.floor(Math.random() * nexts.length)];
       result.push(next);
@@ -103,29 +96,20 @@ document.addEventListener("DOMContentLoaded", function () {
 
       parts = parts.slice(1).concat(next);
       key = parts.join(" ");
-
-      const recent = result.slice(-maxLoopCheck).join(" ");
-      const prev = result.slice(-maxLoopCheck * 2, -maxLoopCheck).join(" ");
-      if (recent === prev) break;
     }
 
     return result;
   }
 
-  // ================= FETCH & CLEAN CORPORA =================
+  // ================= CORPUS CLEANING =================
   function cleanCorpus(posts) {
     return posts
-      .map(p => {
-        if (p.data) return `${p.data.title || ""} ${p.data.selftext || ""}`;
-        return p;
-      })
+      .map(p => `${p.data?.title || ""} ${p.data?.selftext || ""}`)
       .filter(text =>
         text &&
         text.length > 60 &&
         !text.includes("[removed]") &&
-        !text.includes("[deleted]") &&
-        !text.toLowerCase().includes("mod") &&
-        !text.toLowerCase().includes("rules")
+        !text.includes("[deleted]")
       )
       .join(" ")
       .toLowerCase()
@@ -136,31 +120,39 @@ document.addEventListener("DOMContentLoaded", function () {
       .replace(/[^\p{L}\p{N}\s.,?!]/gu, "");
   }
 
+  // ================= LOAD MULTIPLE JSONs =================
   function loadCorpus(style) {
     const urls = CORPUS_URLS[style];
-    const fetches = urls.map(url =>
-      fetch(url)
-        .then(res => {
-          if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
-          return res.json();
-        })
-        .then(data => data.data?.children || data)
-        .catch(err => {
-          console.error("FETCH ERROR:", err);
-          return [];
-        })
-    );
 
-    return Promise.all(fetches).then(results => {
-      const mergedPosts = results.flat();
-      const corpus = cleanCorpus(mergedPosts);
-      markovChains[style] = buildMarkov(corpus, 4);
-      console.log(`${style} corpus loaded (${corpus.split(/\s+/).length} words)`);
+    return Promise.all(
+      urls.map(url =>
+        fetch(url)
+          .then(res => {
+            if (!res.ok) throw new Error(`HTTP ${res.status}`);
+            return res.json();
+          })
+      )
+    ).then(allData => {
+      let combinedText = "";
+
+      allData.forEach(data => {
+        if (Array.isArray(data)) {
+          combinedText += " " + data.join(" ");
+        } else if (data?.data?.children) {
+          combinedText += " " + cleanCorpus(data.data.children);
+        }
+      });
+
+      markovChains[style] = buildMarkov(combinedText);
+      console.log(
+        `${style} corpus ready — ${combinedText.split(/\s+/).length} words`
+      );
     });
   }
 
   Promise.all([loadCorpus("masc"), loadCorpus("fem")])
-    .then(() => console.log("All corpora ready"));
+    .then(() => console.log("All corpora loaded"))
+    .catch(err => console.error("FETCH ERROR:", err));
 
   // ================= INPUT HANDLING =================
   document.querySelectorAll(".editable").forEach(editable => {
@@ -189,20 +181,24 @@ document.addEventListener("DOMContentLoaded", function () {
       if (!lockedStyle) {
         lockedStyle = detectStyle(text);
         applyStyle(lockedStyle);
-        console.log("ENTER pressed");
         console.log("Locked style:", lockedStyle);
       }
 
       const chain = markovChains[lockedStyle];
       if (!chain) return;
 
-      console.log("Chain keys:", Object.keys(chain).length);
-
       const predEl = document.querySelector(`.predicted[data-slot="${slot}"]`);
       if (!predEl) return;
 
-      const words = generateWords(chain, text, 50, 4);
+      const words = generateWords(chain, text);
       predEl.textContent = "";
+
+      // Clean failure = empty parentheses
+      if (!words.length) {
+        predEl.textContent = "";
+        usedSlots.add(slot);
+        return;
+      }
 
       let i = 0;
       const interval = setInterval(() => {
