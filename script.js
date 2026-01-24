@@ -7,11 +7,11 @@ document.addEventListener("DOMContentLoaded", function () {
   const CORPUS_URLS = {
     masc: [
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
-      "https://hunilune.github.io/ghostintheloop/OtherMensSub.json"
+      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json"
     ],
     fem: [
       "https://hunilune.github.io/ghostintheloop/AskWomen.json",
-      "https://hunilune.github.io/ghostintheloop/OtherWomensSub.json"
+      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json"
     ]
   };
 
