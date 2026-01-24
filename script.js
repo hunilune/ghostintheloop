@@ -2,9 +2,17 @@ document.addEventListener("DOMContentLoaded", function () {
 
   // ================= CONFIG =================
   const STYLE_LIMITS = { masc: 300, fem: 60 };
+
+  // Multiple JSON sources per style
   const CORPUS_URLS = {
-    masc: "https://hunilune.github.io/ghostintheloop/AskMen.json",
-    fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
+    masc: [
+      "https://hunilune.github.io/ghostintheloop/AskMen.json",
+      "https://hunilune.github.io/ghostintheloop/OtherMensSub.json"
+    ],
+    fem: [
+      "https://hunilune.github.io/ghostintheloop/AskWomen.json",
+      "https://hunilune.github.io/ghostintheloop/OtherWomensSub.json"
+    ]
   };
 
   let lockedStyle = null;
@@ -44,10 +52,10 @@ document.addEventListener("DOMContentLoaded", function () {
   // ================= MARKOV (4-GRAM, sentence-aware) =================
   function buildMarkov(text, n = 4) {
     const sentences = text
-      .split(/(?<=[.!?])/g)        // split into sentences
+      .split(/(?<=[.!?])/g)
       .map(s => s.trim())
       .filter(s => s.length > 0);
-    
+
     const chain = {};
     sentences.forEach(sentence => {
       const words = sentence.split(/\s+/).filter(Boolean);
@@ -91,14 +99,11 @@ document.addEventListener("DOMContentLoaded", function () {
       const next = nexts[Math.floor(Math.random() * nexts.length)];
       result.push(next);
 
-      // stop at sentence end
       if (/[.!?]$/.test(next)) break;
 
-      // update key
       parts = parts.slice(1).concat(next);
       key = parts.join(" ");
 
-      // loop breaker
       const recent = result.slice(-maxLoopCheck).join(" ");
       const prev = result.slice(-maxLoopCheck * 2, -maxLoopCheck).join(" ");
       if (recent === prev) break;
@@ -132,17 +137,26 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   function loadCorpus(style) {
-    return fetch(CORPUS_URLS[style])
-      .then(res => {
-        if (!res.ok) throw new Error(`HTTP ${res.status} for ${style}`);
-        return res.json();
-      })
-      .then(data => {
-        const corpus = cleanCorpus(data.data?.children || data);
-        markovChains[style] = buildMarkov(corpus, 4);
-        console.log(`${style} corpus loaded (${corpus.split(/\s+/).length} words)`);
-      })
-      .catch(err => console.error("FETCH ERROR:", err));
+    const urls = CORPUS_URLS[style];
+    const fetches = urls.map(url =>
+      fetch(url)
+        .then(res => {
+          if (!res.ok) throw new Error(`HTTP ${res.status} for ${url}`);
+          return res.json();
+        })
+        .then(data => data.data?.children || data)
+        .catch(err => {
+          console.error("FETCH ERROR:", err);
+          return [];
+        })
+    );
+
+    return Promise.all(fetches).then(results => {
+      const mergedPosts = results.flat();
+      const corpus = cleanCorpus(mergedPosts);
+      markovChains[style] = buildMarkov(corpus, 4);
+      console.log(`${style} corpus loaded (${corpus.split(/\s+/).length} words)`);
+    });
   }
 
   Promise.all([loadCorpus("masc"), loadCorpus("fem")])
