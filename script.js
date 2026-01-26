@@ -9,24 +9,21 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let ACTIVE_VOICE = "masc";
-
   const MAX_OUTPUT_WORDS = 22;
-  const BASE_ABSENCE_PROB = 0.05;
-  const MEMORY_WEIGHT = 0.12;
 
   /******************************
-   * GRADED, GENDERED EMOTIONS
+   * GENDERED EMOTIONS (AUTHORITATIVE)
    ******************************/
   const EMOTIONS = {
     masc: {
-      mild: ["tired","stressed","annoyed","uneasy","off","fine"],
-      medium: ["sad","angry","frustrated","lonely","worried","burnt"],
-      intense: ["numb","empty","hopeless","exhausted","done","broken"]
+      mild: ["tired","stressed","off","fine"],
+      medium: ["sad","angry","lonely","frustrated"],
+      intense: ["numb","empty","done","broken"]
     },
     fem: {
-      mild: ["uneasy","low","off","sensitive","fragile"],
-      medium: ["sad","anxious","overwhelmed","hurt","lonely","afraid"],
-      intense: ["depressed","empty","grieving","despair","hopeless","unlovable"]
+      mild: ["low","uneasy","sensitive"],
+      medium: ["sad","anxious","overwhelmed","hurt"],
+      intense: ["empty","hopeless","despair","unlovable"]
     }
   };
 
@@ -34,32 +31,26 @@ document.addEventListener("DOMContentLoaded", () => {
    * STATE
    ******************************/
   let corpora = { masc: [], fem: [] };
-  let suppressionCount = 0;
-  let suppressedMemory = [];
 
   /******************************
    * LOAD CORPORA
    ******************************/
   async function loadCorpora() {
-    try {
-      const [m, f] = await Promise.all([
-        fetch(CORPUS_URLS.masc).then(r => r.json()),
-        fetch(CORPUS_URLS.fem).then(r => r.json())
-      ]);
+    const [m, f] = await Promise.all([
+      fetch(CORPUS_URLS.masc).then(r => r.json()),
+      fetch(CORPUS_URLS.fem).then(r => r.json())
+    ]);
 
-      corpora.masc = normalize(m);
-      corpora.fem  = normalize(f);
+    corpora.masc = normalize(m);
+    corpora.fem  = normalize(f);
 
-      console.log("Corpora loaded:", corpora.masc.length, corpora.fem.length);
-    } catch (e) {
-      console.error("Corpus load failed", e);
-    }
+    console.log("Loaded:", corpora.masc.length, corpora.fem.length);
   }
 
   loadCorpora();
 
   /******************************
-   * NORMALIZATION
+   * NORMALIZATION (BULLETPROOF)
    ******************************/
   function normalize(source) {
     const arr = Array.isArray(source)
@@ -75,11 +66,11 @@ document.addEventListener("DOMContentLoaded", () => {
           .replace(/[^\w\s]/g, "")
           .trim()
       )
-      .filter(t => t.length > 20);
+      .filter(t => t.length > 15);
   }
 
   /******************************
-   * EMOTION DETECTION
+   * EMOTION DETECTION (FIRST)
    ******************************/
   function detectEmotion(text) {
     const words = text.split(/\s+/);
@@ -94,149 +85,81 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * ROLE INFERENCE
+   * FUZZY SIMILARITY
    ******************************/
-  function inferRole(text) {
-    if (
-      /i feel|im feeling|i am feeling|feeling/i.test(text) ||
-      detectEmotion(text)
-    ) {
-      return "emotion";
-    }
-
-    if (/because|since|due to/i.test(text)) return "cause";
-    if (/\?$/.test(text)) return "question";
-    return "statement";
+  function overlapScore(line, inputWords) {
+    return inputWords.reduce(
+      (s, w) => s + (line.includes(w) ? 1 : 0),
+      0
+    );
   }
 
   /******************************
-   * FUZZY SCORE
-   ******************************/
-  function scoreLine(line, inputWords) {
-    const words = line.split(/\s+/);
-    return words.reduce((s, w) => s + (inputWords.includes(w) ? 1 : 0), 0);
-  }
-
-  /******************************
-   * GENERATION
+   * GENERATION (FIXED)
    ******************************/
   function generate(input) {
-    const role = inferRole(input);
-    const emotionLevel = detectEmotion(input);
+    const emotion = detectEmotion(input);
     const inputWords = input.split(/\s+/);
+    const pool = corpora[ACTIVE_VOICE];
 
-    const same = corpora[ACTIVE_VOICE];
-    const opposite = corpora[ACTIVE_VOICE === "masc" ? "fem" : "masc"];
+    // 1️⃣ If emotion detected → NEVER block
+    if (emotion) {
+      // Prefer emotionally structured sentences
+      let emotionalPool = pool.filter(t =>
+        /(but|because|when|that|and)/i.test(t)
+      );
 
-    const cross = opposite.some(t =>
-      inputWords.some(w => t.includes(w))
-    );
+      if (!emotionalPool.length) {
+        emotionalPool = pool;
+      }
 
-    // Emotion strength affects thinning
-    let absenceProb = BASE_ABSENCE_PROB;
-    if (emotionLevel === "intense") absenceProb *= 0.4;
-    if (emotionLevel === "mild") absenceProb *= 1.4;
+      const chosen =
+        emotionalPool[Math.floor(Math.random() * emotionalPool.length)];
 
-    if (suppressedMemory.some(m => input.includes(m))) {
-      absenceProb += MEMORY_WEIGHT;
+      return {
+        text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
+        voice: ACTIVE_VOICE,
+        emotion
+      };
     }
 
-    if (cross && Math.random() < absenceProb) {
-      suppressionCount++;
-      suppressedMemory.push(input);
-      degradeInterface();
-      return { mode: "unsupported" };
-    }
-
-    // 1️⃣ fuzzy overlap
-    let scored = same
-      .map(line => ({ line, score: scoreLine(line, inputWords) }))
+    // 2️⃣ Otherwise fuzzy continuation
+    const scored = pool
+      .map(t => ({ t, score: overlapScore(t, inputWords) }))
       .filter(o => o.score > 0);
 
-    // 2️⃣ semantic fallback
-    if (!scored.length) {
-      scored = same
-        .filter(t => semanticFit(t, role))
-        .map(t => ({ line: t, score: 1 }));
+    if (scored.length) {
+      scored.sort((a, b) => b.score - a.score);
+      const chosen =
+        scored[Math.floor(Math.random() * Math.min(5, scored.length))].t;
+
+      return {
+        text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
+        voice: ACTIVE_VOICE
+      };
     }
 
-    // 3️⃣ emotional intuition fallback (graded)
-    if (!scored.length && role === "emotion") {
-      const regex =
-        emotionLevel === "intense"
-          ? /(nothing|never|cant|empty|done|alone|end)/i
-          : emotionLevel === "medium"
-            ? /(but|because|when|that|and)/i
-            : /(and|when|that)/i;
-
-      scored = same
-        .filter(t => regex.test(t))
-        .map(t => ({ line: t, score: 0 }));
-    }
-
-    if (!scored.length) {
-      return { mode: "unsupported" };
-    }
-
-    scored.sort((a, b) => b.score - a.score);
-
-    const chosen =
-      scored[Math.floor(Math.random() * Math.min(6, scored.length))].line;
-
-    const text = chosen
-      .split(/\s+/)
-      .slice(0, MAX_OUTPUT_WORDS)
-      .join(" ");
+    // 3️⃣ Absolute last resort (very rare)
+    const fallback =
+      pool[Math.floor(Math.random() * pool.length)];
 
     return {
-      mode:
-        scored[0].score === 0
-          ? "soft"
-          : cross
-            ? "thinned"
-            : "expanded",
-      text,
-      voice: ACTIVE_VOICE,
-      emotion: emotionLevel
+      text: fallback.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
+      voice: ACTIVE_VOICE
     };
   }
 
   /******************************
-   * SEMANTIC FILTER
+   * RENDER INLINE
    ******************************/
-  function semanticFit(t, role) {
-    if (role === "emotion") return /(and|but|when|because|that)/i.test(t);
-    if (role === "cause") return /(this|that|it|which)/i.test(t);
-    return true;
-  }
-
-  /******************************
-   * INTERFACE FATIGUE
-   ******************************/
-  function degradeInterface() {
-    document.documentElement.style.setProperty("--fatigue", suppressionCount);
-  }
-
-  /******************************
-   * INLINE RENDER
-   ******************************/
-  function renderInline(slot, result) {
+  function render(slot, result) {
     const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
     if (!el) return;
 
-    if (result.mode === "unsupported") {
-      el.textContent = "— language thins here —";
-      el.style.opacity = "0.35";
-      el.style.color = "#999";
-      return;
-    }
-
     el.textContent = result.text;
-
-    // Emotion intensity subtly affects opacity
-    if (result.emotion === "intense") el.style.opacity = "0.9";
-    else if (result.emotion === "mild") el.style.opacity = "0.7";
-    else el.style.opacity = "1";
+    el.style.opacity =
+      result.emotion === "intense" ? "0.9" :
+      result.emotion === "mild"    ? "0.7" : "1";
 
     el.style.color =
       result.voice === "masc" ? "#3b6cff" : "#d44b8c";
@@ -253,11 +176,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const slot = active.getAttribute("data-slot");
     const input = active.textContent.toLowerCase().trim();
-
     if (!input) return;
 
     const result = generate(input);
-    renderInline(slot, result);
+    render(slot, result);
   });
 
 });
