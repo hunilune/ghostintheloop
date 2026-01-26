@@ -56,7 +56,7 @@ h6 {
   text-wrap: pretty;
 }
 
-// Input //
+/* Input */
 
 .editable {
   display: inline-block;
@@ -67,7 +67,7 @@ h6 {
   outline: none;
 }
 
-// Output or Predictive Text //
+/* Output or Predictive Text */
 
 .predicted {
   display: block;
@@ -79,22 +79,22 @@ h6 {
     filter 0.45s ease;
 }
 
-// Visual hierarchy //
+/* Visual hierarchy */
 
-// Supported language surfaces //
+/* Supported language surfaces */
 .predicted.aligned {
   transform: scale(1.05);
   opacity: 1;
 }
 
-// Discouraged language recedes //
+/* Discouraged language recedes */
 .predicted.cross {
   transform: scale(0.94);
   opacity: 0.55;
   filter: saturate(0.7);
 }
 
-// Ambiguous language stays quiet //
+/* Ambiguous language stays quiet */
 .predicted.neutral {
   opacity: 0.85;
 }
@@ -106,7 +106,7 @@ h6 {
   transition: opacity 0.5s;
 }
 
-// Trigger words //
+/* Trigger words */
 
 .word {
   display: inline-block;
@@ -116,13 +116,13 @@ h6 {
     letter-spacing 0.3s ease;
 }
 
-// Words aligned with the active voice //
+/* Words aligned with the active voice */
 .word.masc,
 .word.fem {
   font-weight: 600;
 }
 
-// Suppressed words thin out when cross-coded //
+/* Suppressed words thin out when cross-coded */
 .predicted.cross .word.masc,
 .predicted.cross .word.fem {
   font-weight: 300;
@@ -175,21 +175,21 @@ hr {
   opacity: 0.45;
 }
 
-// Language alignment //
+/* Language alignment */
 
-// Page clarifies when language aligns //
+/* Page clarifies when language aligns */
 .mode-aligned body {
   background-color: #fafafa;
   color: #111;
 }
 
-// Page darkens when language resists //
+/* Page darkens when language resists */
 .mode-cross body {
   background-color: #0e0e0e;
   color: #888;
 }
 
-// Accessibility //
+/* Accessibility */
 
 @media (prefers-reduced-motion: reduce) {
   * {
