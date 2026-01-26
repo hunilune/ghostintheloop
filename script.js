@@ -6,20 +6,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
-  const MAX_OUTPUT_WORDS = 22;
+  const MAX_OUTPUT_WORDS = 20;
 
-  // Recursively extract text from Reddit JSON
+  async function loadCorpora() {
+    try {
+      const [mRes, fRes] = await Promise.all([fetch(CORPUS_URLS.masc), fetch(CORPUS_URLS.fem)]);
+      const mJson = await mRes.json();
+      const fJson = await fRes.json();
+
+      corpora.masc = normalize(extractText(mJson));
+      corpora.fem  = normalize(extractText(fJson));
+      console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
+    } catch (err) {
+      console.error("Failed to load corpora:", err);
+      corpora.masc = ["Fallback male sentence for testing."];
+      corpora.fem  = ["Fallback female sentence for testing."];
+    } finally {
+      ready = true;
+    }
+  }
+
+  loadCorpora();
+
   function extractText(obj) {
     const out = [];
     function recurse(o) {
       if (!o) return;
       if (Array.isArray(o)) o.forEach(item => recurse(item));
       else if (typeof o === "object") {
-        // Post text
         if ("selftext" in o && o.selftext) out.push(o.selftext);
-        // Comment text
         if ("body" in o && o.body) out.push(o.body);
-        // Recurse into nested children
         for (let k in o) recurse(o[k]);
       }
     }
@@ -30,61 +46,81 @@ document.addEventListener("DOMContentLoaded", () => {
   function normalize(arr) {
     if (!Array.isArray(arr)) return [];
     return arr
-      .map(t => String(t).toLowerCase().trim())
-      .filter(t => t.length > 20); // ignore very short lines
+      .map(t => String(t).trim().replace(/\s+/g, " "))
+      .filter(t => t.length > 20);
   }
 
-  async function loadCorpora() {
-    try {
-      const [mRes, fRes] = await Promise.all([
-        fetch(CORPUS_URLS.masc),
-        fetch(CORPUS_URLS.fem)
-      ]);
-      const mJson = await mRes.json();
-      const fJson = await fRes.json();
+  // -------------------------
+  // MARKOV CHAIN GENERATOR
+  // -------------------------
+  function buildMarkov(textArray) {
+    const chain = {};
+    textArray.forEach(line => {
+      const words = line.split(/\s+/);
+      for (let i = 0; i < words.length - 1; i++) {
+        const w = words[i].toLowerCase();
+        const next = words[i + 1];
+        if (!chain[w]) chain[w] = [];
+        chain[w].push(next);
+      }
+    });
+    return chain;
+  }
 
-      corpora.masc = normalize(extractText(mJson));
-      corpora.fem  = normalize(extractText(fJson));
-
-      console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
-    } catch (err) {
-      console.error("Failed to load corpora:", err);
-      corpora.masc = ["Fallback male sentence"];
-      corpora.fem  = ["Fallback female sentence"];
-    } finally {
-      ready = true;
+  function generateFromChain(chain, lastWord, maxWords = MAX_OUTPUT_WORDS) {
+    const result = [];
+    let word = lastWord.toLowerCase();
+    for (let i = 0; i < maxWords; i++) {
+      const nextWords = chain[word];
+      if (!nextWords || nextWords.length === 0) break;
+      word = nextWords[Math.floor(Math.random() * nextWords.length)];
+      result.push(word);
     }
+    return result.join(" ");
   }
 
-  loadCorpora();
-
-  function generate(input) {
-    if (!ready || !input) return { text: "— corpus not yet speaking —", voice: "masc" };
-
+  // -------------------------
+  // DECIDE VOICE
+  // -------------------------
+  function decideVoice(input) {
     const words = input.toLowerCase().split(/\s+/);
-    const mascScore = corpora.masc.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0), 0);
-    const femScore  = corpora.fem.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0), 0);
-
-    const voice = mascScore >= femScore ? "masc" : "fem";
-    let pool = corpora[voice];
-    if (!pool.length) return { text: "— corpus empty —", voice };
-
-    // Prefer lines containing some input words
-    let candidates = pool.filter(t => words.some(w => t.includes(w)));
-    if (!candidates.length) candidates = pool;
-
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    return { text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "), voice };
+    function score(corpus) {
+      return corpus.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.toLowerCase().includes(w) ? 1 : 0), 0), 0);
+    }
+    const mascScore = score(corpora.masc);
+    const femScore  = score(corpora.fem);
+    return mascScore >= femScore ? "masc" : "fem";
   }
 
+  // -------------------------
+  // GENERATE INLINE PREDICTION
+  // -------------------------
+  function generate(input) {
+    if (!ready || !input) return { text: "", voice: "masc" };
+
+    const voice = decideVoice(input);
+    const chain = buildMarkov(corpora[voice]);
+    const words = input.split(/\s+/);
+    const lastWord = words[words.length - 1];
+    const continuation = generateFromChain(chain, lastWord, MAX_OUTPUT_WORDS);
+
+    return { text: continuation, voice };
+  }
+
+  // -------------------------
+  // RENDER INLINE
+  // -------------------------
   function render(slot, result) {
     const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
     if (!el) return;
     el.textContent = result.text;
     el.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
-    el.style.opacity = result.text.includes("—") ? 0.4 : 0.9;
+    el.style.opacity = 0.85;
   }
 
+  // -------------------------
+  // INPUT HANDLER
+  // -------------------------
   document.querySelectorAll(".editable").forEach(editable => {
     editable.addEventListener("keydown", e => {
       if (e.key !== "Enter") return;
