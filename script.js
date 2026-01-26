@@ -34,7 +34,6 @@ document.addEventListener("DOMContentLoaded", () => {
       let mascData = await mascRes.json();
       let femData  = await femRes.json();
 
-      // Extract array from .data
       corpora.masc = normalize(Array.isArray(mascData.data) ? mascData.data : []);
       corpora.fem  = normalize(Array.isArray(femData.data)  ? femData.data  : []);
 
@@ -64,7 +63,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return arr
       .map(t => t.toLowerCase().trim())
       .filter(t =>
-        t.length > 30 &&
+        t.length > 10 && // allow shorter lines
         !t.match(/moderator|rules|subreddit|invalid|media|tv|film/i)
       );
   }
@@ -89,6 +88,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
+   * SEMANTIC FILTER (optional)
+   ******************************/
+  function semanticFit(t, role) {
+    // Optional filtering for emotion or cause
+    // Uncomment to activate semantic guidance:
+    // if (role === "emotion") return /(but|and|because|when|that)/i.test(t);
+    // if (role === "cause") return /(this|that|it|which)/i.test(t);
+
+    // By default, allow all corpus lines
+    return true;
+  }
+
+  /******************************
    * GENERATION
    ******************************/
   function generate(input) {
@@ -110,13 +122,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return { mode: "suppressed" };
     }
 
-    const pool = same.filter(t => semanticFit(t, role));
-    if (!pool.length) {
-      suppressionCount++;
-      suppressedMemory.push(input);
-      degradeInterface();
-      return { mode: "unsupported" };
-    }
+    let pool = same.filter(t => semanticFit(t, role));
+
+    // fallback to the full corpus if pool is empty
+    if (!pool.length) pool = same.length ? same : opposite;
+
+    // still empty? return unsupported
+    if (!pool.length) return { mode: "unsupported" };
 
     const text = pool[Math.floor(Math.random() * pool.length)]
       .split(/\s+/)
@@ -124,15 +136,6 @@ document.addEventListener("DOMContentLoaded", () => {
       .join(" ");
 
     return { mode: cross ? "thinned" : "expanded", text };
-  }
-
-  /******************************
-   * SEMANTIC FILTER
-   ******************************/
-  function semanticFit(t, role) {
-    if (role === "emotion") return /(but|and|because|when|that)/i.test(t);
-    if (role === "cause") return /(this|that|it|which)/i.test(t);
-    return true;
   }
 
   /******************************
@@ -162,7 +165,7 @@ document.addEventListener("DOMContentLoaded", () => {
       el.textContent = "— continuation unavailable in this voice —";
     } else if (result.mode === "unsupported") {
       el.style.opacity = "0.35";
-      el.textContent = "— language thins here —";
+      el.textContent = "— no matching text available —";
     } else {
       el.style.opacity = "1";
       el.style.transform = "scale(1.05)";
