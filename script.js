@@ -1,20 +1,20 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  // ================= CONFIG =================
+  /* Configuration */
 
   const CORPUS_URLS = {
     masc: "https://hunilune.github.io/ghostintheloop/AskMen.json",
     fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
   };
 
-  const ALIGN_THRESHOLD = 2; // how much stronger one corpus must be
-  const MIN_SIGNAL = 2;      // minimum frequency to count
+  const ALIGN_THRESHOLD = 2; /* How much stronger one corpus must be */
+  const MIN_SIGNAL = 2;      /* Minimum frequency to count */
 
   let lockedStyle = null;
   let markovChains = { masc: null, fem: null };
   let freqMaps = { masc: null, fem: null };
 
-  // ================= STYLE DETECTION =================
+  /* Classifies the input as a binary gender */
 
   function detectStyle(text) {
     let masc = 0, fem = 0;
@@ -32,8 +32,8 @@ document.addEventListener("DOMContentLoaded", () => {
     document.documentElement.classList.add(`mode-${style}`);
   }
 
-  // ================= CORPUS CLEANING =================
-
+  /* Corpus cleaning */
+  
   function cleanCorpus(posts) {
     return posts
       .map(p => `${p.data.title} ${p.data.selftext}`)
@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
       .replace(/[^\p{L}\p{N}\s.,?!]/gu, "");
   }
 
-  // ================= MARKOV =================
+  /* Markov */
 
   function buildMarkov(text) {
     const words = text.split(/\s+/);
@@ -96,7 +96,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return result.join(" ");
   }
 
-  // ================= FREQUENCY MAPS =================
+  /* Frequency maps */
 
   function buildFrequencyMap(text) {
     const map = {};
@@ -108,7 +108,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return map;
   }
 
-  // ================= LOAD CORPORA =================
+  /* Load the corpus */
 
   function loadCorpus(style) {
     return fetch(CORPUS_URLS[style])
@@ -124,7 +124,7 @@ document.addEventListener("DOMContentLoaded", () => {
   Promise.all([loadCorpus("masc"), loadCorpus("fem")])
     .then(() => console.log("All corpora ready"));
 
-  // ================= SOCIAL CLASSIFICATION =================
+  /* Social classification */
 
   function classifyWord(word) {
     const m = freqMaps.masc[word] || 0;
@@ -174,7 +174,7 @@ document.addEventListener("DOMContentLoaded", () => {
       document.documentElement.classList.add("mode-cross");
   }
 
-  // ================= INPUT HANDLING =================
+ /* Handles the input */
 
   document.querySelectorAll(".editable").forEach(editable => {
     editable.addEventListener("keydown", e => {
