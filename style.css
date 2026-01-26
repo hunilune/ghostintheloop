@@ -125,7 +125,10 @@ h6 {
 
 .word {
   display: inline-block;
-  transition: font-weight 1.5s ease, opacity 1.5s ease, transform 1.5s ease;
+  transition:
+    font-weight 1.5s ease,
+    opacity 1.5s ease,
+    transform 1.5s ease;
 }
 
 /* Aligned words stay normal */
@@ -222,4 +225,48 @@ hr {
   * {
     transition: none !important;
   }
+}
+
+/* --- Word dynamics --- */
+
+.word {
+  display: inline-block;
+  transition: 
+    transform 1.2s ease, 
+    opacity 1.2s ease, 
+    font-weight 1.2s ease, 
+    color 0.8s ease;
+}
+
+/* Masculine words in masc voice: grow and bolden */
+.word.boost.masc {
+  font-weight: 600;
+  transform: scale(1);
+  opacity: 1;
+  color: #3b6cff;
+}
+
+/* As user types, boost scale and weight will increase via JS inline style */
+
+/* Masculine words in fem voice: fade and shrink */
+.word.cross.masc {
+  font-weight: 300;
+  transform: scale(1);
+  opacity: 1;
+  color: #3b6cff;
+}
+
+/* Aligned words (matches active voice) */
+.word.aligned.masc {
+  font-weight: 600;
+  transform: scale(1);
+  opacity: 1;
+  color: #3b6cff;
+}
+
+.word.aligned.fem {
+  font-weight: 600;
+  transform: scale(1);
+  opacity: 1;
+  color: #d44b8c;
 }
