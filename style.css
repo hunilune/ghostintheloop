@@ -1,213 +1,106 @@
 @font-face {
-      font-family: 'Social';
-      src: url('ABCSocialCyrillic-Regular-Trial.otf') format('opentype');
-    }
+  font-family: 'Social';
+  src: url('ABCSocialCyrillic-Regular-Trial.otf') format('opentype');
+}
 
 @font-face {
-      font-family: 'Cigars';
-      src: url('HW Cigars Trial Regular.otf') format('opentype');
-    }
-
-.inter-<uniquifier> {
-  font-family: "Inter", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
+  font-family: 'Cigars';
+  src: url('HW Cigars Trial Regular.otf') format('opentype');
 }
 
 :root {
+  --bg-light: #f5f5f5;
+  --bg-dark: #0f0f12;
+  --fg-light: #222;
+  --fg-dark: #b8b8c0;
   --fatigue: 0;
 }
 
+:root[data-mode="light"] body {
+  background: var(--bg-light);
+  color: var(--fg-light);
+}
+
+:root[data-mode="dark"] body {
+  background: var(--bg-dark);
+  color: var(--fg-dark);
+}
+
 body {
-  font-family: serif;
-  background: #FFFFFF;
-  padding: 28px;
-  padding-bottom: 1rem;
-  line-height: 1.1;
-  transition: all 0.6s ease;
+  font-family: Social, serif;
+  padding: 2rem;
+  line-height: 1.4;
+  transition: background 0.6s ease, color 0.6s ease;
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 }
 
-h1 {
-  font-family: Cigars, serif;
-  font-weight: normal;
-  font-size: 2.6rem;
-  padding-top: 60px;
+/* Semantic states */
+.mode-aligned {
+  --target-mode: light;
 }
 
-h2 {
-  font-family: Cigars, serif;
-  font-weight: normal;
-  font-size: 2rem;
-  padding-left: 80px;
+.mode-cross {
+  --target-mode: dark;
 }
 
-h6 {
-  font-family: Social, sans-serif;
-  font-weight: normal;
-  font-size: 0.9rem;
-  padding-left: 88px;
-}
-
-.paragraph {
-  font-family: Social;
-  max-width: 900px;
-  font-size: 1rem;
-  padding-top: 4rem;
-  padding-bottom: 2rem;
-  padding-left: 88px;
-  text-wrap: pretty;
-}
-
-/* Input */
-
-.editable {
-  min-height: 4rem;
+/* Editor */
+#editor {
+  font-size: 1.2rem;
+  max-width: 40rem;
   padding: 1rem;
-  font-size: 1rem;
-  line-height: 1.4;
   outline: none;
-  padding-left: 80px;
-  white-space: pre-wrap;
+  min-height: 3rem;
+  border-left: 2px solid currentColor;
 }
 
-.editable .suggestion {
-  opacity: 0.4;
-  pointer-events: none;
-  user-select: none;
-}
-
-/* Output or Predictive Text */
-
+/* Prediction */
 .predicted {
-  display: block;
-  margin-top: 0.5em;
-  line-height: 1.4;
-  transition:
-    transform 0.45s ease,
-    opacity 0.45s ease,
-    filter 0.45s ease;
+  margin-top: 1rem;
   font-size: calc(1rem - (var(--fatigue) * 0.03));
-  line-height: calc(1.6 - (var(--fatigue) * 0.05));
-  font-weight: calc(400 - (var(--fatigue) * 20));
+  opacity: 0.9;
   transition: all 0.4s ease;
 }
 
-/* Visual hierarchy */
-
-/* Supported language surfaces */
 .predicted.aligned {
   transform: scale(1.05);
   opacity: 1;
 }
 
-/* Discouraged language recedes */
 .predicted.cross {
   transform: scale(0.94);
   opacity: 0.55;
   filter: saturate(0.7);
 }
 
-/* Ambiguous language stays quiet */
 .predicted.neutral {
-  opacity: 0.85;
+  opacity: 0.75;
 }
 
 .predicted.no-support {
-  color: #c44;           /* Red to indicate absence */
-  font-style: italic;     /* Subtle visual cue */
-  opacity: 0.8;           /* Slightly faded */
-  transition: opacity 0.5s;
+  color: #c44;
+  font-style: italic;
+  opacity: 0.7;
 }
 
-/* Trigger words */
-
-.word {
+/* Suggestions */
+.suggestion {
   display: inline-block;
-  transition:
-    font-weight 0.3s ease,
-    opacity 0.3s ease,
-    letter-spacing 0.3s ease;
-}
-
-/* Words aligned with the active voice */
-.word.masc,
-.word.fem {
-  font-weight: 600;
-}
-
-/* Suppressed words thin out when cross-coded */
-.predicted.cross .word.masc,
-.predicted.cross .word.fem {
-  font-weight: 300;
-  opacity: 0.45;
-  letter-spacing: -0.01em;
-}
-
-.note {
-  font-family: Social;
-  margin-top: 3rem;
-  font-size: 0.9rem;
-  opacity: 0.6;
-  padding-left: 80px;
-  padding-bottom: 80px;
-}
-
-.characters {
-  font-family: PT Mono;
-  max-width: 900px;
-  margin-top: 3rem;
-  font-size: 0.5rem;
-  text-align: right;
-  opacity: 0.6;
-  padding-left: 80px;
-}
-
-.top-nav {
-  font-family: Social;
-  margin-top: 2rem;
-  font-size: 0.9rem;
-  opacity: 0.4;
-  text-transform: uppercase;
-}
-
-.bottom-nav {
-  font-family: Social;
-  font-size: 0.9rem;
-  opacity: 0.4;
-  text-transform: uppercase;
-}
-
-hr {
-  display: block;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-  margin-left: auto;
-  margin-right: auto;
-  border-style: inset;
-  border-width: 1px;
-  opacity: 0.45;
-}
-
-/* Language alignment */
-
-/* Page clarifies when language aligns */
-.mode-aligned body {
-  background-color: #fafafa;
-  color: #111;
-}
-
-/* Page darkens when language resists */
-.mode-cross body {
-  background-color: #0e0e0e;
+  margin-left: 0.4em;
   color: #888;
+  pointer-events: none;
 }
 
-/* Accessibility */
+.suggestion.absence {
+  opacity: 0.2;
+  font-style: italic;
+}
 
-@media (prefers-reduced-motion: reduce) {
-  * {
-    transition: none !important;
-  }
+.suggestion.uncertain {
+  animation: flicker 0.7s infinite;
+}
+
+@keyframes flicker {
+  0% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+  100% { opacity: 0.3; }
 }
