@@ -10,7 +10,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const MAX_OUTPUT_WORDS = 22;
 
-  // Gendered emotion allowance (1 = fully allowed, <1 = thinning probability)
   const EMOTIONS = {
     sad:     { fem: 1.0, masc: 0.25 },
     lonely:  { fem: 0.9, masc: 0.3 },
@@ -19,15 +18,12 @@ document.addEventListener("DOMContentLoaded", () => {
     tired:   { fem: 0.6, masc: 0.6 }
   };
 
-  let ACTIVE_VOICE = "masc"; // fallback if undecidable
-
-  /******************************
-   * STATE
-   ******************************/
+  let ACTIVE_VOICE = "masc"; // fallback
   let corpora = { masc: [], fem: [] };
+  let ready = false; // indicates corpora loaded
 
   /******************************
-   * LOAD CORPORA (SAFE)
+   * LOAD CORPORA
    ******************************/
   async function loadCorpora() {
     try {
@@ -45,16 +41,18 @@ document.addEventListener("DOMContentLoaded", () => {
       console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
     } catch (err) {
       console.error("Corpus load failed:", err);
-      // Fallback
       corpora.masc = ["Fallback male sentence for testing."];
       corpora.fem  = ["Fallback female sentence for testing."];
+    } finally {
+      ready = true;
+      document.body.style.opacity = "1"; // reveal input
     }
   }
 
   loadCorpora();
 
   /******************************
-   * EXTRACT TEXT ARRAY FROM JSON
+   * EXTRACT TEXT ARRAY
    ******************************/
   function extractText(src) {
     if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
@@ -74,7 +72,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * DETECT EMOTION
+   * EMOTION DETECTION
    ******************************/
   function detectEmotion(text) {
     text = text.toLowerCase();
@@ -83,7 +81,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * DECIDE CORPUS / VOICE
+   * DECIDE VOICE
    ******************************/
   function decideVoice(input) {
     const words = input.toLowerCase().split(/\s+/);
@@ -99,44 +97,32 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (mascScore > femScore) return "masc";
     if (femScore > mascScore) return "fem";
-    return ACTIVE_VOICE; // fallback
+    return ACTIVE_VOICE;
   }
 
   /******************************
    * GENERATE PREDICTIVE TEXT
    ******************************/
   function generate(input) {
-    if (!input) return { text: "", voice: ACTIVE_VOICE };
+    if (!input || !ready) return { text: "— corpus not yet speaking —", voice: ACTIVE_VOICE };
 
-    // 1️⃣ Decide corpus based on input
     const voice = decideVoice(input);
     const pool  = corpora[voice];
     if (!pool.length) return { text: "— corpus not yet speaking —", voice };
 
-    // 2️⃣ Emotion detection
     const emotion = detectEmotion(input);
     let allow = 1.0;
     if (emotion) allow = EMOTIONS[emotion][voice] ?? 0.5;
 
-    // 3️⃣ Probabilistic thinning
-    if (Math.random() > allow) {
-      return { text: "— language thins here —", voice };
-    }
+    if (Math.random() > allow) return { text: "— language thins here —", voice };
 
-    // 4️⃣ Fuzzy match: prefer lines containing any input word
     const inputWords = input.toLowerCase().split(/\s+/);
-    let candidates = pool.filter(t =>
-      inputWords.some(w => t.includes(w))
-    );
-
+    let candidates = pool.filter(t => inputWords.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
-    // 5️⃣ Pick random line, limit words
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    return {
-      text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
-      voice
-    };
+
+    return { text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "), voice };
   }
 
   /******************************
@@ -156,6 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   document.addEventListener("keydown", e => {
     if (e.key !== "Enter") return;
+    if (!ready) return;
 
     const active = document.activeElement;
     if (!active?.classList.contains("editable")) return;
