@@ -18,9 +18,31 @@ document.addEventListener("DOMContentLoaded", () => {
     tired:   { fem: 0.6, masc: 0.6 }
   };
 
-  let ACTIVE_VOICE = "masc"; // fallback
   let corpora = { masc: [], fem: [] };
-  let ready = false; // indicates corpora loaded
+  let ready = false; // corpus loaded
+  let markovFallback = null; // fallback Markov chain
+
+  /******************************
+   * UTILITIES
+   ******************************/
+  function extractText(src) {
+    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
+    if (Array.isArray(src?.data)) return src.data.map(x => x.body ?? x.text ?? x);
+    return [];
+  }
+
+  function normalize(arr) {
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .map(t => String(t).toLowerCase().replace(/[^\w\s]/g, "").trim())
+      .filter(t => t.length > 20);
+  }
+
+  function detectEmotion(text) {
+    text = text.toLowerCase();
+    for (let e in EMOTIONS) if (text.includes(e)) return e;
+    return null;
+  }
 
   /******************************
    * LOAD CORPORA
@@ -39,46 +61,21 @@ document.addEventListener("DOMContentLoaded", () => {
       corpora.fem  = normalize(extractText(fJson));
 
       console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
+
+      // build fallback Markov from combined corpora
+      markovFallback = buildMarkov(corpora.masc.concat(corpora.fem));
     } catch (err) {
       console.error("Corpus load failed:", err);
       corpora.masc = ["Fallback male sentence for testing."];
       corpora.fem  = ["Fallback female sentence for testing."];
+      markovFallback = buildMarkov(corpora.masc.concat(corpora.fem));
     } finally {
       ready = true;
-      document.body.style.opacity = "1"; // reveal input
+      document.body.style.opacity = "1";
     }
   }
 
   loadCorpora();
-
-  /******************************
-   * EXTRACT TEXT ARRAY
-   ******************************/
-  function extractText(src) {
-    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
-    if (Array.isArray(src?.data)) return src.data.map(x => x.body ?? x.text ?? x);
-    if (Array.isArray(src?.comments)) return src.comments.map(x => x.body ?? x.text ?? x);
-    return [];
-  }
-
-  /******************************
-   * NORMALIZE TEXT
-   ******************************/
-  function normalize(arr) {
-    if (!Array.isArray(arr)) return [];
-    return arr
-      .map(t => String(t).toLowerCase().replace(/[^\w\s]/g, "").trim())
-      .filter(t => t.length > 20);
-  }
-
-  /******************************
-   * EMOTION DETECTION
-   ******************************/
-  function detectEmotion(text) {
-    text = text.toLowerCase();
-    for (let e in EMOTIONS) if (text.includes(e)) return e;
-    return null;
-  }
 
   /******************************
    * DECIDE VOICE
@@ -97,32 +94,64 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (mascScore > femScore) return "masc";
     if (femScore > mascScore) return "fem";
-    return ACTIVE_VOICE;
+    return "masc"; // default
   }
 
   /******************************
    * GENERATE PREDICTIVE TEXT
    ******************************/
   function generate(input) {
-    if (!input || !ready) return { text: "— corpus not yet speaking —", voice: ACTIVE_VOICE };
+    if (!ready || !input) return { text: "— corpus not yet speaking —", voice: "masc" };
 
     const voice = decideVoice(input);
-    const pool  = corpora[voice];
-    if (!pool.length) return { text: "— corpus not yet speaking —", voice };
+    const pool = corpora[voice];
+    if (!pool.length) return { text: "— corpus empty —", voice };
 
     const emotion = detectEmotion(input);
     let allow = 1.0;
     if (emotion) allow = EMOTIONS[emotion][voice] ?? 0.5;
-
     if (Math.random() > allow) return { text: "— language thins here —", voice };
 
+    // fuzzy matching
     const inputWords = input.toLowerCase().split(/\s+/);
     let candidates = pool.filter(t => inputWords.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    if (!chosen) {
+      // fallback Markov
+      return { text: markovFallback ? generateMarkov(markovFallback) : "— nothing generated —", voice };
+    }
 
     return { text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "), voice };
+  }
+
+  /******************************
+   * MARKOV FALLBACK
+   ******************************/
+  function buildMarkov(texts) {
+    const words = texts.join(" ").split(/\s+/);
+    const chain = {};
+    for (let i = 0; i < words.length - 1; i++) {
+      const w = words[i];
+      const next = words[i + 1];
+      if (!chain[w]) chain[w] = [];
+      chain[w].push(next);
+    }
+    return chain;
+  }
+
+  function generateMarkov(chain, length = 10) {
+    const keys = Object.keys(chain);
+    let word = keys[Math.floor(Math.random() * keys.length)];
+    let result = [word];
+    for (let i = 0; i < length; i++) {
+      const nexts = chain[word];
+      if (!nexts) break;
+      word = nexts[Math.floor(Math.random() * nexts.length)];
+      result.push(word);
+    }
+    return result.join(" ");
   }
 
   /******************************
@@ -131,7 +160,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function render(slot, result) {
     const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
     if (!el) return;
-
     el.textContent = result.text;
     el.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
     el.style.opacity = result.text.includes("thins") ? 0.4 : 0.9;
@@ -140,19 +168,19 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * INPUT HANDLER
    ******************************/
-  document.addEventListener("keydown", e => {
-    if (e.key !== "Enter") return;
-    if (!ready) return;
+  document.querySelectorAll(".editable").forEach(editable => {
+    editable.addEventListener("keydown", e => {
+      if (e.key !== "Enter") return;
+      e.preventDefault();
 
-    const active = document.activeElement;
-    if (!active?.classList.contains("editable")) return;
+      if (!ready) return;
+      const slot = editable.dataset.slot;
+      const input = editable.textContent.trim();
+      if (!input) return;
 
-    const slot = active.dataset.slot;
-    const input = active.textContent.trim();
-    if (!input) return;
-
-    const result = generate(input);
-    render(slot, result);
+      const result = generate(input);
+      render(slot, result);
+    });
   });
 
 });
