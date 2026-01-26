@@ -11,8 +11,24 @@ document.addEventListener("DOMContentLoaded", () => {
   let ACTIVE_VOICE = "masc";
 
   const MAX_OUTPUT_WORDS = 22;
-  const BASE_ABSENCE_PROB = 0.07;
+  const BASE_ABSENCE_PROB = 0.05;
   const MEMORY_WEIGHT = 0.12;
+
+  /******************************
+   * GRADED, GENDERED EMOTIONS
+   ******************************/
+  const EMOTIONS = {
+    masc: {
+      mild: ["tired","stressed","annoyed","uneasy","off","fine"],
+      medium: ["sad","angry","frustrated","lonely","worried","burnt"],
+      intense: ["numb","empty","hopeless","exhausted","done","broken"]
+    },
+    fem: {
+      mild: ["uneasy","low","off","sensitive","fragile"],
+      medium: ["sad","anxious","overwhelmed","hurt","lonely","afraid"],
+      intense: ["depressed","empty","grieving","despair","hopeless","unlovable"]
+    }
+  };
 
   /******************************
    * STATE
@@ -34,7 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
       corpora.masc = normalize(m);
       corpora.fem  = normalize(f);
 
-      console.log("Corpora ready:", corpora.masc.length, corpora.fem.length);
+      console.log("Corpora loaded:", corpora.masc.length, corpora.fem.length);
     } catch (e) {
       console.error("Corpus load failed", e);
     }
@@ -43,7 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCorpora();
 
   /******************************
-   * NORMALIZE
+   * NORMALIZATION
    ******************************/
   function normalize(source) {
     const arr = Array.isArray(source)
@@ -63,10 +79,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
+   * EMOTION DETECTION
+   ******************************/
+  function detectEmotion(text) {
+    const words = text.split(/\s+/);
+    const vocab = EMOTIONS[ACTIVE_VOICE];
+
+    for (const level of ["intense","medium","mild"]) {
+      if (words.some(w => vocab[level].includes(w))) {
+        return level;
+      }
+    }
+    return null;
+  }
+
+  /******************************
    * ROLE INFERENCE
    ******************************/
   function inferRole(text) {
-    if (/i feel|i am|im feeling|feeling/i.test(text)) return "emotion";
+    if (
+      /i feel|im feeling|i am feeling|feeling/i.test(text) ||
+      detectEmotion(text)
+    ) {
+      return "emotion";
+    }
+
     if (/because|since|due to/i.test(text)) return "cause";
     if (/\?$/.test(text)) return "question";
     return "statement";
@@ -85,6 +122,7 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function generate(input) {
     const role = inferRole(input);
+    const emotionLevel = detectEmotion(input);
     const inputWords = input.split(/\s+/);
 
     const same = corpora[ACTIVE_VOICE];
@@ -94,7 +132,11 @@ document.addEventListener("DOMContentLoaded", () => {
       inputWords.some(w => t.includes(w))
     );
 
+    // Emotion strength affects thinning
     let absenceProb = BASE_ABSENCE_PROB;
+    if (emotionLevel === "intense") absenceProb *= 0.4;
+    if (emotionLevel === "mild") absenceProb *= 1.4;
+
     if (suppressedMemory.some(m => input.includes(m))) {
       absenceProb += MEMORY_WEIGHT;
     }
@@ -106,14 +148,30 @@ document.addEventListener("DOMContentLoaded", () => {
       return { mode: "unsupported" };
     }
 
+    // 1️⃣ fuzzy overlap
     let scored = same
       .map(line => ({ line, score: scoreLine(line, inputWords) }))
       .filter(o => o.score > 0);
 
+    // 2️⃣ semantic fallback
     if (!scored.length) {
       scored = same
         .filter(t => semanticFit(t, role))
         .map(t => ({ line: t, score: 1 }));
+    }
+
+    // 3️⃣ emotional intuition fallback (graded)
+    if (!scored.length && role === "emotion") {
+      const regex =
+        emotionLevel === "intense"
+          ? /(nothing|never|cant|empty|done|alone|end)/i
+          : emotionLevel === "medium"
+            ? /(but|because|when|that|and)/i
+            : /(and|when|that)/i;
+
+      scored = same
+        .filter(t => regex.test(t))
+        .map(t => ({ line: t, score: 0 }));
     }
 
     if (!scored.length) {
@@ -131,9 +189,15 @@ document.addEventListener("DOMContentLoaded", () => {
       .join(" ");
 
     return {
-      mode: cross ? "thinned" : "expanded",
+      mode:
+        scored[0].score === 0
+          ? "soft"
+          : cross
+            ? "thinned"
+            : "expanded",
       text,
-      voice: ACTIVE_VOICE
+      voice: ACTIVE_VOICE,
+      emotion: emotionLevel
     };
   }
 
@@ -141,7 +205,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * SEMANTIC FILTER
    ******************************/
   function semanticFit(t, role) {
-    if (role === "emotion") return /(and|but|because|when|that)/i.test(t);
+    if (role === "emotion") return /(and|but|when|because|that)/i.test(t);
     if (role === "cause") return /(this|that|it|which)/i.test(t);
     return true;
   }
@@ -160,8 +224,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
     if (!el) return;
 
-    el.textContent = "";
-
     if (result.mode === "unsupported") {
       el.textContent = "— language thins here —";
       el.style.opacity = "0.35";
@@ -170,12 +232,18 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     el.textContent = result.text;
-    el.style.opacity = result.mode === "thinned" ? "0.5" : "1";
-    el.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
+
+    // Emotion intensity subtly affects opacity
+    if (result.emotion === "intense") el.style.opacity = "0.9";
+    else if (result.emotion === "mild") el.style.opacity = "0.7";
+    else el.style.opacity = "1";
+
+    el.style.color =
+      result.voice === "masc" ? "#3b6cff" : "#d44b8c";
   }
 
   /******************************
-   * INPUT HANDLING
+   * INPUT
    ******************************/
   document.addEventListener("keydown", e => {
     if (e.key !== "Enter") return;
@@ -186,7 +254,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const slot = active.getAttribute("data-slot");
     const input = active.textContent.toLowerCase().trim();
 
-    if (input.split(/\s+/).length < 2) return;
+    if (!input) return;
 
     const result = generate(input);
     renderInline(slot, result);
