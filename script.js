@@ -1,37 +1,60 @@
 document.addEventListener("DOMContentLoaded", () => {
 
+  /******************************
+   * CONFIG
+   ******************************/
   const CORPUS_URLS = {
     masc: "https://hunilune.github.io/ghostintheloop/AskMen.json",
     fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
   };
 
   let ACTIVE_VOICE = "masc";
-  const MAX_OUTPUT_WORDS = 22;
 
+  const MAX_OUTPUT_WORDS = 22;
+  const BASE_ABSENCE_PROB = 0.07;
+  const MEMORY_WEIGHT = 0.12;
+
+  /******************************
+   * STATE
+   ******************************/
   let corpora = { masc: [], fem: [] };
+  let suppressionCount = 0;
+  let suppressedMemory = [];
 
   /******************************
    * LOAD CORPORA
-   *****************************/
+   ******************************/
   async function loadCorpora() {
-    const [m, f] = await Promise.all([
-      fetch(CORPUS_URLS.masc).then(r => r.json()),
-      fetch(CORPUS_URLS.fem).then(r => r.json())
-    ]);
+    try {
+      const [m, f] = await Promise.all([
+        fetch(CORPUS_URLS.masc).then(r => r.json()),
+        fetch(CORPUS_URLS.fem).then(r => r.json())
+      ]);
 
-    corpora.masc = normalize(m.data || []);
-    corpora.fem  = normalize(f.data || []);
+      corpora.masc = normalize(m);
+      corpora.fem  = normalize(f);
+
+      console.log("Corpora ready:", corpora.masc.length, corpora.fem.length);
+    } catch (e) {
+      console.error("Corpus load failed", e);
+    }
   }
 
   loadCorpora();
 
   /******************************
-   * NORMALIZE TEXT
+   * NORMALIZE
    ******************************/
-  function normalize(arr) {
+  function normalize(source) {
+    const arr = Array.isArray(source)
+      ? source
+      : Array.isArray(source?.data)
+        ? source.data
+        : [];
+
     return arr
       .map(t =>
-        t
+        String(t)
           .toLowerCase()
           .replace(/[^\w\s]/g, "")
           .trim()
@@ -40,104 +63,133 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * GENERATE (continuation-first)
+   * ROLE INFERENCE
+   ******************************/
+  function inferRole(text) {
+    if (/i feel|i am|im feeling|feeling/i.test(text)) return "emotion";
+    if (/because|since|due to/i.test(text)) return "cause";
+    if (/\?$/.test(text)) return "question";
+    return "statement";
+  }
+
+  /******************************
+   * FUZZY SCORE
+   ******************************/
+  function scoreLine(line, inputWords) {
+    const words = line.split(/\s+/);
+    return words.reduce((s, w) => s + (inputWords.includes(w) ? 1 : 0), 0);
+  }
+
+  /******************************
+   * GENERATION
    ******************************/
   function generate(input) {
-    const cleanInput = input
-      .toLowerCase()
-      .replace(/[^\w\s]/g, "")
-      .trim();
+    const role = inferRole(input);
+    const inputWords = input.split(/\s+/);
 
     const same = corpora[ACTIVE_VOICE];
-    if (!same.length) return { mode: "unsupported" };
+    const opposite = corpora[ACTIVE_VOICE === "masc" ? "fem" : "masc"];
 
-    /* 1. Try direct continuation */
-    const directHits = same.filter(line =>
-      line.includes(cleanInput)
+    const cross = opposite.some(t =>
+      inputWords.some(w => t.includes(w))
     );
 
-    if (directHits.length) {
-      const hit = directHits[Math.floor(Math.random() * directHits.length)];
-      const continuation = hit
-        .slice(hit.indexOf(cleanInput) + cleanInput.length)
-        .trim()
-        .split(/\s+/)
-        .slice(0, MAX_OUTPUT_WORDS)
-        .join(" ");
-
-      if (continuation.length > 5) {
-        return { mode: "expanded", text: continuation };
-      }
+    let absenceProb = BASE_ABSENCE_PROB;
+    if (suppressedMemory.some(m => input.includes(m))) {
+      absenceProb += MEMORY_WEIGHT;
     }
 
-    /* 2. Soft similarity fallback */
-    const inputWords = cleanInput.split(/\s+/);
-
-    const scored = same.map(line => {
-      const score = inputWords.filter(w => line.includes(w)).length;
-      return { line, score };
-    });
-
-    const viable = scored
-      .filter(s => s.score > 0)
-      .sort((a, b) => b.score - a.score);
-
-    if (!viable.length) {
-      // LAST resort: random continuation fragment
-      const fallback = same[Math.floor(Math.random() * same.length)];
-      return {
-        mode: "expanded",
-        text: fallback.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ")
-      };
+    if (cross && Math.random() < absenceProb) {
+      suppressionCount++;
+      suppressedMemory.push(input);
+      degradeInterface();
+      return { mode: "unsupported" };
     }
 
-    const chosen = viable[0].line;
+    let scored = same
+      .map(line => ({ line, score: scoreLine(line, inputWords) }))
+      .filter(o => o.score > 0);
+
+    if (!scored.length) {
+      scored = same
+        .filter(t => semanticFit(t, role))
+        .map(t => ({ line: t, score: 1 }));
+    }
+
+    if (!scored.length) {
+      return { mode: "unsupported" };
+    }
+
+    scored.sort((a, b) => b.score - a.score);
+
+    const chosen =
+      scored[Math.floor(Math.random() * Math.min(6, scored.length))].line;
+
+    const text = chosen
+      .split(/\s+/)
+      .slice(0, MAX_OUTPUT_WORDS)
+      .join(" ");
+
     return {
-      mode: "expanded",
-      text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ")
+      mode: cross ? "thinned" : "expanded",
+      text,
+      voice: ACTIVE_VOICE
     };
   }
 
   /******************************
-   * RENDER
+   * SEMANTIC FILTER
    ******************************/
-  function renderPrediction(editableEl, result) {
-    const slot = editableEl.dataset.slot;
+  function semanticFit(t, role) {
+    if (role === "emotion") return /(and|but|because|when|that)/i.test(t);
+    if (role === "cause") return /(this|that|it|which)/i.test(t);
+    return true;
+  }
+
+  /******************************
+   * INTERFACE FATIGUE
+   ******************************/
+  function degradeInterface() {
+    document.documentElement.style.setProperty("--fatigue", suppressionCount);
+  }
+
+  /******************************
+   * INLINE RENDER
+   ******************************/
+  function renderInline(slot, result) {
     const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
     if (!el) return;
 
-    // clear old state so retry works
     el.textContent = "";
-    el.style.opacity = "1";
-    el.style.transform = "scale(1)";
 
-    if (!result.text) {
-      el.textContent = "— no matching text available —";
+    if (result.mode === "unsupported") {
+      el.textContent = "— language thins here —";
       el.style.opacity = "0.35";
+      el.style.color = "#999";
       return;
     }
 
     el.textContent = result.text;
-    el.style.color = ACTIVE_VOICE === "masc" ? "#3a6cff" : "#d94a8c";
-    el.style.transform = "scale(1.05)";
+    el.style.opacity = result.mode === "thinned" ? "0.5" : "1";
+    el.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
   }
 
   /******************************
-   * INPUT
+   * INPUT HANDLING
    ******************************/
   document.addEventListener("keydown", e => {
     if (e.key !== "Enter") return;
 
-    const el = document.activeElement;
-    if (!el.classList.contains("editable")) return;
+    const active = document.activeElement;
+    if (!active?.classList.contains("editable")) return;
 
-    e.preventDefault();
+    const slot = active.getAttribute("data-slot");
+    const input = active.textContent.toLowerCase().trim();
 
-    const input = el.textContent.trim();
     if (input.split(/\s+/).length < 2) return;
 
     const result = generate(input);
-    renderPrediction(el, result);
+    renderInline(slot, result);
   });
 
 });
