@@ -1,190 +1,205 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   /******************************
-   * CONFIG
+   * ELEMENTS
+   ******************************/
+  const editor = document.querySelector("#editor");
+  const output = document.querySelector("#output");
+
+  document.documentElement.setAttribute("data-mode", "light");
+
+  /******************************
+   * CORPUS SOURCES
    ******************************/
   const CORPUS_URLS = {
     masc: [
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json",
-      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
+      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json"
     ],
     fem: [
       "https://hunilune.github.io/ghostintheloop/AskWomen.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json",
-      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json",
-      "https://hunilune.github.io/ghostintheloop/AskFeminists.json"
+      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json"
     ]
-  };
-
-  const MAX_OUTPUT_WORDS = 22;
-
-  const EMOTIONS = {
-    sad:     { fem: 1.0, masc: 0.25 },
-    lonely:  { fem: 0.9, masc: 0.3 },
-    anxious: { fem: 0.8, masc: 0.4 },
-    angry:   { fem: 0.4, masc: 1.0 },
-    tired:   { fem: 0.6, masc: 0.6 }
   };
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
-  let biasAccumulator = 0;
 
-  const editor = document.querySelector("#editor");
-  const container = document.documentElement;
-
-  let suggestionSpan = null;
+  let activeVoice = "masc";
+  let fatigue = 0;
 
   /******************************
-   * LOAD CORPORA
+   * LOAD & NORMALIZE
    ******************************/
   async function loadCorpora() {
     try {
-      const [mRes, fRes] = await Promise.all([
-        Promise.all(CORPUS_URLS.masc.map(u => fetch(u).then(r => r.json()))),
-        Promise.all(CORPUS_URLS.fem.map(u => fetch(u).then(r => r.json())))
+      await Promise.all([
+        loadVoice("masc"),
+        loadVoice("fem")
       ]);
-
-      corpora.masc = normalize(mRes.flatMap(extractText));
-      corpora.fem  = normalize(fRes.flatMap(extractText));
+      ready = true;
+      console.log("Corpora ready", corpora);
     } catch (err) {
-      console.warn("Corpus load failed, using fallback.");
-      corpora.masc = ["fallback male sentence for testing"];
-      corpora.fem  = ["fallback female sentence for testing"];
-    } finally {
+      console.error("Corpus load failed", err);
+      corpora.masc = ["handle it yourself", "focus on solutions"];
+      corpora.fem  = ["talk about how you feel", "you are not alone"];
       ready = true;
     }
   }
 
-  loadCorpora();
+  async function loadVoice(voice) {
+    const texts = [];
 
-  /******************************
-   * HELPERS
-   ******************************/
+    for (const url of CORPUS_URLS[voice]) {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const json = await res.json();
+      texts.push(...extractText(json));
+    }
+
+    corpora[voice] = normalize(texts);
+  }
+
   function extractText(src) {
-    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? "");
-    if (src?.data?.children)
-      return src.data.children.map(c => c.data.selftext ?? c.data.title ?? "");
+    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
+    if (Array.isArray(src?.data?.children))
+      return src.data.children.map(c =>
+        `${c.data.title ?? ""} ${c.data.selftext ?? ""}`
+      );
     return [];
   }
 
   function normalize(arr) {
     return arr
-      .map(t => String(t).toLowerCase().replace(/[^\w\s]/g, "").trim())
-      .filter(t => t.length > 20);
+      .map(t => String(t).toLowerCase())
+      .map(t => t.replace(/https?:\/\/\S+/g, ""))
+      .map(t => t.replace(/[^\p{L}\p{N}\s.,?!]/gu, ""))
+      .map(t => t.replace(/\s+/g, " ").trim())
+      .filter(t => t.length > 40);
+  }
+
+  loadCorpora();
+
+  /******************************
+   * SCORING
+   ******************************/
+  function score(input, corpus) {
+    const words = input.toLowerCase().split(/\s+/);
+    return corpus.reduce((sum, line) => {
+      return sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0);
+    }, 0);
   }
 
   function detectEmotion(text) {
-    for (let e in EMOTIONS) if (text.includes(e)) return e;
+    if (text.includes("sad")) return "sad";
+    if (text.includes("lonely")) return "lonely";
+    if (text.includes("cry")) return "cry";
+    if (text.includes("angry")) return "angry";
     return null;
   }
 
   /******************************
-   * CLASSIFICATION (continuous)
+   * CLASSIFICATION
    ******************************/
   function classify(input) {
-    const words = input.toLowerCase().split(/\s+/);
+    const mascScore = score(input, corpora.masc);
+    const femScore  = score(input, corpora.fem);
 
-    function score(corpus) {
-      return corpus.reduce((sum, line) =>
-        sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0)
-      , 0);
+    const confidence =
+      Math.abs(mascScore - femScore) / (mascScore + femScore + 1);
+
+    let alignment = "neutral";
+    if (confidence > 0.35) {
+      alignment = mascScore >= femScore ? "aligned" : "cross";
     }
 
-    let masc = score(corpora.masc);
-    let fem  = score(corpora.fem);
+    activeVoice = mascScore >= femScore ? "masc" : "fem";
 
-    masc += biasAccumulator;
-
-    const total = masc + fem || 1;
-
-    const result = {
-      masc: masc / total,
-      fem: fem / total,
-      confidence: Math.abs(masc - fem) / total
-    };
-
-    biasAccumulator += (result.masc - result.fem) * 0.05;
-
-    return result;
+    return { mascScore, femScore, confidence, alignment };
   }
 
   /******************************
-   * GENERATE TEXT OR ABSENCE
+   * GENERATION (NON-MARKOV)
    ******************************/
-  function generate(input, cls) {
-    const emotion = detectEmotion(input);
-    let allow = 1.0;
-
-    if (emotion) {
-      allow = EMOTIONS[emotion][cls.masc > cls.fem ? "masc" : "fem"] ?? 0.5;
-    }
-
-    if (Math.random() > allow) return "";
-
-    const pool = cls.masc > cls.fem ? corpora.masc : corpora.fem;
+  function generate(input) {
+    const pool = corpora[activeVoice];
     if (!pool.length) return "";
 
-    const inputWords = input.split(/\s+/);
-    let candidates = pool.filter(t => inputWords.some(w => t.includes(w)));
+    const emotion = detectEmotion(input);
+
+    // Social suppression
+    if (activeVoice === "masc" && emotion && Math.random() < 0.55) {
+      return "";
+    }
+
+    // Prefer partial lexical overlap
+    const words = input.toLowerCase().split(/\s+/);
+    let candidates = pool.filter(t =>
+      words.some(w => t.includes(w))
+    );
+
     if (!candidates.length) candidates = pool;
 
-    return candidates[Math.floor(Math.random() * candidates.length)]
-      .split(/\s+/)
-      .slice(0, MAX_OUTPUT_WORDS)
-      .join(" ");
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    return chosen.split(/\s+/).slice(0, 22).join(" ");
   }
 
   /******************************
-   * APPLY VISUAL HIERARCHY
+   * RENDERING
    ******************************/
-  function applyVisuals(cls) {
-    container.dataset.mode = cls.masc > cls.fem ? "dark" : "light";
-
-    const scale = 0.85 + cls.confidence * 0.5;
-    suggestionSpan.style.transform = `scale(${scale})`;
-    suggestionSpan.style.opacity = 0.3 + cls.confidence;
-
-    if (cls.confidence < 0.2) {
-      suggestionSpan.classList.add("uncertain");
-    } else {
-      suggestionSpan.classList.remove("uncertain");
-    }
+  function setMode(mode) {
+    document.documentElement.classList.remove("mode-aligned", "mode-cross");
+    document.documentElement.classList.add(`mode-${mode}`);
+    document.documentElement.setAttribute(
+      "data-mode",
+      mode === "cross" ? "dark" : "light"
+    );
   }
 
-  /******************************
-   * RENDER
-   ******************************/
-  function showSuggestion(text, cls) {
-    if (!suggestionSpan) {
-      suggestionSpan = document.createElement("span");
-      suggestionSpan.className = "suggestion";
-      editor.appendChild(suggestionSpan);
-    }
+  function updateFatigue(amount) {
+    fatigue = Math.max(0, Math.min(10, fatigue + amount));
+    document.documentElement.style.setProperty("--fatigue", fatigue);
+  }
+
+  function render(text, cls) {
+    output.className = "predicted";
 
     if (!text) {
-      suggestionSpan.textContent = "—";
-      suggestionSpan.classList.add("absence");
-    } else {
-      suggestionSpan.textContent = text;
-      suggestionSpan.classList.remove("absence");
+      output.textContent = "phrase unsupported in current voice.";
+      output.classList.add("no-support");
+      setMode("cross");
+      updateFatigue(0.6);
+      return;
     }
 
-    applyVisuals(cls);
+    output.textContent = text;
+
+    if (cls.alignment === "aligned") {
+      output.classList.add("aligned");
+      setMode("aligned");
+      updateFatigue(-0.2);
+    } else if (cls.alignment === "cross") {
+      output.classList.add("cross");
+      setMode("cross");
+      updateFatigue(0.4);
+    } else {
+      output.classList.add("neutral");
+      updateFatigue(0.1);
+    }
   }
 
   /******************************
-   * INPUT
+   * INPUT LOOP
    ******************************/
   editor.addEventListener("input", () => {
     if (!ready) return;
+
     const input = editor.innerText.trim();
     if (!input) return;
 
     const cls = classify(input);
-    const text = generate(input, cls);
-    showSuggestion(text, cls);
+    const prediction = generate(input);
+    render(prediction, cls);
   });
 
 });
