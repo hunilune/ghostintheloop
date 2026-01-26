@@ -1,207 +1,169 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   /* Configuration */
-
-  const CORPUS_URLS = {
-    masc: "https://hunilune.github.io/ghostintheloop/AskMen.json",
-    fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
-  };
-
-  const ALIGN_THRESHOLD = 2; /* How much stronger one corpus must be */
-  const MIN_SIGNAL = 2;      /* Minimum frequency to count */
-
-  let lockedStyle = null;
-  let markovChains = { masc: null, fem: null };
-  let freqMaps = { masc: null, fem: null };
-
-  /* Classifies the input as a binary gender */
-
-  function detectStyle(text) {
-    let masc = 0, fem = 0;
-
-    if (text.match(/\b(must|should|fix|prove|logic|handle)\b/)) masc += 2;
-    if (text.match(/\b(feel|felt|sad|lonely|sorry|cry)\b/)) fem += 2;
-
-    if (text.includes("!")) masc++;
-    if (text.includes("?") || text.includes("...")) fem++;
-
-    return masc >= fem ? "masc" : "fem";
-  }
-
-  function applyStyle(style) {
-    document.documentElement.classList.add(`mode-${style}`);
-  }
-
-  /* Corpus cleaning */
   
-  function cleanCorpus(posts) {
-    return posts
-      .map(p => `${p.data.title} ${p.data.selftext}`)
-      .filter(t =>
-        t &&
-        t.length > 60 &&
-        !t.includes("[removed]") &&
-        !t.includes("[deleted]")
-      )
-      .join(" ")
-      .toLowerCase()
-      .replace(/https?:\/\/\S+/g, "")
-      .replace(/\b(edit|tl;dr|op)\b/g, "")
-      .replace(/\n+/g, " ")
-      .replace(/\s+/g, " ")
-      .replace(/[^\p{L}\p{N}\s.,?!]/gu, "");
+let ACTIVE_VOICE = "masc"; // "masc" or "fem"
+
+const MAX_OUTPUT_WORDS = 22;
+const BASE_ABSENCE_PROB = 0.25;
+const MEMORY_WEIGHT = 0.15;
+
+/******************************
+ * STATE
+ ******************************/
+
+let corpora = { masc: [], fem: [] };
+let suppressionCount = 0;
+let suppressedMemory = [];
+
+/******************************
+ * LOAD CORPORA
+ ******************************/
+
+Promise.all([
+  fetch("redditMasc.json").then(r => r.json()),
+  fetch("redditFem.json").then(r => r.json())
+]).then(([masc, fem]) => {
+  corpora.masc = normalize(masc);
+  corpora.fem = normalize(fem);
+  console.log("All corpora ready");
+});
+
+/******************************
+ * NORMALIZATION
+ ******************************/
+
+function normalize(arr) {
+  return arr
+    .map(t => t.toLowerCase().trim())
+    .filter(t =>
+      t.length > 30 &&
+      !t.match(/moderator|rules|subreddit|invalid|media|tv|film/i)
+    );
+}
+
+/******************************
+ * ROLE INFERENCE
+ ******************************/
+
+function inferRole(text) {
+  if (/i feel|i am feeling|feeling/i.test(text)) return "emotion";
+  if (/\?$/.test(text)) return "question";
+  if (/because|since|due to/i.test(text)) return "cause";
+  return "statement";
+}
+
+/******************************
+ * MEMORY CHECK
+ ******************************/
+
+function resemblesSuppressed(text) {
+  return suppressedMemory.some(mem =>
+    mem.split(" ").some(w => text.includes(w))
+  );
+}
+
+/******************************
+ * GENERATION
+ ******************************/
+
+function generate(input) {
+  const role = inferRole(input);
+  const same = corpora[ACTIVE_VOICE];
+  const opposite = corpora[ACTIVE_VOICE === "masc" ? "fem" : "masc"];
+
+  const cross = opposite.some(t =>
+    input.split(/\s+/).some(w => t.includes(w))
+  );
+
+  let absenceProb = BASE_ABSENCE_PROB;
+  if (resemblesSuppressed(input)) absenceProb += MEMORY_WEIGHT;
+
+  if (cross && Math.random() < absenceProb) {
+    suppressionCount++;
+    suppressedMemory.push(input);
+    degradeInterface();
+    return { mode: "suppressed" };
   }
 
-  /* Markov */
-
-  function buildMarkov(text) {
-    const words = text.split(/\s+/);
-    const chain = {};
-
-    for (let i = 0; i < words.length - 3; i++) {
-      const key = `${words[i]} ${words[i+1]} ${words[i+2]}`;
-      const next = words[i+3];
-      if (!chain[key]) chain[key] = [];
-      chain[key].push(next);
-    }
-    return chain;
+  const pool = same.filter(t => semanticFit(t, role));
+  if (!pool.length) {
+    suppressionCount++;
+    suppressedMemory.push(input);
+    degradeInterface();
+    return { mode: "unsupported" };
   }
 
-  function pickKey(chain, seed) {
-    const keys = Object.keys(chain);
-    const words = seed.split(/\s+/);
+  const text = pool[Math.floor(Math.random() * pool.length)]
+    .split(/\s+/)
+    .slice(0, MAX_OUTPUT_WORDS)
+    .join(" ");
 
-    for (let i = words.length - 3; i >= 0; i--) {
-      const key = `${words[i]} ${words[i+1]} ${words[i+2]}`;
-      if (chain[key]) return key;
-    }
-    return keys[Math.floor(Math.random() * keys.length)];
+  return { mode: cross ? "thinned" : "expanded", text };
+}
+
+/******************************
+ * SEMANTIC FILTER
+ ******************************/
+
+function semanticFit(t, role) {
+  if (role === "emotion") return /(but|and|because|when|that)/i.test(t);
+  if (role === "cause") return /(this|that|it|which)/i.test(t);
+  return true;
+}
+
+/******************************
+ * INTERFACE DEGRADATION
+ ******************************/
+
+function degradeInterface() {
+  const root = document.documentElement;
+  root.style.setProperty("--fatigue", suppressionCount);
+}
+
+/******************************
+ * RENDER
+ ******************************/
+
+function render(result) {
+  const el = document.createElement("div");
+  el.className = "predicted";
+
+  if (result.mode === "expanded") {
+    el.style.opacity = "1";
+    el.style.transform = "scale(1.05)";
+    el.textContent = result.text;
   }
 
-  function generate(chain, seed, max = 30) {
-    const start = pickKey(chain, seed);
-    if (!start) return "";
-
-    let parts = start.split(" ");
-    let result = [];
-
-    for (let i = 0; i < max; i++) {
-      const nexts = chain[parts.join(" ")];
-      if (!nexts) break;
-      const next = nexts[Math.floor(Math.random() * nexts.length)];
-      result.push(next);
-      if (/[.!?]$/.test(next)) break;
-      parts = [parts[1], parts[2], next];
-    }
-    return result.join(" ");
+  if (result.mode === "thinned") {
+    el.style.opacity = "0.45";
+    el.style.transform = "scale(0.95)";
+    el.textContent = result.text;
   }
 
-  /* Frequency maps */
-
-  function buildFrequencyMap(text) {
-    const map = {};
-    text.split(/\s+/).forEach(w => {
-      if (w.length < 2) return;
-      if (!map[w]) map[w] = 0;
-      map[w]++;
-    });
-    return map;
+  if (result.mode === "suppressed") {
+    el.style.opacity = "0.25";
+    el.textContent = "— continuation unavailable in this voice —";
   }
 
-  /* Load the corpus */
-
-  function loadCorpus(style) {
-    return fetch(CORPUS_URLS[style])
-      .then(res => res.json())
-      .then(data => {
-        const text = cleanCorpus(data.data.children);
-        markovChains[style] = buildMarkov(text);
-        freqMaps[style] = buildFrequencyMap(text);
-        console.log(`${style} corpus loaded`);
-      });
+  if (result.mode === "unsupported") {
+    el.style.opacity = "0.35";
+    el.textContent = "— language thins here —";
   }
 
-  Promise.all([loadCorpus("masc"), loadCorpus("fem")])
-    .then(() => console.log("All corpora ready"));
+  document.body.appendChild(el);
+}
 
-  /* Social classification */
+/******************************
+ * INPUT
+ ******************************/
 
-  function classifyWord(word) {
-    const m = freqMaps.masc[word] || 0;
-    const f = freqMaps.fem[word] || 0;
+document.addEventListener("keydown", e => {
+  if (e.key !== "Enter") return;
 
-    if (m >= f * ALIGN_THRESHOLD && m >= MIN_SIGNAL) return "masc";
-    if (f >= m * ALIGN_THRESHOLD && f >= MIN_SIGNAL) return "fem";
-    return "neutral";
-  }
+  const input = document.activeElement.value?.toLowerCase().trim();
+  if (!input || input.split(/\s+/).length < 2) return;
 
-  function annotateSentence(text) {
-    const words = text.split(/\s+/);
-    let mascScore = 0, femScore = 0;
-
-    const annotated = words.map(w => {
-      const clean = w.replace(/[^\p{L}\p{N}]/gu, "");
-      const cls = classifyWord(clean);
-      if (cls === "masc") mascScore++;
-      if (cls === "fem") femScore++;
-      return cls === "neutral" ? w : `<span class="word ${cls}">${w}</span>`;
-    });
-
-    let alignment = "neutral";
-
-    if (lockedStyle === "masc") {
-      if (mascScore > femScore) alignment = "aligned";
-      else if (femScore > mascScore) alignment = "cross";
-    }
-
-    if (lockedStyle === "fem") {
-      if (femScore > mascScore) alignment = "aligned";
-      else if (mascScore > femScore) alignment = "cross";
-    }
-
-    return { html: annotated.join(" "), alignment };
-  }
-
-  function applyVisualHierarchy(el, annotated) {
-    el.innerHTML = annotated.html;
-    el.classList.remove("aligned", "cross", "neutral");
-    el.classList.add(annotated.alignment);
-
-    document.documentElement.classList.remove("mode-aligned", "mode-cross");
-    if (annotated.alignment === "aligned")
-      document.documentElement.classList.add("mode-aligned");
-    if (annotated.alignment === "cross")
-      document.documentElement.classList.add("mode-cross");
-  }
-
- /* Handles the input */
-
-  document.querySelectorAll(".editable").forEach(editable => {
-    editable.addEventListener("keydown", e => {
-      if (e.key !== "Enter") return;
-      e.preventDefault();
-
-      const text = editable.innerText.trim().toLowerCase();
-      if (!text) return;
-
-      if (!lockedStyle) {
-        lockedStyle = detectStyle(text);
-        applyStyle(lockedStyle);
-      }
-
-      const chain = markovChains[lockedStyle];
-      if (!chain) return;
-
-      const prediction = generate(chain, text);
-      const predEl = document.querySelector(
-        `.predicted[data-slot="${editable.dataset.slot}"]`
-      );
-
-      if (!predEl) return;
-
-      const annotated = annotateSentence(prediction || text);
-      applyVisualHierarchy(predEl, annotated);
-    });
-  });
-
+  const result = generate(input);
+  render(result);
 });
