@@ -167,3 +167,4 @@ document.addEventListener("keydown", e => {
   const result = generate(input);
   render(result);
 });
+}
