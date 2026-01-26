@@ -1,8 +1,128 @@
+@font-face {
+  font-family: 'Social';
+  src: url('ABCSocialCyrillic-Regular-Trial.otf') format('opentype');
+}
+
+@font-face {
+  font-family: 'Cigars';
+  src: url('HW Cigars Trial Regular.otf') format('opentype');
+}
+
+.inter-<uniquifier> {
+  font-family: "Inter", sans-serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
+
+:root {
+  --fatigue: 0;
+}
+
+body {
+  font-family: serif;
+  background: #FFFFFF;
+  padding: 28px;
+  padding-bottom: 1rem;
+  line-height: 1.1;
+  transition: all 0.6s ease;
+  filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
+}
+
+h1 {
+  font-family: Cigars, serif;
+  font-weight: normal;
+  font-size: 2.6rem;
+  padding-top: 60px;
+}
+
+h2 {
+  font-family: Cigars, serif;
+  font-weight: normal;
+  font-size: 2rem;
+  padding-left: 80px;
+}
+
+h6 {
+  font-family: Social, sans-serif;
+  font-weight: normal;
+  font-size: 0.9rem;
+  padding-left: 88px;
+}
+
+.paragraph {
+  font-family: Social;
+  max-width: 900px;
+  font-size: 1rem;
+  padding-top: 4rem;
+  padding-bottom: 2rem;
+  padding-left: 88px;
+  text-wrap: pretty;
+}
+
+/* Input */
+.editable {
+  min-height: 4rem;
+  padding: 1rem;
+  font-size: 1rem;
+  line-height: 1.4;
+  outline: none;
+  padding-left: 80px;
+  white-space: pre-wrap;
+}
+
+.editable .suggestion {
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
+}
+
+/* Output or Predictive Text */
+.predicted {
+  display: block;
+  margin-top: 0.5em;
+  line-height: 1.4;
+  transition:
+    transform 0.45s ease,
+    opacity 0.45s ease,
+    filter 0.45s ease;
+  font-size: calc(1rem - (var(--fatigue) * 0.03));
+  line-height: calc(1.6 - (var(--fatigue) * 0.05));
+  font-weight: calc(400 - (var(--fatigue) * 20));
+  transition: all 0.4s ease;
+}
+
+/* Visual hierarchy */
+/* Supported language surfaces */
+.predicted.aligned {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+/* Discouraged language recedes */
+.predicted.cross {
+  transform: scale(0.94);
+  opacity: 0.55;
+  filter: saturate(0.7);
+}
+
+/* Ambiguous language stays quiet */
+.predicted.neutral {
+  opacity: 0.85;
+}
+
+.predicted.no-support {
+  color: #c44;
+  font-style: italic;
+  opacity: 0.8;
+  transition: opacity 0.5s;
+}
+
 /* --- Word dynamics --- */
 .word {
   display: inline-block;
-  margin-right: 0.2em;       /* space between words */
-  transform-origin: left center; /* scale from left edge */
+  margin-right: 0.2em;
+  transform-origin: left center;
   transition: 
     transform 1.2s ease, 
     opacity 1.2s ease, 
@@ -18,8 +138,6 @@
   opacity: 1;
   color: #3b6cff;
 }
-
-/* As user types, boost scale and weight will increase via JS inline style */
 
 /* Masculine words in fem voice: fade and shrink */
 .word.cross.masc {
@@ -42,4 +160,81 @@
   transform: scale(1);
   opacity: 1;
   color: #d44b8c;
+}
+
+/* Trigger words */
+.word.masc,
+.word.fem {
+  font-weight: 600;
+}
+
+/* Suppressed words thin out when cross-coded */
+.predicted.cross .word.masc,
+.predicted.cross .word.fem {
+  font-weight: 300;
+  opacity: 0.45;
+  letter-spacing: -0.01em;
+}
+
+.note {
+  font-family: Social;
+  margin-top: 3rem;
+  font-size: 0.9rem;
+  opacity: 0.6;
+  padding-left: 80px;
+  padding-bottom: 80px;
+}
+
+.characters {
+  font-family: PT Mono;
+  max-width: 900px;
+  margin-top: 3rem;
+  font-size: 0.5rem;
+  text-align: right;
+  opacity: 0.6;
+  padding-left: 80px;
+}
+
+.top-nav {
+  font-family: Social;
+  margin-top: 2rem;
+  font-size: 0.9rem;
+  opacity: 0.4;
+  text-transform: uppercase;
+}
+
+.bottom-nav {
+  font-family: Social;
+  font-size: 0.9rem;
+  opacity: 0.4;
+  text-transform: uppercase;
+}
+
+hr {
+  display: block;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  margin-left: auto;
+  margin-right: auto;
+  border-style: inset;
+  border-width: 1px;
+  opacity: 0.45;
+}
+
+/* Language alignment */
+.mode-aligned body {
+  background-color: #fafafa;
+  color: #111;
+}
+
+.mode-cross body {
+  background-color: #0e0e0e;
+  color: #888;
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
 }
