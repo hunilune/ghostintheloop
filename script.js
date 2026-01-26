@@ -176,41 +176,77 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * RENDER
+   * RENDER SUGGESTION
    ******************************/
-function showSuggestion(prediction) {
-  if (!editor) return;
+  function showSuggestion(prediction) {
+    if (!editor) return;
 
-  if (!suggestionSpan) {
-    suggestionSpan = document.createElement("span");
-    suggestionSpan.className = "suggestion";
-    editor.appendChild(suggestionSpan);
-  }
-
-  const words = prediction.text.split(/\s+/).map(w => {
-    const span = document.createElement("span");
-    span.textContent = w + " ";
-    span.className = "word";
-
-    // Fading/shrinking for masculine words in fem voice
-    if (prediction.voice === "masc" && activeVoice === "fem") {
-      span.classList.add("cross", "masc");
-    } 
-    // Bolder/larger for masculine words in masc voice
-    else if (prediction.voice === "masc" && activeVoice === "masc") {
-      span.classList.add("boost", "masc");
-    } 
-    // Aligned or neutral words
-    else {
-      span.classList.add("aligned", prediction.voice);
+    if (!suggestionSpan) {
+      suggestionSpan = document.createElement("span");
+      suggestionSpan.className = "suggestion";
+      editor.appendChild(suggestionSpan);
     }
 
-    return span;
-  });
+    const words = prediction.text.split(/\s+/).map(w => {
+      const span = document.createElement("span");
+      span.textContent = w + " ";
+      span.className = "word";
 
-  suggestionSpan.textContent = "";
-  words.forEach(w => suggestionSpan.appendChild(w));
-}
+      // Fade/shrink for masculine words in fem voice
+      if (prediction.voice === "masc" && activeVoice === "fem") {
+        span.classList.add("cross", "masc");
+      } 
+      // Boost for masculine words in masc voice
+      else if (prediction.voice === "masc" && activeVoice === "masc") {
+        span.classList.add("boost", "masc");
+      } 
+      // Aligned or neutral words
+      else {
+        span.classList.add("aligned", prediction.voice);
+      }
+
+      // Optional color coding
+      span.style.color = prediction.voice === "masc" ? "#3b6cff" : "#d44b8c";
+
+      return span;
+    });
+
+    suggestionSpan.textContent = "";
+    words.forEach(w => suggestionSpan.appendChild(w));
+  }
+
+  /******************************
+   * ACCEPT SUGGESTION
+   ******************************/
+  function acceptSuggestion() {
+    if (!suggestionSpan) return;
+
+    // Move all suggestion spans into editor, preserving styling
+    while (suggestionSpan.firstChild) {
+      editor.appendChild(suggestionSpan.firstChild);
+    }
+
+    // Remove empty suggestion span
+    suggestionSpan.remove();
+    suggestionSpan = null;
+
+    // Move caret to end
+    placeCaretAtEnd(editor);
+  }
+
+  /******************************
+   * PLACE CARET
+   ******************************/
+  function placeCaretAtEnd(el) {
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
   /******************************
    * INPUT EVENTS
    ******************************/
@@ -219,31 +255,6 @@ function showSuggestion(prediction) {
     const prediction = generate(text);
     showSuggestion(prediction);
   });
-
-  function acceptSuggestion() {
-  if (!suggestionSpan) return;
-
-  // Move suggestion into editor text
-  editor.innerText += suggestionSpan.innerText;
-  
-  // Remove the suggestion span
-  suggestionSpan.remove();
-  suggestionSpan = null;
-
-  // Move caret to end
-  placeCaretAtEnd(editor);
-}
-
-// Utility: place caret at end of editable
-function placeCaretAtEnd(el) {
-  el.focus();
-  const range = document.createRange();
-  range.selectNodeContents(el);
-  range.collapse(false);
-  const sel = window.getSelection();
-  sel.removeAllRanges();
-  sel.addRange(range);
-}
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
