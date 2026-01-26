@@ -1,139 +1,168 @@
 document.addEventListener("DOMContentLoaded", () => {
 
   /******************************
-   * ELEMENTS
-   ******************************/
-  const editor = document.querySelector("#editor");
-  const output = document.querySelector("#output");
-
-  document.documentElement.setAttribute("data-mode", "light");
-
-  /******************************
-   * CORPUS SOURCES
+   * CONFIG
    ******************************/
   const CORPUS_URLS = {
     masc: [
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json"
+      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json",
+      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
     ],
     fem: [
       "https://hunilune.github.io/ghostintheloop/AskWomen.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json"
+      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json",
+      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json",
+      "https://hunilune.github.io/ghostintheloop/AskFeminists.json"
     ]
+  };
+
+  const FALLBACK = {
+    masc: ["fallback male sentence for testing"],
+    fem: ["fallback female sentence for testing"]
+  };
+
+  const MAX_OUTPUT_WORDS = 22;
+
+  const EMOTIONS = {
+    sad:     { fem: 1.0, masc: 0.25 },
+    lonely:  { fem: 0.9, masc: 0.3 },
+    anxious: { fem: 0.8, masc: 0.4 },
+    angry:   { fem: 0.4, masc: 1.0 },
+    tired:   { fem: 0.6, masc: 0.6 }
   };
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
-
   let activeVoice = "masc";
-  let fatigue = 0;
+
+  const editor = document.querySelector("#editor");
+  let suggestionSpan = null;
 
   /******************************
-   * LOAD & NORMALIZE
+   * LOAD CORPORA (ROBUST)
    ******************************/
+  async function loadSide(side) {
+    const collected = [];
+
+    for (const url of CORPUS_URLS[side]) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+
+        const json = await res.json();
+        const extracted = extractText(json);
+        collected.push(...extracted);
+      } catch (err) {
+        console.warn("Skipped corpus:", url);
+      }
+    }
+
+    return normalize(collected);
+  }
+
   async function loadCorpora() {
-    try {
-      await Promise.all([
-        loadVoice("masc"),
-        loadVoice("fem")
-      ]);
-      ready = true;
-      console.log("Corpora ready", corpora);
-    } catch (err) {
-      console.error("Corpus load failed", err);
-      corpora.masc = ["handle it yourself", "focus on solutions"];
-      corpora.fem  = ["talk about how you feel", "you are not alone"];
-      ready = true;
-    }
-  }
+    corpora.masc = await loadSide("masc");
+    corpora.fem  = await loadSide("fem");
 
-  async function loadVoice(voice) {
-    const texts = [];
+    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
+    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
 
-    for (const url of CORPUS_URLS[voice]) {
-      const res = await fetch(url);
-      if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      const json = await res.json();
-      texts.push(...extractText(json));
-    }
+    console.log("Corpora ready:", {
+      masc: corpora.masc.length,
+      fem: corpora.fem.length
+    });
 
-    corpora[voice] = normalize(texts);
-  }
-
-  function extractText(src) {
-    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
-    if (Array.isArray(src?.data?.children))
-      return src.data.children.map(c =>
-        `${c.data.title ?? ""} ${c.data.selftext ?? ""}`
-      );
-    return [];
-  }
-
-  function normalize(arr) {
-    return arr
-      .map(t => String(t).toLowerCase())
-      .map(t => t.replace(/https?:\/\/\S+/g, ""))
-      .map(t => t.replace(/[^\p{L}\p{N}\s.,?!]/gu, ""))
-      .map(t => t.replace(/\s+/g, " ").trim())
-      .filter(t => t.length > 40);
+    ready = true;
   }
 
   loadCorpora();
 
   /******************************
-   * SCORING
+   * EXTRACT TEXT
    ******************************/
-  function score(input, corpus) {
-    const words = input.toLowerCase().split(/\s+/);
-    return corpus.reduce((sum, line) => {
-      return sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0);
-    }, 0);
+  function extractText(src) {
+    if (Array.isArray(src)) return src;
+
+    if (Array.isArray(src?.data?.children)) {
+      return src.data.children.map(c =>
+        `${c.data.title || ""} ${c.data.selftext || ""}`
+      );
+    }
+
+    return [];
   }
 
+  /******************************
+   * NORMALIZE
+   ******************************/
+  function normalize(arr) {
+    return arr
+      .map(t =>
+        String(t)
+          .toLowerCase()
+          .replace(/[^\w\s]/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter(t => t.length > 20);
+  }
+
+  /******************************
+   * EMOTION DETECTION
+   ******************************/
   function detectEmotion(text) {
-    if (text.includes("sad")) return "sad";
-    if (text.includes("lonely")) return "lonely";
-    if (text.includes("cry")) return "cry";
-    if (text.includes("angry")) return "angry";
+    for (const e in EMOTIONS) {
+      if (text.includes(e)) return e;
+    }
     return null;
   }
 
   /******************************
-   * CLASSIFICATION
+   * VOICE DECISION
    ******************************/
-  function classify(input) {
-    const mascScore = score(input, corpora.masc);
-    const femScore  = score(input, corpora.fem);
+  function decideVoice(input) {
+    const words = input.split(/\s+/);
 
-    const confidence =
-      Math.abs(mascScore - femScore) / (mascScore + femScore + 1);
-
-    let alignment = "neutral";
-    if (confidence > 0.35) {
-      alignment = mascScore >= femScore ? "aligned" : "cross";
+    function score(corpus) {
+      return corpus.reduce(
+        (sum, line) =>
+          sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0),
+        0
+      );
     }
 
-    activeVoice = mascScore >= femScore ? "masc" : "fem";
+    const m = score(corpora.masc);
+    const f = score(corpora.fem);
 
-    return { mascScore, femScore, confidence, alignment };
+    if (m > f) return "masc";
+    if (f > m) return "fem";
+    return activeVoice;
   }
 
   /******************************
-   * GENERATION (NON-MARKOV)
+   * GENERATION
    ******************************/
   function generate(input) {
-    const pool = corpora[activeVoice];
-    if (!pool.length) return "";
+    if (!ready || !input) return { text: "", voice: activeVoice };
+
+    const voice = decideVoice(input);
+    activeVoice = voice;
+
+    const pool = corpora[voice];
+    const isFallback = pool === FALLBACK[voice];
 
     const emotion = detectEmotion(input);
+    let allow = 1.0;
 
-    // Social suppression
-    if (activeVoice === "masc" && emotion && Math.random() < 0.55) {
-      return "";
+    if (!isFallback && emotion) {
+      allow = EMOTIONS[emotion]?.[voice] ?? 0.5;
+      if (Math.random() > allow) {
+        return { text: "", voice };
+      }
     }
 
-    // Prefer partial lexical overlap
-    const words = input.toLowerCase().split(/\s+/);
+    const words = input.split(/\s+/);
     let candidates = pool.filter(t =>
       words.some(w => t.includes(w))
     );
@@ -141,65 +170,59 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!candidates.length) candidates = pool;
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    return chosen.split(/\s+/).slice(0, 22).join(" ");
+    const out = chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ");
+
+    return { text: out, voice };
   }
 
   /******************************
-   * RENDERING
+   * RENDER
    ******************************/
-  function setMode(mode) {
-    document.documentElement.classList.remove("mode-aligned", "mode-cross");
-    document.documentElement.classList.add(`mode-${mode}`);
-    document.documentElement.setAttribute(
-      "data-mode",
-      mode === "cross" ? "dark" : "light"
-    );
-  }
+  function showSuggestion(prediction) {
+    if (!editor) return;
 
-  function updateFatigue(amount) {
-    fatigue = Math.max(0, Math.min(10, fatigue + amount));
-    document.documentElement.style.setProperty("--fatigue", fatigue);
-  }
-
-  function render(text, cls) {
-    output.className = "predicted";
-
-    if (!text) {
-      output.textContent = "phrase unsupported in current voice.";
-      output.classList.add("no-support");
-      setMode("cross");
-      updateFatigue(0.6);
-      return;
+    if (!suggestionSpan) {
+      suggestionSpan = document.createElement("span");
+      suggestionSpan.className = "suggestion";
+      editor.appendChild(suggestionSpan);
     }
 
-    output.textContent = text;
+    suggestionSpan.textContent = prediction.text;
+    suggestionSpan.style.color =
+      prediction.voice === "masc" ? "#3b6cff" : "#d44b8c";
+  }
 
-    if (cls.alignment === "aligned") {
-      output.classList.add("aligned");
-      setMode("aligned");
-      updateFatigue(-0.2);
-    } else if (cls.alignment === "cross") {
-      output.classList.add("cross");
-      setMode("cross");
-      updateFatigue(0.4);
-    } else {
-      output.classList.add("neutral");
-      updateFatigue(0.1);
-    }
+  function acceptSuggestion() {
+    if (!suggestionSpan) return;
+    suggestionSpan.removeAttribute("class");
+    suggestionSpan = null;
+    placeCaretAtEnd(editor);
+  }
+
+  function placeCaretAtEnd(el) {
+    el.focus();
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    r.collapse(false);
+    const s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
   }
 
   /******************************
-   * INPUT LOOP
+   * INPUT EVENTS
    ******************************/
   editor.addEventListener("input", () => {
-    if (!ready) return;
+    const text = editor.innerText.trim().toLowerCase();
+    const prediction = generate(text);
+    showSuggestion(prediction);
+  });
 
-    const input = editor.innerText.trim();
-    if (!input) return;
-
-    const cls = classify(input);
-    const prediction = generate(input);
-    render(prediction, cls);
+  editor.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      acceptSuggestion();
+    }
   });
 
 });
