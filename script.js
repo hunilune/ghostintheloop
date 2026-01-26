@@ -114,7 +114,7 @@ document.addEventListener("DOMContentLoaded", () => {
     activeVoice = voice;
 
     const pool = corpora[voice];
-    if (!pool.length) return { text: "— corpus empty —", voice };
+    if (!pool.length) return { text: "Sorry, I don't understand you.", voice };
 
     const emotion = detectEmotion(input);
     let allow = 1.0;
