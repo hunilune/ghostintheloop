@@ -10,6 +10,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const MAX_OUTPUT_WORDS = 22;
   const BASE_ABSENCE_PROB = 0.25;
   const MEMORY_WEIGHT = 0.15;
+  const CONTEXT_WINDOW = 5; // last N words of input for soft matching
 
   /******************************
    * STATE
@@ -63,7 +64,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return arr
       .map(t => t.toLowerCase().trim())
       .filter(t =>
-        t.length > 10 && // allow shorter lines
+        t.length > 10 &&
         !t.match(/moderator|rules|subreddit|invalid|media|tv|film/i)
       );
   }
@@ -91,25 +92,26 @@ document.addEventListener("DOMContentLoaded", () => {
    * SEMANTIC FILTER (optional)
    ******************************/
   function semanticFit(t, role) {
-    // Optional filtering for emotion or cause
-    // Uncomment to activate semantic guidance:
+    // Uncomment to activate semantic filtering
     // if (role === "emotion") return /(but|and|because|when|that)/i.test(t);
     // if (role === "cause") return /(this|that|it|which)/i.test(t);
-
-    // By default, allow all corpus lines
-    return true;
+    return true; // by default, allow all lines
   }
 
   /******************************
-   * GENERATION
+   * GENERATION (soft matching, context aware)
    ******************************/
   function generate(input) {
     const role = inferRole(input);
     const same = corpora[ACTIVE_VOICE];
     const opposite = corpora[ACTIVE_VOICE === "masc" ? "fem" : "masc"];
 
+    const inputWords = input.toLowerCase().split(/\s+/);
+    const contextWords = inputWords.slice(-CONTEXT_WINDOW);
+
+    // cross-coded detection
     const cross = opposite.some(t =>
-      input.split(/\s+/).some(w => t.includes(w))
+      inputWords.some(w => t.includes(w))
     );
 
     let absenceProb = BASE_ABSENCE_PROB;
@@ -122,14 +124,22 @@ document.addEventListener("DOMContentLoaded", () => {
       return { mode: "suppressed" };
     }
 
-    let pool = same.filter(t => semanticFit(t, role));
+    // Score corpus lines by overlapping words in context
+    let scoredPool = same.map(line => {
+      const lineWords = line.toLowerCase().split(/\s+/);
+      const score = lineWords.filter(w => contextWords.includes(w)).length;
+      return { line, score };
+    });
 
-    // fallback to the full corpus if pool is empty
+    // Keep lines with at least 1 overlap
+    let pool = scoredPool.filter(obj => obj.score > 0).map(obj => obj.line);
+
+    // fallback to entire corpus if nothing overlaps
     if (!pool.length) pool = same.length ? same : opposite;
 
-    // still empty? return unsupported
     if (!pool.length) return { mode: "unsupported" };
 
+    // Pick a random line from pool
     const text = pool[Math.floor(Math.random() * pool.length)]
       .split(/\s+/)
       .slice(0, MAX_OUTPUT_WORDS)
@@ -156,6 +166,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     el.textContent = result.text || "";
     el.style.opacity = "1";
+
+    // Color coding by voice
+    el.style.color = ACTIVE_VOICE === "masc" ? "blue" : "pink";
 
     if (result.mode === "thinned") {
       el.style.opacity = "0.45";
