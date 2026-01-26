@@ -6,23 +6,23 @@ document.addEventListener("DOMContentLoaded", () => {
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
+  const MAX_OUTPUT_WORDS = 22;
 
-  // Recursively find all "body" strings in the JSON
-  function extractBodies(obj) {
+  // Recursively extract text from Reddit JSON
+  function extractText(obj) {
     const out = [];
-
     function recurse(o) {
       if (!o) return;
-      if (Array.isArray(o)) {
-        o.forEach(item => recurse(item));
-      } else if (typeof o === "object") {
-        if ("body" in o && typeof o.body === "string") {
-          out.push(o.body);
-        }
+      if (Array.isArray(o)) o.forEach(item => recurse(item));
+      else if (typeof o === "object") {
+        // Post text
+        if ("selftext" in o && o.selftext) out.push(o.selftext);
+        // Comment text
+        if ("body" in o && o.body) out.push(o.body);
+        // Recurse into nested children
         for (let k in o) recurse(o[k]);
       }
     }
-
     recurse(obj);
     return out;
   }
@@ -31,7 +31,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!Array.isArray(arr)) return [];
     return arr
       .map(t => String(t).toLowerCase().trim())
-      .filter(t => t.length > 5);
+      .filter(t => t.length > 20); // ignore very short lines
   }
 
   async function loadCorpora() {
@@ -40,12 +40,11 @@ document.addEventListener("DOMContentLoaded", () => {
         fetch(CORPUS_URLS.masc),
         fetch(CORPUS_URLS.fem)
       ]);
-
       const mJson = await mRes.json();
       const fJson = await fRes.json();
 
-      corpora.masc = normalize(extractBodies(mJson));
-      corpora.fem  = normalize(extractBodies(fJson));
+      corpora.masc = normalize(extractText(mJson));
+      corpora.fem  = normalize(extractText(fJson));
 
       console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
     } catch (err) {
@@ -62,20 +61,20 @@ document.addEventListener("DOMContentLoaded", () => {
   function generate(input) {
     if (!ready || !input) return { text: "— corpus not yet speaking —", voice: "masc" };
 
-    // crude way to pick voice: whichever corpus has more words in common
     const words = input.toLowerCase().split(/\s+/);
-    const mascScore = corpora.masc.reduce((sum, line) => sum + words.reduce((s,w)=>s+(line.includes(w)?1:0),0), 0);
-    const femScore  = corpora.fem.reduce((sum, line) => sum + words.reduce((s,w)=>s+(line.includes(w)?1:0),0), 0);
+    const mascScore = corpora.masc.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0), 0);
+    const femScore  = corpora.fem.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0), 0);
 
     const voice = mascScore >= femScore ? "masc" : "fem";
     let pool = corpora[voice];
     if (!pool.length) return { text: "— corpus empty —", voice };
 
+    // Prefer lines containing some input words
     let candidates = pool.filter(t => words.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    return { text: chosen.split(/\s+/).slice(0, 22).join(" "), voice };
+    return { text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "), voice };
   }
 
   function render(slot, result) {
