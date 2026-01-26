@@ -19,29 +19,41 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let corpora = { masc: [], fem: [] };
-  let ready = false; // corpus loaded
-  let markovFallback = null; // fallback Markov chain
+  let ready = false;
 
   /******************************
-   * UTILITIES
+   * HELPER TO EXTRACT TEXT FROM NESTED JSON
    ******************************/
-  function extractText(src) {
-    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
-    if (Array.isArray(src?.data)) return src.data.map(x => x.body ?? x.text ?? x);
-    return [];
+  function extractBodies(obj) {
+    let out = [];
+    if (!obj) return out;
+
+    if (Array.isArray(obj)) {
+      obj.forEach(child => out.push(...extractBodies(child)));
+    } else if (obj.body) {
+      out.push(obj.body);
+    } else if (obj.data) {
+      // check for children
+      if (Array.isArray(obj.data.children)) {
+        obj.data.children.forEach(c => out.push(...extractBodies(c.data)));
+      } else {
+        out.push(...extractBodies(obj.data));
+      }
+    } else if (typeof obj === "object") {
+      for (let key in obj) out.push(...extractBodies(obj[key]));
+    }
+
+    return out;
   }
 
+  /******************************
+   * NORMALIZE TEXT
+   ******************************/
   function normalize(arr) {
     if (!Array.isArray(arr)) return [];
     return arr
       .map(t => String(t).toLowerCase().replace(/[^\w\s]/g, "").trim())
-      .filter(t => t.length > 20);
-  }
-
-  function detectEmotion(text) {
-    text = text.toLowerCase();
-    for (let e in EMOTIONS) if (text.includes(e)) return e;
-    return null;
+      .filter(t => t.length > 5);
   }
 
   /******************************
@@ -57,25 +69,29 @@ document.addEventListener("DOMContentLoaded", () => {
       const mJson = await mRes.json();
       const fJson = await fRes.json();
 
-      corpora.masc = normalize(extractText(mJson));
-      corpora.fem  = normalize(extractText(fJson));
+      corpora.masc = normalize(extractBodies(mJson));
+      corpora.fem  = normalize(extractBodies(fJson));
 
       console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
-
-      // build fallback Markov from combined corpora
-      markovFallback = buildMarkov(corpora.masc.concat(corpora.fem));
     } catch (err) {
-      console.error("Corpus load failed:", err);
-      corpora.masc = ["Fallback male sentence for testing."];
-      corpora.fem  = ["Fallback female sentence for testing."];
-      markovFallback = buildMarkov(corpora.masc.concat(corpora.fem));
+      console.error("Failed to load corpora:", err);
+      corpora.masc = ["Fallback male sentence"];
+      corpora.fem = ["Fallback female sentence"];
     } finally {
       ready = true;
-      document.body.style.opacity = "1";
     }
   }
 
   loadCorpora();
+
+  /******************************
+   * EMOTION DETECTION
+   ******************************/
+  function detectEmotion(text) {
+    text = text.toLowerCase();
+    for (let e in EMOTIONS) if (text.includes(e)) return e;
+    return null;
+  }
 
   /******************************
    * DECIDE VOICE
@@ -84,9 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const words = input.toLowerCase().split(/\s+/);
 
     function score(corpus) {
-      return corpus.reduce((sum, line) => {
-        return sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0);
-      }, 0);
+      return corpus.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0), 0);
     }
 
     const mascScore = score(corpora.masc);
@@ -112,46 +126,12 @@ document.addEventListener("DOMContentLoaded", () => {
     if (emotion) allow = EMOTIONS[emotion][voice] ?? 0.5;
     if (Math.random() > allow) return { text: "— language thins here —", voice };
 
-    // fuzzy matching
     const inputWords = input.toLowerCase().split(/\s+/);
     let candidates = pool.filter(t => inputWords.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    if (!chosen) {
-      // fallback Markov
-      return { text: markovFallback ? generateMarkov(markovFallback) : "— nothing generated —", voice };
-    }
-
     return { text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "), voice };
-  }
-
-  /******************************
-   * MARKOV FALLBACK
-   ******************************/
-  function buildMarkov(texts) {
-    const words = texts.join(" ").split(/\s+/);
-    const chain = {};
-    for (let i = 0; i < words.length - 1; i++) {
-      const w = words[i];
-      const next = words[i + 1];
-      if (!chain[w]) chain[w] = [];
-      chain[w].push(next);
-    }
-    return chain;
-  }
-
-  function generateMarkov(chain, length = 10) {
-    const keys = Object.keys(chain);
-    let word = keys[Math.floor(Math.random() * keys.length)];
-    let result = [word];
-    for (let i = 0; i < length; i++) {
-      const nexts = chain[word];
-      if (!nexts) break;
-      word = nexts[Math.floor(Math.random() * nexts.length)];
-      result.push(word);
-    }
-    return result.join(" ");
   }
 
   /******************************
