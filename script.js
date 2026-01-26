@@ -7,7 +7,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
   };
 
-  const MAX_OUTPUT_WORDS = 20;
+  const MAX_OUTPUT_WORDS = 22;
 
   const EMOTIONS = {
     sad:     { fem: 1.0, masc: 0.25 },
@@ -18,166 +18,162 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   let corpora = { masc: [], fem: [] };
-  let markovChains = { masc: {}, fem: {} };
-  let ready = false;
+  let ready = false; // corpora loaded
+  let activeVoice = "masc"; // default
+
+  const editor = document.querySelector("#editor");
+  let suggestionSpan = null;
 
   /******************************
    * LOAD CORPORA
    ******************************/
-  async function loadCorpus(url) {
+  async function loadCorpora() {
     try {
-      const res = await fetch(url);
-      const json = await res.json();
-      return extractText(json);
-    } catch (e) {
-      console.error("Error loading corpus:", e);
-      return [];
+      const [mRes, fRes] = await Promise.all([
+        fetch(CORPUS_URLS.masc),
+        fetch(CORPUS_URLS.fem)
+      ]);
+      const mJson = await mRes.json();
+      const fJson = await fRes.json();
+      corpora.masc = normalize(extractText(mJson));
+      corpora.fem  = normalize(extractText(fJson));
+      console.log("Corpora loaded:", corpora.masc.length, corpora.fem.length);
+    } catch (err) {
+      console.error("Corpus load failed:", err);
+      corpora.masc = ["Fallback male sentence for testing."];
+      corpora.fem  = ["Fallback female sentence for testing."];
+    } finally {
+      ready = true;
     }
   }
 
-  async function initCorpora() {
-    const [mascData, femData] = await Promise.all([
-      loadCorpus(CORPUS_URLS.masc),
-      loadCorpus(CORPUS_URLS.fem)
-    ]);
-
-    corpora.masc = normalize(mascData);
-    corpora.fem  = normalize(femData);
-
-    markovChains.masc = buildMarkov(corpora.masc.join(" "));
-    markovChains.fem  = buildMarkov(corpora.fem.join(" "));
-
-    console.log("Corpora loaded:", corpora.masc.length, corpora.fem.length);
-    ready = true;
-  }
-
-  initCorpora();
+  loadCorpora();
 
   /******************************
-   * EXTRACT TEXT FROM REDDIT JSON
+   * EXTRACT TEXT ARRAY FROM JSON
    ******************************/
   function extractText(src) {
-    if (!src?.data?.children) return [];
-    return src.data.children
-      .map(c => c.data?.selftext || c.data?.title || "")
-      .filter(t => t && t.length > 20);
+    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
+    if (Array.isArray(src?.data?.children))
+      return src.data.children.map(c => c.data.selftext ?? c.data.title ?? "");
+    return [];
   }
 
   /******************************
    * NORMALIZE TEXT
    ******************************/
   function normalize(arr) {
-    return arr.map(t => t.toLowerCase().replace(/\s+/g, " ").trim());
+    if (!Array.isArray(arr)) return [];
+    return arr
+      .map(t => String(t).toLowerCase().replace(/[^\w\s]/g, "").trim())
+      .filter(t => t.length > 20);
   }
 
   /******************************
-   * EMOTION DETECTION
+   * DETECT EMOTION
    ******************************/
-  function detectEmotion(input) {
-    input = input.toLowerCase();
-    for (let e in EMOTIONS) if (input.includes(e)) return e;
+  function detectEmotion(text) {
+    text = text.toLowerCase();
+    for (let e in EMOTIONS) if (text.includes(e)) return e;
     return null;
   }
 
   /******************************
-   * DECIDE VOICE (MASC/FEM)
+   * DECIDE VOICE
    ******************************/
-  function decideVoice(input, emotion) {
+  function decideVoice(input) {
     const words = input.toLowerCase().split(/\s+/);
-    const scores = { masc: 0, fem: 0 };
-
-    for (let v of ["masc", "fem"]) {
-      for (let line of corpora[v]) {
-        for (let w of words) {
-          if (line.includes(w)) scores[v]++;
-        }
-      }
+    function score(corpus) {
+      return corpus.reduce((sum, line) => {
+        return sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0);
+      }, 0);
     }
-
-    // boost with emotion
-    if (emotion) {
-      scores.masc *= EMOTIONS[emotion].masc;
-      scores.fem  *= EMOTIONS[emotion].fem;
-    }
-
-    return scores.masc >= scores.fem ? "masc" : "fem";
+    const mascScore = score(corpora.masc);
+    const femScore  = score(corpora.fem);
+    if (mascScore > femScore) return "masc";
+    if (femScore > mascScore) return "fem";
+    return activeVoice;
   }
 
   /******************************
-   * MARKOV CHAIN GENERATION
-   ******************************/
-  function buildMarkov(text) {
-    const words = text.split(/\s+/);
-    const chain = {};
-    for (let i = 0; i < words.length - 1; i++) {
-      const w = words[i];
-      const next = words[i + 1];
-      if (!chain[w]) chain[w] = [];
-      chain[w].push(next);
-    }
-    return chain;
-  }
-
-  function generateFromMarkov(chain, startWords, maxWords = 15) {
-    let result = [];
-    let last = startWords[startWords.length - 1] || startWords[0];
-    for (let i = 0; i < maxWords; i++) {
-      if (!last) break;
-      const nexts = chain[last];
-      if (!nexts || nexts.length === 0) break;
-      const next = nexts[Math.floor(Math.random() * nexts.length)];
-      result.push(next);
-      last = next;
-    }
-    return result.join(" ");
-  }
-
-  /******************************
-   * GENERATE PREDICTIVE TEXT
+   * GENERATE PREDICTION
    ******************************/
   function generate(input) {
-    if (!ready || !input) return { text: "— corpus not yet speaking —", voice: "masc" };
+    if (!ready || !input) return { text: "", voice: activeVoice };
+
+    const voice = decideVoice(input);
+    activeVoice = voice;
+
+    const pool = corpora[voice];
+    if (!pool.length) return { text: "— corpus empty —", voice };
 
     const emotion = detectEmotion(input);
-    const voice = decideVoice(input, emotion);
-    const chain = markovChains[voice];
+    let allow = 1.0;
+    if (emotion) allow = EMOTIONS[emotion][voice] ?? 0.5;
 
-    const inputWords = input.toLowerCase().split(/\s+/).slice(-2);
-    let prediction = generateFromMarkov(chain, inputWords, MAX_OUTPUT_WORDS);
+    if (Math.random() > allow) return { text: "", voice };
 
-    if (!prediction) prediction = "— language thins here —";
+    const inputWords = input.toLowerCase().split(/\s+/);
+    let candidates = pool.filter(t => inputWords.some(w => t.includes(w)));
+    if (!candidates.length) candidates = pool;
 
-    return { text: prediction, voice };
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    const nextWords = chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS);
+
+    return { text: nextWords.join(" "), voice };
   }
 
   /******************************
-   * INLINE RENDER
+   * RENDER INLINE SUGGESTION
    ******************************/
-  document.querySelectorAll(".editable").forEach(editable => {
-    editable.addEventListener("keydown", e => {
-      if (e.key !== "Enter") return;
+  function showSuggestion(prediction) {
+    if (!editor) return;
+
+    if (!suggestionSpan) {
+      suggestionSpan = document.createElement("span");
+      suggestionSpan.className = "suggestion";
+      editor.appendChild(suggestionSpan);
+    }
+
+    suggestionSpan.textContent = prediction.text;
+    suggestionSpan.style.color = prediction.voice === "masc" ? "#3b6cff" : "#d44b8c";
+  }
+
+  function acceptSuggestion() {
+    if (!suggestionSpan) return;
+    // Insert suggestion text into editor
+    suggestionSpan.removeAttribute("class");
+    suggestionSpan = null;
+    // Move cursor to end
+    placeCaretAtEnd(editor);
+  }
+
+  /******************************
+   * UTILITY: Place caret at end
+   ******************************/
+  function placeCaretAtEnd(el) {
+    el.focus();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  }
+
+  /******************************
+   * INPUT HANDLING
+   ******************************/
+  editor.addEventListener("input", () => {
+    const text = editor.innerText.trim();
+    const prediction = generate(text);
+    showSuggestion(prediction);
+  });
+
+  editor.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
       e.preventDefault();
-      if (!ready) return;
-
-      const input = editable.textContent.trim();
-      if (!input) return;
-
-      const result = generate(input);
-
-      // append prediction inline
-      const span = document.createElement("span");
-      span.textContent = " " + result.text;
-      span.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
-
-      editable.appendChild(span);
-
-      // move cursor to end
-      const range = document.createRange();
-      range.selectNodeContents(editable);
-      range.collapse(false);
-      const sel = window.getSelection();
-      sel.removeAllRanges();
-      sel.addRange(range);
-    });
+      acceptSuggestion();
+    }
   });
 });
