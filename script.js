@@ -34,18 +34,15 @@ document.addEventListener("DOMContentLoaded", () => {
       let mascData = await mascRes.json();
       let femData  = await femRes.json();
 
-      // Ensure it is an array (in case JSON is wrapped in an object)
-      if (!Array.isArray(mascData)) mascData = mascData.data || [];
-      if (!Array.isArray(femData))  femData  = femData.data || [];
-
-      corpora.masc = normalize(mascData);
-      corpora.fem  = normalize(femData);
+      // Extract the actual array from .data
+      corpora.masc = normalize(Array.isArray(mascData.data) ? mascData.data : []);
+      corpora.fem  = normalize(Array.isArray(femData.data)  ? femData.data  : []);
 
       console.log("All corpora loaded successfully");
     } catch (err) {
       console.error("Error loading corpora:", err);
 
-      // Fallback corpus to keep script functional
+      // Fallback small corpus to prevent crashes
       corpora.masc = normalize([
         "Fallback male sentence for testing.",
         "Another example of male input text."
@@ -63,6 +60,7 @@ document.addEventListener("DOMContentLoaded", () => {
    * NORMALIZATION
    ******************************/
   function normalize(arr) {
+    if (!Array.isArray(arr)) return [];
     return arr
       .map(t => t.toLowerCase().trim())
       .filter(t =>
