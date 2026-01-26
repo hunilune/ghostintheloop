@@ -64,12 +64,19 @@ h6 {
 /* Input */
 
 .editable {
-  display: inline-block;
-  min-width: 80px;
-  /* padding: 1px 3px; */
-  /* Border underneath text */
-  border-bottom: 0px solid #000;
+  min-height: 4rem;
+  padding: 1rem;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+  line-height: 1.4;
   outline: none;
+  white-space: pre-wrap;
+}
+
+.editable .suggestion {
+  opacity: 0.4;
+  pointer-events: none;
+  user-select: none;
 }
 
 /* Output or Predictive Text */
