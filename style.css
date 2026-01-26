@@ -56,6 +56,8 @@ h6 {
   text-wrap: pretty;
 }
 
+// Input
+
 .editable {
   display: inline-block;
   min-width: 80px;
@@ -65,17 +67,67 @@ h6 {
   outline: none;
 }
 
+// Output or Predictive Text
+
 .predicted {
+  display: block;
+  margin-top: 0.5em;
+  line-height: 1.4;
+  transition:
+    transform 0.45s ease,
+    opacity 0.45s ease,
+    filter 0.45s ease;
+}
+
+// Visual hierarchy //
+
+// Supported language surfaces //
+.predicted.aligned {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+// Discouraged language recedes //
+.predicted.cross {
+  transform: scale(0.94);
   opacity: 0.55;
-  font-style: italic;
-  margin-left: 4px;
+  filter: saturate(0.7);
+}
+
+// Ambiguous language stays quiet /
+.predicted.neutral {
+  opacity: 0.85;
 }
 
 .predicted.no-support {
-  color: #c44;           /* red-ish to indicate absence */
-  font-style: italic;     /* subtle visual cue */
-  opacity: 0.8;           /* slightly faded */
+  color: #c44;           /* Red to indicate absence */
+  font-style: italic;     /* Subtle visual cue */
+  opacity: 0.8;           /* Slightly faded */
   transition: opacity 0.5s;
+}
+
+// Trigger words //
+
+.word {
+  display: inline-block;
+  transition:
+    font-weight 0.3s ease,
+    opacity 0.3s ease,
+    letter-spacing 0.3s ease;
+}
+
+// Words aligned with the active voice //
+.word.masc,
+.word.fem {
+  font-weight: 600;
+}
+
+// Suppressed words thin out when cross-coded //
+.predicted.cross .word.masc,
+.predicted.cross .word.fem {
+  font-weight: 300;
+  opacity: 0.45;
+  letter-spacing: -0.01em;
 }
 
 .note {
@@ -123,13 +175,24 @@ hr {
   opacity: 0.45;
 }
 
+/* ================= PAGE MOOD ================= */
 
-.mode-masc .editable {
-  outline: 2px solid rgba(0, 80, 255, 0.4);
+/* Page clarifies when language aligns */
+.mode-aligned body {
+  background-color: #fafafa;
+  color: #111;
 }
 
-.mode-fem .editable {
-  outline: 2px solid rgba(255, 0, 80, 0.4);
-  opacity: 0.85;
+/* Page darkens when language resists */
+.mode-cross body {
+  background-color: #0e0e0e;
+  color: #888;
 }
 
+/* ================= SUBTLE ACCESSIBILITY ================= */
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+  }
+}
