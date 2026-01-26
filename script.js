@@ -220,6 +220,31 @@ function showSuggestion(prediction) {
     showSuggestion(prediction);
   });
 
+  function acceptSuggestion() {
+  if (!suggestionSpan) return;
+
+  // Move suggestion into editor text
+  editor.innerText += suggestionSpan.innerText;
+  
+  // Remove the suggestion span
+  suggestionSpan.remove();
+  suggestionSpan = null;
+
+  // Move caret to end
+  placeCaretAtEnd(editor);
+}
+
+// Utility: place caret at end of editable
+function placeCaretAtEnd(el) {
+  el.focus();
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
