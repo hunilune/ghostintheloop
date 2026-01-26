@@ -12,52 +12,69 @@ document.addEventListener("DOMContentLoaded", () => {
   const MAX_OUTPUT_WORDS = 22;
 
   /******************************
-   * GENDERED EMOTIONS (AUTHORITATIVE)
-   ******************************/
-  const EMOTIONS = {
-    masc: {
-      mild: ["tired","stressed","off","fine"],
-      medium: ["sad","angry","lonely","frustrated"],
-      intense: ["numb","empty","done","broken"]
-    },
-    fem: {
-      mild: ["low","uneasy","sensitive"],
-      medium: ["sad","anxious","overwhelmed","hurt"],
-      intense: ["empty","hopeless","despair","unlovable"]
-    }
-  };
-
-  /******************************
    * STATE
    ******************************/
   let corpora = { masc: [], fem: [] };
 
   /******************************
-   * LOAD CORPORA
+   * LOAD CORPORA (ROBUST)
    ******************************/
   async function loadCorpora() {
-    const [m, f] = await Promise.all([
-      fetch(CORPUS_URLS.masc).then(r => r.json()),
-      fetch(CORPUS_URLS.fem).then(r => r.json())
-    ]);
+    try {
+      const [mRes, fRes] = await Promise.all([
+        fetch(CORPUS_URLS.masc),
+        fetch(CORPUS_URLS.fem)
+      ]);
 
-    corpora.masc = normalize(m);
-    corpora.fem  = normalize(f);
+      const mJson = await mRes.json();
+      const fJson = await fRes.json();
 
-    console.log("Loaded:", corpora.masc.length, corpora.fem.length);
+      corpora.masc = normalize(extractTextArray(mJson));
+      corpora.fem  = normalize(extractTextArray(fJson));
+
+      console.log("Loaded:", corpora.masc.length, corpora.fem.length);
+
+    } catch (err) {
+      console.error("Corpus load failed:", err);
+    }
   }
 
   loadCorpora();
 
   /******************************
-   * NORMALIZATION (BULLETPROOF)
+   * EXTRACT TEXT FROM ANY SHAPE
    ******************************/
-  function normalize(source) {
-    const arr = Array.isArray(source)
-      ? source
-      : Array.isArray(source?.data)
-        ? source.data
-        : [];
+  function extractTextArray(source) {
+    if (Array.isArray(source)) {
+      // array of strings OR objects
+      return source.map(x =>
+        typeof x === "string" ? x :
+        x?.body || x?.text || ""
+      );
+    }
+
+    if (Array.isArray(source?.data)) {
+      return source.data.map(x =>
+        typeof x === "string" ? x :
+        x?.body || x?.text || ""
+      );
+    }
+
+    if (Array.isArray(source?.comments)) {
+      return source.comments.map(x =>
+        typeof x === "string" ? x :
+        x?.body || x?.text || ""
+      );
+    }
+
+    return [];
+  }
+
+  /******************************
+   * NORMALIZE
+   ******************************/
+  function normalize(arr) {
+    if (!Array.isArray(arr)) return [];
 
     return arr
       .map(t =>
@@ -66,107 +83,63 @@ document.addEventListener("DOMContentLoaded", () => {
           .replace(/[^\w\s]/g, "")
           .trim()
       )
-      .filter(t => t.length > 15);
+      .filter(t => t.length > 20);
   }
 
   /******************************
-   * EMOTION DETECTION (FIRST)
+   * SIMPLE EMOTION DETECTION
    ******************************/
-  function detectEmotion(text) {
-    const words = text.split(/\s+/);
-    const vocab = EMOTIONS[ACTIVE_VOICE];
-
-    for (const level of ["intense","medium","mild"]) {
-      if (words.some(w => vocab[level].includes(w))) {
-        return level;
-      }
-    }
-    return null;
+  function isEmotion(text) {
+    return /(feel|feeling|sad|angry|lonely|tired|anxious|empty)/i.test(text);
   }
 
   /******************************
-   * FUZZY SIMILARITY
-   ******************************/
-  function overlapScore(line, inputWords) {
-    return inputWords.reduce(
-      (s, w) => s + (line.includes(w) ? 1 : 0),
-      0
-    );
-  }
-
-  /******************************
-   * GENERATION (FIXED)
+   * GENERATE (SAFE)
    ******************************/
   function generate(input) {
-    const emotion = detectEmotion(input);
-    const inputWords = input.split(/\s+/);
     const pool = corpora[ACTIVE_VOICE];
 
-    // 1️⃣ If emotion detected → NEVER block
-    if (emotion) {
-      // Prefer emotionally structured sentences
-      let emotionalPool = pool.filter(t =>
-        /(but|because|when|that|and)/i.test(t)
-      );
-
-      if (!emotionalPool.length) {
-        emotionalPool = pool;
-      }
-
-      const chosen =
-        emotionalPool[Math.floor(Math.random() * emotionalPool.length)];
-
+    // 🚨 Hard guard: corpus not ready
+    if (!pool || pool.length === 0) {
       return {
-        text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
-        voice: ACTIVE_VOICE,
-        emotion
-      };
-    }
-
-    // 2️⃣ Otherwise fuzzy continuation
-    const scored = pool
-      .map(t => ({ t, score: overlapScore(t, inputWords) }))
-      .filter(o => o.score > 0);
-
-    if (scored.length) {
-      scored.sort((a, b) => b.score - a.score);
-      const chosen =
-        scored[Math.floor(Math.random() * Math.min(5, scored.length))].t;
-
-      return {
-        text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
+        text: "— corpus not yet speaking —",
         voice: ACTIVE_VOICE
       };
     }
 
-    // 3️⃣ Absolute last resort (very rare)
-    const fallback =
-      pool[Math.floor(Math.random() * pool.length)];
+    // Prefer emotional structure if emotion detected
+    let candidates = isEmotion(input)
+      ? pool.filter(t => /(but|because|when|that|and)/i.test(t))
+      : pool;
+
+    if (!candidates.length) {
+      candidates = pool;
+    }
+
+    const chosen =
+      candidates[Math.floor(Math.random() * candidates.length)];
 
     return {
-      text: fallback.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
+      text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
       voice: ACTIVE_VOICE
     };
   }
 
   /******************************
-   * RENDER INLINE
+   * RENDER
    ******************************/
   function render(slot, result) {
     const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
     if (!el) return;
 
     el.textContent = result.text;
-    el.style.opacity =
-      result.emotion === "intense" ? "0.9" :
-      result.emotion === "mild"    ? "0.7" : "1";
-
     el.style.color =
       result.voice === "masc" ? "#3b6cff" : "#d44b8c";
+    el.style.opacity = "0.9";
   }
 
   /******************************
-   * INPUT
+   * INPUT HANDLER
    ******************************/
   document.addEventListener("keydown", e => {
     if (e.key !== "Enter") return;
@@ -175,7 +148,7 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!active?.classList.contains("editable")) return;
 
     const slot = active.getAttribute("data-slot");
-    const input = active.textContent.toLowerCase().trim();
+    const input = active.textContent.trim();
     if (!input) return;
 
     const result = generate(input);
