@@ -7,23 +7,24 @@ document.addEventListener("DOMContentLoaded", () => {
   let corpora = { masc: [], fem: [] };
   let ready = false;
 
-  // Helper to recursively extract all "body" strings from nested Reddit-style JSON
+  // Recursive extractor for nested Reddit-style JSON
   function extractBodies(obj) {
     let out = [];
     if (!obj) return out;
 
     if (Array.isArray(obj)) {
-      obj.forEach(child => out.push(...extractBodies(child)));
-    } else if (obj.body) {
+      obj.forEach(item => out.push(...extractBodies(item)));
+    } else if (obj.body && typeof obj.body === "string") {
       out.push(obj.body);
     } else if (obj.data) {
+      // if there is children, dive into them
       if (Array.isArray(obj.data.children)) {
-        obj.data.children.forEach(c => out.push(...extractBodies(c.data)));
+        obj.data.children.forEach(child => out.push(...extractBodies(child.data)));
       } else {
         out.push(...extractBodies(obj.data));
       }
     } else if (typeof obj === "object") {
-      for (let k in obj) out.push(...extractBodies(obj[k]));
+      for (let key in obj) out.push(...extractBodies(obj[key]));
     }
 
     return out;
@@ -61,15 +62,14 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadCorpora();
 
-  // Very simple generate function (just picks a random line from determined voice)
+  // Simple predictive text generator
   function generate(input) {
-    if (!ready) return { text: "— corpus not yet speaking —", voice: "masc" };
+    if (!ready || !input) return { text: "— corpus not yet speaking —", voice: "masc" };
 
     const voice = corpora.masc.some(t => input.includes(t)) ? "masc" : "fem";
     const pool = corpora[voice];
     if (!pool.length) return { text: "— corpus empty —", voice };
 
-    // simple fuzzy match: pick any line containing a word from input, or random
     const words = input.toLowerCase().split(/\s+/);
     let candidates = pool.filter(t => words.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
