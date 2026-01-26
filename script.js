@@ -80,7 +80,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * DECIDE VOICE (MASCFEM)
+   * DECIDE VOICE (MASC/FEM)
    ******************************/
   function decideVoice(input, emotion) {
     const words = input.toLowerCase().split(/\s+/);
@@ -100,8 +100,7 @@ document.addEventListener("DOMContentLoaded", () => {
       scores.fem  *= EMOTIONS[emotion].fem;
     }
 
-    if (scores.masc >= scores.fem) return "masc";
-    return "fem";
+    return scores.masc >= scores.fem ? "masc" : "fem";
   }
 
   /******************************
@@ -120,9 +119,10 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function generateFromMarkov(chain, startWords, maxWords = 15) {
-    let result = [...startWords];
-    let last = startWords[startWords.length - 1];
+    let result = [];
+    let last = startWords[startWords.length - 1] || startWords[0];
     for (let i = 0; i < maxWords; i++) {
+      if (!last) break;
       const nexts = chain[last];
       if (!nexts || nexts.length === 0) break;
       const next = nexts[Math.floor(Math.random() * nexts.length)];
@@ -142,37 +142,42 @@ document.addEventListener("DOMContentLoaded", () => {
     const voice = decideVoice(input, emotion);
     const chain = markovChains[voice];
 
-    const inputWords = input.toLowerCase().split(/\s+/).slice(-2); // last 2 words
-    let text = generateFromMarkov(chain, inputWords, MAX_OUTPUT_WORDS);
+    const inputWords = input.toLowerCase().split(/\s+/).slice(-2);
+    let prediction = generateFromMarkov(chain, inputWords, MAX_OUTPUT_WORDS);
 
-    if (!text) text = "— language thins here —";
+    if (!prediction) prediction = "— language thins here —";
 
-    return { text, voice };
+    return { text: prediction, voice };
   }
 
   /******************************
-   * RENDER INLINE
-   ******************************/
-  function render(slot, result) {
-    const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
-    if (!el) return;
-    el.textContent = result.text;
-    el.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
-    el.style.opacity = 0.9;
-  }
-
-  /******************************
-   * INPUT HANDLER
+   * INLINE RENDER
    ******************************/
   document.querySelectorAll(".editable").forEach(editable => {
     editable.addEventListener("keydown", e => {
       if (e.key !== "Enter") return;
       e.preventDefault();
-      const slot = editable.dataset.slot;
+      if (!ready) return;
+
       const input = editable.textContent.trim();
       if (!input) return;
+
       const result = generate(input);
-      render(slot, result);
+
+      // append prediction inline
+      const span = document.createElement("span");
+      span.textContent = " " + result.text;
+      span.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
+
+      editable.appendChild(span);
+
+      // move cursor to end
+      const range = document.createRange();
+      range.selectNodeContents(editable);
+      range.collapse(false);
+      const sel = window.getSelection();
+      sel.removeAllRanges();
+      sel.addRange(range);
     });
   });
 });
