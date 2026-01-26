@@ -1,32 +1,29 @@
 document.addEventListener("DOMContentLoaded", () => {
   const CORPUS_URLS = {
     masc: "https://hunilune.github.io/ghostintheloop/AskMen.json",
-    fem: "https://hunilune.github.io/ghostintheloop/AskWomen.json"
+    fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
   };
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
 
-  // Recursive extractor for nested Reddit-style JSON
+  // Recursively find all "body" strings in the JSON
   function extractBodies(obj) {
-    let out = [];
-    if (!obj) return out;
+    const out = [];
 
-    if (Array.isArray(obj)) {
-      obj.forEach(item => out.push(...extractBodies(item)));
-    } else if (obj.body && typeof obj.body === "string") {
-      out.push(obj.body);
-    } else if (obj.data) {
-      // if there is children, dive into them
-      if (Array.isArray(obj.data.children)) {
-        obj.data.children.forEach(child => out.push(...extractBodies(child.data)));
-      } else {
-        out.push(...extractBodies(obj.data));
+    function recurse(o) {
+      if (!o) return;
+      if (Array.isArray(o)) {
+        o.forEach(item => recurse(item));
+      } else if (typeof o === "object") {
+        if ("body" in o && typeof o.body === "string") {
+          out.push(o.body);
+        }
+        for (let k in o) recurse(o[k]);
       }
-    } else if (typeof obj === "object") {
-      for (let key in obj) out.push(...extractBodies(obj[key]));
     }
 
+    recurse(obj);
     return out;
   }
 
@@ -48,13 +45,13 @@ document.addEventListener("DOMContentLoaded", () => {
       const fJson = await fRes.json();
 
       corpora.masc = normalize(extractBodies(mJson));
-      corpora.fem = normalize(extractBodies(fJson));
+      corpora.fem  = normalize(extractBodies(fJson));
 
       console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
     } catch (err) {
       console.error("Failed to load corpora:", err);
       corpora.masc = ["Fallback male sentence"];
-      corpora.fem = ["Fallback female sentence"];
+      corpora.fem  = ["Fallback female sentence"];
     } finally {
       ready = true;
     }
@@ -62,15 +59,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadCorpora();
 
-  // Simple predictive text generator
   function generate(input) {
     if (!ready || !input) return { text: "— corpus not yet speaking —", voice: "masc" };
 
-    const voice = corpora.masc.some(t => input.includes(t)) ? "masc" : "fem";
-    const pool = corpora[voice];
+    // crude way to pick voice: whichever corpus has more words in common
+    const words = input.toLowerCase().split(/\s+/);
+    const mascScore = corpora.masc.reduce((sum, line) => sum + words.reduce((s,w)=>s+(line.includes(w)?1:0),0), 0);
+    const femScore  = corpora.fem.reduce((sum, line) => sum + words.reduce((s,w)=>s+(line.includes(w)?1:0),0), 0);
+
+    const voice = mascScore >= femScore ? "masc" : "fem";
+    let pool = corpora[voice];
     if (!pool.length) return { text: "— corpus empty —", voice };
 
-    const words = input.toLowerCase().split(/\s+/);
     let candidates = pool.filter(t => words.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
