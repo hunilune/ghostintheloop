@@ -125,16 +125,28 @@ h6 {
 
 .word {
   display: inline-block;
-  transition:
-    font-weight 0.3s ease,
-    opacity 0.3s ease,
-    letter-spacing 0.3s ease;
+  transition: font-weight 1.5s ease, opacity 1.5s ease, transform 1.5s ease;
 }
 
-/* Words aligned with the active voice */
-.word.masc,
-.word.fem {
+/* Aligned words stay normal */
+.word.aligned {
   font-weight: 600;
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Masculine words fade/shrink in fem voice */
+.word.cross.fem {
+  font-weight: 300;
+  opacity: 0.5;
+  transform: scale(0.95);
+}
+
+/* Masculine words boost in masc voice */
+.word.boost.masc {
+  font-weight: 700;
+  opacity: 1;
+  transform: scale(1.05);
 }
 
 /* Suppressed words thin out when cross-coded */
