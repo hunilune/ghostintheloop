@@ -8,8 +8,18 @@ document.addEventListener("DOMContentLoaded", () => {
     fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
   };
 
-  let ACTIVE_VOICE = "masc";
   const MAX_OUTPUT_WORDS = 22;
+
+  // Gendered emotion allowance (1 = fully allowed, <1 = thinning probability)
+  const EMOTIONS = {
+    sad:     { fem: 1.0, masc: 0.25 },
+    lonely:  { fem: 0.9, masc: 0.3 },
+    anxious: { fem: 0.8, masc: 0.4 },
+    angry:   { fem: 0.4, masc: 1.0 },
+    tired:   { fem: 0.6, masc: 0.6 }
+  };
+
+  let ACTIVE_VOICE = "masc"; // fallback if undecidable
 
   /******************************
    * STATE
@@ -17,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let corpora = { masc: [], fem: [] };
 
   /******************************
-   * LOAD CORPORA (ROBUST)
+   * LOAD CORPORA (SAFE)
    ******************************/
   async function loadCorpora() {
     try {
@@ -29,99 +39,103 @@ document.addEventListener("DOMContentLoaded", () => {
       const mJson = await mRes.json();
       const fJson = await fRes.json();
 
-      corpora.masc = normalize(extractTextArray(mJson));
-      corpora.fem  = normalize(extractTextArray(fJson));
+      corpora.masc = normalize(extractText(mJson));
+      corpora.fem  = normalize(extractText(fJson));
 
-      console.log("Loaded:", corpora.masc.length, corpora.fem.length);
-
+      console.log("Loaded corpora:", corpora.masc.length, corpora.fem.length);
     } catch (err) {
       console.error("Corpus load failed:", err);
+      // Fallback
+      corpora.masc = ["Fallback male sentence for testing."];
+      corpora.fem  = ["Fallback female sentence for testing."];
     }
   }
 
   loadCorpora();
 
   /******************************
-   * EXTRACT TEXT FROM ANY SHAPE
+   * EXTRACT TEXT ARRAY FROM JSON
    ******************************/
-  function extractTextArray(source) {
-    if (Array.isArray(source)) {
-      // array of strings OR objects
-      return source.map(x =>
-        typeof x === "string" ? x :
-        x?.body || x?.text || ""
-      );
-    }
-
-    if (Array.isArray(source?.data)) {
-      return source.data.map(x =>
-        typeof x === "string" ? x :
-        x?.body || x?.text || ""
-      );
-    }
-
-    if (Array.isArray(source?.comments)) {
-      return source.comments.map(x =>
-        typeof x === "string" ? x :
-        x?.body || x?.text || ""
-      );
-    }
-
+  function extractText(src) {
+    if (Array.isArray(src)) return src.map(x => x.body ?? x.text ?? x);
+    if (Array.isArray(src?.data)) return src.data.map(x => x.body ?? x.text ?? x);
+    if (Array.isArray(src?.comments)) return src.comments.map(x => x.body ?? x.text ?? x);
     return [];
   }
 
   /******************************
-   * NORMALIZE
+   * NORMALIZE TEXT
    ******************************/
   function normalize(arr) {
     if (!Array.isArray(arr)) return [];
-
     return arr
-      .map(t =>
-        String(t)
-          .toLowerCase()
-          .replace(/[^\w\s]/g, "")
-          .trim()
-      )
+      .map(t => String(t).toLowerCase().replace(/[^\w\s]/g, "").trim())
       .filter(t => t.length > 20);
   }
 
   /******************************
-   * SIMPLE EMOTION DETECTION
+   * DETECT EMOTION
    ******************************/
-  function isEmotion(text) {
-    return /(feel|feeling|sad|angry|lonely|tired|anxious|empty)/i.test(text);
+  function detectEmotion(text) {
+    text = text.toLowerCase();
+    for (let e in EMOTIONS) if (text.includes(e)) return e;
+    return null;
   }
 
   /******************************
-   * GENERATE (SAFE)
+   * DECIDE CORPUS / VOICE
+   ******************************/
+  function decideVoice(input) {
+    const words = input.toLowerCase().split(/\s+/);
+
+    function score(corpus) {
+      return corpus.reduce((sum, line) => {
+        return sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0), 0);
+      }, 0);
+    }
+
+    const mascScore = score(corpora.masc);
+    const femScore  = score(corpora.fem);
+
+    if (mascScore > femScore) return "masc";
+    if (femScore > mascScore) return "fem";
+    return ACTIVE_VOICE; // fallback
+  }
+
+  /******************************
+   * GENERATE PREDICTIVE TEXT
    ******************************/
   function generate(input) {
-    const pool = corpora[ACTIVE_VOICE];
+    if (!input) return { text: "", voice: ACTIVE_VOICE };
 
-    // 🚨 Hard guard: corpus not ready
-    if (!pool || pool.length === 0) {
-      return {
-        text: "— corpus not yet speaking —",
-        voice: ACTIVE_VOICE
-      };
+    // 1️⃣ Decide corpus based on input
+    const voice = decideVoice(input);
+    const pool  = corpora[voice];
+    if (!pool.length) return { text: "— corpus not yet speaking —", voice };
+
+    // 2️⃣ Emotion detection
+    const emotion = detectEmotion(input);
+    let allow = 1.0;
+    if (emotion) allow = EMOTIONS[emotion][voice] ?? 0.5;
+
+    // 3️⃣ Probabilistic thinning
+    if (Math.random() > allow) {
+      return { text: "— language thins here —", voice };
     }
 
-    // Prefer emotional structure if emotion detected
-    let candidates = isEmotion(input)
-      ? pool.filter(t => /(but|because|when|that|and)/i.test(t))
-      : pool;
+    // 4️⃣ Fuzzy match: prefer lines containing any input word
+    const inputWords = input.toLowerCase().split(/\s+/);
+    let candidates = pool.filter(t =>
+      inputWords.some(w => t.includes(w))
+    );
 
-    if (!candidates.length) {
-      candidates = pool;
-    }
+    if (!candidates.length) candidates = pool;
 
-    const chosen =
-      candidates[Math.floor(Math.random() * candidates.length)];
-
+    // 5️⃣ Pick random line, limit words
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
     return {
       text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
-      voice: ACTIVE_VOICE
+      voice
     };
   }
 
@@ -133,9 +147,8 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!el) return;
 
     el.textContent = result.text;
-    el.style.color =
-      result.voice === "masc" ? "#3b6cff" : "#d44b8c";
-    el.style.opacity = "0.9";
+    el.style.color = result.voice === "masc" ? "#3b6cff" : "#d44b8c";
+    el.style.opacity = result.text.includes("thins") ? 0.4 : 0.9;
   }
 
   /******************************
@@ -147,7 +160,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const active = document.activeElement;
     if (!active?.classList.contains("editable")) return;
 
-    const slot = active.getAttribute("data-slot");
+    const slot = active.dataset.slot;
     const input = active.textContent.trim();
     if (!input) return;
 
