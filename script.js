@@ -34,7 +34,7 @@ document.addEventListener("DOMContentLoaded", () => {
       let mascData = await mascRes.json();
       let femData  = await femRes.json();
 
-      // Extract the actual array from .data
+      // Extract array from .data
       corpora.masc = normalize(Array.isArray(mascData.data) ? mascData.data : []);
       corpora.fem  = normalize(Array.isArray(femData.data)  ? femData.data  : []);
 
@@ -42,7 +42,7 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (err) {
       console.error("Error loading corpora:", err);
 
-      // Fallback small corpus to prevent crashes
+      // Fallback small corpus
       corpora.masc = normalize([
         "Fallback male sentence for testing.",
         "Another example of male input text."
@@ -144,42 +144,47 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * RENDER
+   * RENDER PREDICTION
    ******************************/
-  function render(result) {
-    const el = document.createElement("div");
-    el.className = "predicted";
+  function renderPrediction(editableEl, result) {
+    const slot = editableEl.dataset.slot;
+    const el = document.querySelector(`.predicted[data-slot="${slot}"]`);
+    if (!el) return;
 
-    if (result.mode === "expanded") {
-      el.style.opacity = "1";
-      el.style.transform = "scale(1.05)";
-      el.textContent = result.text;
-    } else if (result.mode === "thinned") {
+    el.textContent = result.text || "";
+    el.style.opacity = "1";
+
+    if (result.mode === "thinned") {
       el.style.opacity = "0.45";
       el.style.transform = "scale(0.95)";
-      el.textContent = result.text;
     } else if (result.mode === "suppressed") {
       el.style.opacity = "0.25";
       el.textContent = "— continuation unavailable in this voice —";
     } else if (result.mode === "unsupported") {
       el.style.opacity = "0.35";
       el.textContent = "— language thins here —";
+    } else {
+      el.style.opacity = "1";
+      el.style.transform = "scale(1.05)";
     }
-
-    document.body.appendChild(el);
   }
 
   /******************************
-   * INPUT
+   * INPUT HANDLER
    ******************************/
   document.addEventListener("keydown", e => {
     if (e.key !== "Enter") return;
 
-    const input = document.activeElement.value?.toLowerCase().trim();
+    const el = document.activeElement;
+    if (!el.classList.contains("editable")) return;
+
+    e.preventDefault(); // prevent newline in contenteditable
+
+    const input = el.textContent?.toLowerCase().trim();
     if (!input || input.split(/\s+/).length < 2) return;
 
     const result = generate(input);
-    render(result);
+    renderPrediction(el, result);
   });
 
 });
