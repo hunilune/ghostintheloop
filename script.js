@@ -3,8 +3,17 @@ document.addEventListener("DOMContentLoaded", () => {
    * CONFIG
    ******************************/
   const CORPUS_URLS = {
-    masc: "https://hunilune.github.io/ghostintheloop/AskMen.json",
-    fem:  "https://hunilune.github.io/ghostintheloop/AskWomen.json"
+    masc: [
+      "https://hunilune.github.io/ghostintheloop/AskMen.json",
+      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json",
+      "https://hunilune.github.io/ghostintheloop/PurplePillDebate"
+    ],
+    fem: [
+      "https://hunilune.github.io/ghostintheloop/AskWomen.json",
+      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json",
+      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json",
+      "https://hunilune.github.io/ghostintheloop/AskFeminists.json"
+    ]
   };
 
   const MAX_OUTPUT_WORDS = 22;
