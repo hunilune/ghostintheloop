@@ -61,6 +61,7 @@ h6 {
 }
 
 /* Input */
+
 .editable {
   min-height: 4rem;
   padding: 1rem;
@@ -77,58 +78,18 @@ h6 {
   user-select: none;
 }
 
-/* Output or Predictive Text */
-.predicted {
-  display: block;
-  margin-top: 0.5em;
-  line-height: 1.4;
-  transition:
-    transform 0.45s ease,
-    opacity 0.45s ease,
-    filter 0.45s ease;
-  font-size: calc(1rem - (var(--fatigue) * 0.03));
-  line-height: calc(1.6 - (var(--fatigue) * 0.05));
-  font-weight: calc(400 - (var(--fatigue) * 20));
-  transition: all 0.4s ease;
-}
-
-/* Visual hierarchy */
-/* Supported language surfaces */
-.predicted.aligned {
-  transform: scale(1.05);
-  opacity: 1;
-}
-
-/* Discouraged language recedes */
-.predicted.cross {
-  transform: scale(0.94);
-  opacity: 0.55;
-  filter: saturate(0.7);
-}
-
-/* Ambiguous language stays quiet */
-.predicted.neutral {
-  opacity: 0.85;
-}
-
-.predicted.no-support {
-  color: #c44;
-  font-style: italic;
-  opacity: 0.8;
-  transition: opacity 0.5s;
-}
-
 /* --- Word dynamics --- */
+
 .word {
   display: inline-block;
-  margin-right: 0.2em;
-  transform-origin: left center;
   transition: 
     transform 1.2s ease, 
     opacity 1.2s ease, 
     font-weight 1.2s ease, 
     color 0.8s ease,
     letter-spacing 0.8s ease;
+  line-height: 1.2em; /* prevents overlap when scaling */
+  margin-right: 0.05em;
 }
 
 /* Masculine words in masc voice: grow and bolden */
@@ -137,6 +98,7 @@ h6 {
   transform: scale(1);
   opacity: 1;
   color: #3b6cff;
+  letter-spacing: 0.02em;
 }
 
 /* Masculine words in fem voice: fade and shrink */
@@ -162,18 +124,47 @@ h6 {
   color: #d44b8c;
 }
 
-/* Trigger words */
-.word.masc,
-.word.fem {
-  font-weight: 600;
+/* Output or Predictive Text */
+
+.predicted {
+  display: block;
+  margin-top: 0.5em;
+  line-height: 1.4;
+  transition:
+    transform 0.45s ease,
+    opacity 0.45s ease,
+    filter 0.45s ease;
+  font-size: calc(1rem - (var(--fatigue) * 0.03));
+  line-height: calc(1.6 - (var(--fatigue) * 0.05));
+  font-weight: calc(400 - (var(--fatigue) * 20));
+  transition: all 0.4s ease;
 }
 
-/* Suppressed words thin out when cross-coded */
-.predicted.cross .word.masc,
-.predicted.cross .word.fem {
-  font-weight: 300;
-  opacity: 0.45;
-  letter-spacing: -0.01em;
+/* Visual hierarchy */
+
+/* Supported language surfaces */
+.predicted.aligned {
+  transform: scale(1.05);
+  opacity: 1;
+}
+
+/* Discouraged language recedes */
+.predicted.cross {
+  transform: scale(0.94);
+  opacity: 0.55;
+  filter: saturate(0.7);
+}
+
+/* Ambiguous language stays quiet */
+.predicted.neutral {
+  opacity: 0.85;
+}
+
+.predicted.no-support {
+  color: #c44;           
+  font-style: italic;     
+  opacity: 0.8;           
+  transition: opacity 0.5s;
 }
 
 .note {
@@ -222,17 +213,21 @@ hr {
 }
 
 /* Language alignment */
+
+/* Page clarifies when language aligns */
 .mode-aligned body {
   background-color: #fafafa;
   color: #111;
 }
 
+/* Page darkens when language resists */
 .mode-cross body {
   background-color: #0e0e0e;
   color: #888;
 }
 
 /* Accessibility */
+
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
