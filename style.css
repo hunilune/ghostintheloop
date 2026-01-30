@@ -39,9 +39,24 @@ body {
 
 /* Writing surface overrides body centering */
 .writing-surface {
-  max-width: 900px;
-  margin: 0 auto;
-  text-align: left;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+}
+
+/* Image always centered, near top */
+.inline-image {
+  width: 120px;
+  margin-top: 0.5rem;
+  margin-bottom: 1rem;
+  transition: margin-bottom 0.6s ease, filter 0.6s ease;
+}
+
+/* Editor centered */
+#editor {
+  text-align: center;
+  max-width: 700px;
 }
 
 /* H1 override for editable content */
@@ -53,12 +68,6 @@ body {
   font-size: 25px !important;
   letter-spacing: -0.75px;
   margin: 0;
-}
-
-h2 {
-  /*! font-family: Social, sans-serif; */
-  /*! font-weight: normal; */
-  /*! font-size: 40px; */
 }
 
 h6 {
@@ -102,13 +111,31 @@ h6 {
 }
 
 /* Words for predictive text */
+/* Predictive words */
 .editable .suggestion .word {
   display: inline;
   opacity: 0;
-  font-family: Office Times, serif; /* matches paragraph font */
-  transform: scale(0.95);
-  transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease;
-  margin-right: 0.05em;
+  transform: scale(0.96);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+/* Masculine prediction: assertive, solid */
+.mode-masc .editable .suggestion .word {
+  color: #000;
+  font-weight: 600;
+  opacity: 1;
+}
+
+/* Feminine prediction: quieter, lighter */
+.mode-fem .editable .suggestion .word {
+  color: #000;
+  font-weight: 400;
+  opacity: 0.45;
+}
+
+/* Typed (non-predictive) text */
+.editable {
+  color: rgba(0, 0, 0, 0.75);
 }
 
 /* Output or Predictive Text */
@@ -127,29 +154,6 @@ h6 {
   transition: all 0.4s ease;
 }
 
-/* Male/female text dynamics */
-.word.boost.masc {
-  font-weight: 600;
-  transform: scale(1);
-  color: #3b6cff;
-}
-
-.word.cross.masc {
-  font-weight: 300;
-  transform: scale(0.95);
-  color: #3b6cff;
-}
-
-.word.aligned.masc {
-  font-weight: 600;
-  color: #3b6cff;
-}
-
-.word.aligned.fem {
-  font-weight: 500;
-  color: #d44b8c;
-}
-
 /* Notes and misc */
 
 .note {
@@ -157,16 +161,22 @@ h6 {
   margin-top: 3rem;
   font-size: 0.8rem;
   opacity: 0.45;
+  text-align: center;
+}
+
+/* Explicitly disable wrapping */
+.no-wrap {
+  float: none !important;
+  shape-outside: none !important;
 }
 
 .characters {
-  font-family: Social;
-  max-width: 900px;
+ font-family: Social;
   margin-top: 3rem;
-  font-size: 0.75rem;
-  text-align: left;
-  opacity: 0.7;
+  font-size: 0.8rem;
+  opacity: 0.4;
 }
+
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
@@ -175,25 +185,12 @@ h6 {
   }
 }
 
-/* === Inline image with text wrap === */
-.inline-image {
-  float: left;
-  width: 120px;
-  margin: 0.6rem 1.4rem 1rem 0;
-  shape-outside: ellipse(50% 50%);
-  clip-path: ellipse(50% 50%);
-  transition: margin-top 0.6s ease, filter 0.6s ease;
-}
-
-/* Image reacts to masculine language */
+/* Masculine mode: image closer to text */
 .mode-masc .inline-image {
-  margin-top: 0.2rem;
-  filter: contrast(1.05);
+  margin-bottom: 0.6rem;
 }
 
-/* Image reacts to feminine language */
+/* Feminine mode: image repels text */
 .mode-fem .inline-image {
-  margin-top: 1.4rem;
-  filter: blur(0.3px);
+  margin-bottom: 2.4rem;
 }
-
