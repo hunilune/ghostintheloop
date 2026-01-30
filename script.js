@@ -274,19 +274,34 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
+   * Image
+   ******************************/
+  
+  function pushImageDown() {
+  const img = document.querySelector(".inline-image");
+  if (!img) return;
+
+  const current = parseFloat(img.dataset.offset || 0);
+  const next = current + 12; // px per sentence
+
+  img.style.marginTop = `${next}px`;
+  img.dataset.offset = next;
+}
+
+
+  /******************************
    * INPUT EVENTS
    ******************************/
-  editor.addEventListener("input", () => {
-    const text = editor.innerText.trim().toLowerCase();
-    const prediction = generate(text);
-    showSuggestion(prediction);
-  });
-
   editor.addEventListener("keydown", e => {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      acceptSuggestion();
-    }
-  });
+  if (e.key === "." || e.key === "!" || e.key === "?") {
+    setTimeout(pushImageDown, 50);
+  }
+
+  if (e.key === "Enter") {
+    e.preventDefault();
+    acceptSuggestion();
+    pushImageDown();
+  }
+});
 
 });
