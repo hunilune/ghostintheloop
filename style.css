@@ -21,6 +21,13 @@
   font-style: italic;
 }
 
+.faustina-<uniquifier> {
+  font-family: "Faustina", serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
+}
+
 /* Root variables */
 :root {
   --fatigue: 0;
@@ -61,10 +68,10 @@ body {
 /* H1 override for editable content */
 .editable h1,
   h1.editable {
-  font-family: Office Times, serif;
+  font-family: Faustina, serif;
   font-weight: normal;
   text-align: center;
-  font-size: 25px !important;
+  font-size: 30px !important;
   letter-spacing: -0.75px;
   margin: 0;
 }
