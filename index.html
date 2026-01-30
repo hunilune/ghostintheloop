@@ -1,6 +1,7 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
+  <meta charset="UTF-8">
   <title>an (a)ppar(i)tion</title>
   <link rel="icon" href="Favicon.png">
 
@@ -14,20 +15,22 @@
 </head>
 <body class="mode-masc">
 
-  <h1 class="editable" contenteditable="true" data-slot="1">A Narrative</h1> 
+  <h1 class="editable" id="editor" contenteditable="true">I am </h1>
+
   <h6>Translated by an (A)ppar(I)tion</h6>
   
   <div class="writing-surface">
     <img src="Darwinesque.png" alt="God-like sketch" class="inline-image">
-  
-<div class="editor-wrapper">
-  <div id="rotating-suggestion" class="suggestion-overlay"></div>
-  <div id="prediction-suggestion" class="suggestion-overlay"></div>
-  <div id="editor" class="editable" contenteditable="true">I am </div>
-</div>
 
-  <div class="note no-wrap">
-    Prone to mistakes due to bias
+    <!-- Rotating & predictive suggestions -->
+    <div class="editor-wrapper">
+      <span id="rotating-suggestion"></span>
+      <span id="prediction-suggestion"></span>
+    </div>
+
+    <div class="note no-wrap">
+      Prone to mistakes due to bias
+    </div>
   </div>
 
   <script src="script.js"></script>
