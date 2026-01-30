@@ -28,7 +28,6 @@
 
 /* Body */
 body {
-  font-family: serif;
   background: #F0F0F0;
   cursor: url("Cursor.png"), auto;
   text-align: center;
@@ -37,6 +36,13 @@ body {
   line-height: 1.1;
   transition: all 0.6s ease;
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
+}
+
+/* Writing surface overrides body centering */
+.writing-surface {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: left;
 }
 
 /* H1 override for editable content */
