@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   /******************************
    * CONFIG
    ******************************/
@@ -37,11 +36,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let activeVoice = "masc";
 
   const editor = document.querySelector("#editor");
-  let suggestionSpan = editor.querySelector(".suggestion");
+  const suggestionSpan = document.querySelector(".suggestion");
   let typeCount = 0;
-
   let predictionTimer = null;
-  const PREDICTION_DELAY = 1500;
+  const PREDICTION_DELAY = 2000;
 
   let rotatingTimer = null;
   let rotatingIndex = 0;
@@ -69,18 +67,15 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadCorpora() {
     corpora.masc = await loadSide("masc");
     corpora.fem  = await loadSide("fem");
-
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
     if (!corpora.fem.length)  corpora.fem = [...FALLBACK.fem];
-
     ready = true;
-    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
 
   loadCorpora();
 
   /******************************
-   * TEXT EXTRACTION & NORMALIZATION
+   * EXTRACT & NORMALIZE
    ******************************/
   function extractText(src) {
     if (Array.isArray(src)) {
@@ -134,7 +129,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const words = input.split(/\s+/);
     const firstInput = typeCount === 0;
     const emotion = detectEmotion(input);
-
     if (firstInput && emotion && EMOTIONS[emotion]?.fem > 0.7) return "fem";
 
     function score(corpus) {
@@ -143,7 +137,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const mScore = score(corpora.masc);
     const fScore = score(corpora.fem);
-
     if (mScore > fScore) return "masc";
     if (fScore > mScore) return "fem";
     return activeVoice;
@@ -170,7 +163,6 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function showSuggestion(prediction) {
     if (!editor || !suggestionSpan) return;
-
     suggestionSpan.innerHTML = "";
     setMode(prediction.voice);
 
@@ -178,31 +170,40 @@ document.addEventListener("DOMContentLoaded", () => {
       const span = document.createElement("span");
       span.textContent = word.toLowerCase() + " ";
       span.className = "word";
-
-      // Styling handled in CSS
+      span.style.opacity = 0;
+      span.style.transform = "scale(0.96)";
+      span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+      span.style.fontWeight = prediction.voice === "masc" ? 700 : 300;
+      span.style.color = prediction.voice === "masc" ? "rgba(0,0,0,0.7)" : "rgba(0,0,0,0.25)";
       suggestionSpan.appendChild(span);
 
-      setTimeout(() => {
-        span.style.opacity = 1;
-        span.style.transform = "scale(1)";
-      }, i * 120);
+      // Cross-browser fade-in
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          span.style.opacity = 1;
+          span.style.transform = "scale(1)";
+        }, i * 120);
+      });
     });
   }
 
   /******************************
-   * ACCEPT SUGGESTION
+   * ACCEPT PREDICTION
    ******************************/
   function acceptSuggestion() {
-    if (!suggestionSpan) return;
-
-    const words = Array.from(suggestionSpan.querySelectorAll(".word"));
-    if (!words.length) return;
-
-    const frag = document.createDocumentFragment();
-    words.forEach(node => frag.appendChild(document.createTextNode(node.textContent)));
+    if (!editor || !suggestionSpan) return;
 
     const sel = window.getSelection();
     const range = sel.getRangeAt(0);
+    const frag = document.createDocumentFragment();
+
+    Array.from(suggestionSpan.childNodes).forEach(node => {
+      const span = document.createElement("span");
+      span.textContent = node.textContent;
+      span.className = `word mode-${activeVoice}`;
+      frag.appendChild(span);
+    });
+
     range.deleteContents();
     range.insertNode(frag);
 
@@ -225,21 +226,22 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * ROTATING GHOST SUGGESTIONS
+   * ROTATING SUGGESTIONS
    ******************************/
   function startRotatingSuggestions() {
     if (!editor || rotatingActive) return;
     rotatingActive = true;
-
     suggestionSpan.innerHTML = "";
 
     firstSentenceSuggestions.forEach((word, i) => {
       const span = document.createElement("span");
-      span.textContent = i < firstSentenceSuggestions.length - 1 ? word : word.trim();
+      span.textContent = word;
       span.className = "word";
       span.style.opacity = 0;
       span.style.transform = "scale(0.9)";
+      span.style.transition = "opacity 0.6s ease, transform 0.6s ease";
       span.style.cursor = "pointer";
+      span.style.fontFamily = "Office Times, serif";
       span.addEventListener("click", () => insertRotatingSuggestion(span));
       suggestionSpan.appendChild(span);
     });
@@ -261,15 +263,10 @@ document.addEventListener("DOMContentLoaded", () => {
     rotatingActive = false;
     if (rotatingTimer) clearTimeout(rotatingTimer);
     rotatingTimer = null;
-    if (suggestionSpan) suggestionSpan.innerHTML = "";
   }
 
-  /******************************
-   * INSERT CLICKED ROTATING SUGGESTION
-   ******************************/
   function insertRotatingSuggestion(span) {
     stopRotatingSuggestions();
-
     editor.innerText = "I am ";
     placeCaretAtEnd(editor);
 
@@ -278,8 +275,11 @@ document.addEventListener("DOMContentLoaded", () => {
     const frag = document.createDocumentFragment();
     frag.appendChild(document.createTextNode(span.textContent));
     range.insertNode(frag);
-
-    placeCaretAtEnd(editor);
+    range.setStartAfter(range.endContainer);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+    editor.focus();
     typeCount = 0;
   }
 
@@ -289,6 +289,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function setMode(voice) {
     document.body.classList.remove("mode-masc", "mode-fem");
     document.body.classList.add(`mode-${voice}`);
+    activeVoice = voice;
   }
 
   /******************************
@@ -297,18 +298,13 @@ document.addEventListener("DOMContentLoaded", () => {
   if (editor && editor.innerText.trim() === "I am") startRotatingSuggestions();
 
   editor.addEventListener("keydown", (e) => {
-    if (rotatingActive && !["Enter"].includes(e.key)) stopRotatingSuggestions();
+    if (rotatingActive && !["Enter"].includes(e.key)) {
+      stopRotatingSuggestions();
+    }
 
     if (e.key === "Enter") {
       e.preventDefault();
-      if (rotatingActive) {
-        const visibleSpan = Array.from(suggestionSpan.children)
-          .find(s => parseFloat(s.style.opacity) > 0);
-        if (visibleSpan) insertRotatingSuggestion(visibleSpan);
-      } else {
-        if (predictionTimer) clearTimeout(predictionTimer);
-        acceptSuggestion();
-      }
+      acceptSuggestion();
     }
   });
 
@@ -316,14 +312,12 @@ document.addEventListener("DOMContentLoaded", () => {
     const text = editor.innerText;
     if (rotatingActive && text !== "I am") stopRotatingSuggestions();
 
-    const trimmed = text.trim();
-    if (!rotatingActive && text.endsWith(" ") && trimmed.length > 3) {
+    if (!rotatingActive && text.endsWith(" ") && text.trim().length > 3) {
       if (predictionTimer) clearTimeout(predictionTimer);
       predictionTimer = setTimeout(() => {
-        const prediction = generate(trimmed);
+        const prediction = generate(text.trim());
         showSuggestion(prediction);
       }, PREDICTION_DELAY);
     }
   });
-
 });
