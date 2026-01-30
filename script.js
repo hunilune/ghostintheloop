@@ -182,7 +182,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     prediction.text.split(/\s+/).forEach((word, i) => {
       const span = document.createElement("span");
-      span.textContent = word + " ";
+      span.textContent = word; // preserve capitalization
       span.style.fontFamily = "Office Times, serif";
       span.style.lineHeight = "1.4";
       span.style.opacity = 0;
@@ -215,7 +215,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const range = sel.getRangeAt(0);
     range.deleteContents();
     const frag = document.createDocumentFragment();
-    Array.from(suggestionSpan.childNodes).forEach(node => frag.appendChild(node.cloneNode(true)));
+    Array.from(suggestionSpan.childNodes).forEach(node => {
+      frag.appendChild(document.createTextNode(node.textContent + " "));
+    });
     range.insertNode(frag);
     suggestionSpan.remove();
     suggestionSpan = null;
@@ -249,13 +251,14 @@ document.addEventListener("DOMContentLoaded", () => {
     suggestionSpan.innerHTML = "";
     firstSentenceSuggestions.forEach(word => {
       const span = document.createElement("span");
-      span.textContent = word + " ";
+      span.textContent = word; // no trailing space
       span.style.opacity = 0;
       span.style.fontWeight = 500;
       span.style.fontFamily = "Office Times, serif";
       span.style.transition = "opacity 0.6s ease, transform 0.6s ease";
       span.style.cursor = "pointer";
 
+      // Click to insert
       span.addEventListener("click", () => insertSuggestion(span));
       suggestionSpan.appendChild(span);
     });
@@ -283,8 +286,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const sel = window.getSelection();
     const range = sel.getRangeAt(0);
     const frag = document.createDocumentFragment();
-    frag.appendChild(span.cloneNode(true));
+    frag.appendChild(document.createTextNode(span.textContent + " ")); // single space
     range.insertNode(frag);
+
     stopRotatingSuggestions();
     if (suggestionSpan) suggestionSpan.remove();
     suggestionSpan = null;
