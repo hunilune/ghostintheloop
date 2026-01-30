@@ -40,7 +40,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Debounce for delayed prediction
   let predictionTimer = null;
-  const PREDICTION_DELAY = 1000; // 1 second
+  const PREDICTION_DELAY = 2000; // 2 seconds
+
+  // Rotating ghost suggestions for first sentence
+  let rotatingTimer = null;
+  let rotatingIndex = 0;
+  const firstSentenceSuggestions = ["sad", "lonely", "wondering"];
+  let rotatingActive = false;
 
   /******************************
    * LOAD CORPORA
@@ -229,6 +235,48 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
+   * ROTATING GHOST SUGGESTIONS
+   ******************************/
+  function startRotatingSuggestions() {
+    if (!editor || rotatingActive) return;
+    rotatingActive = true;
+
+    if (!suggestionSpan) {
+      suggestionSpan = document.createElement("span");
+      suggestionSpan.className = "suggestion";
+      editor.appendChild(suggestionSpan);
+    }
+
+    suggestionSpan.innerHTML = "";
+    firstSentenceSuggestions.forEach(word => {
+      const span = document.createElement("span");
+      span.textContent = word + " ";
+      span.style.opacity = 0;
+      span.style.fontWeight = 500;
+      span.style.fontFamily = "Office Times, serif";
+      span.style.transition = "opacity 0.6s ease";
+      suggestionSpan.appendChild(span);
+    });
+
+    function cycle() {
+      if (!rotatingActive) return;
+      const spans = Array.from(suggestionSpan.children);
+      spans.forEach(s => s.style.opacity = 0);
+      spans[rotatingIndex].style.opacity = 1;
+      rotatingIndex = (rotatingIndex + 1) % spans.length;
+      rotatingTimer = setTimeout(cycle, 1000);
+    }
+
+    cycle();
+  }
+
+  function stopRotatingSuggestions() {
+    rotatingActive = false;
+    if (rotatingTimer) clearTimeout(rotatingTimer);
+    rotatingTimer = null;
+  }
+
+  /******************************
    * MODE STYLING
    ******************************/
   function setMode(voice) {
@@ -239,21 +287,46 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * INPUT EVENTS
    ******************************/
-  editor.addEventListener("input", () => {
-    const text = editor.innerText.trim().toLowerCase();
-    if (!text) return;
+  // Start rotating suggestions immediately if only placeholder is present
+  if (editor && editor.innerText.trim() === "I am") startRotatingSuggestions();
 
-    // Delayed prediction
-    if (predictionTimer) clearTimeout(predictionTimer);
-    predictionTimer = setTimeout(() => {
-      const prediction = generate(text);
-      showSuggestion(prediction);
-    }, PREDICTION_DELAY);
+  editor.addEventListener("input", () => {
+    const text = editor.innerText.trim();
+    if (rotatingActive && text !== "I am") stopRotatingSuggestions();
+
+    if (!rotatingActive && text) {
+      if (predictionTimer) clearTimeout(predictionTimer);
+      predictionTimer = setTimeout(() => {
+        const prediction = generate(text);
+        showSuggestion(prediction);
+      }, PREDICTION_DELAY);
+    }
   });
 
-  editor.addEventListener("keydown", e => {
+  editor.addEventListener("keydown", (e) => {
     if (e.key === "Enter") {
       e.preventDefault();
+
+      // Accept rotating suggestion if active
+      if (rotatingActive && suggestionSpan) {
+        const visibleSpan = Array.from(suggestionSpan.children)
+          .find(s => parseFloat(s.style.opacity) > 0);
+        if (visibleSpan) {
+          const sel = window.getSelection();
+          const range = sel.getRangeAt(0);
+          const frag = document.createDocumentFragment();
+          frag.appendChild(visibleSpan.cloneNode(true));
+          range.insertNode(frag);
+        }
+        stopRotatingSuggestions();
+        suggestionSpan.remove();
+        suggestionSpan = null;
+        typeCount++;
+        placeCaretAtEnd(editor);
+        return;
+      }
+
+      // Normal predictive suggestion
       if (predictionTimer) clearTimeout(predictionTimer);
       acceptSuggestion();
     }
