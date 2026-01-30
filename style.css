@@ -32,7 +32,7 @@ body {
   font-family: Cigars, serif;
   font-weight: normal;
   font-size: 1.7rem !important;
-  margin: 0;
+  margin-top: 2rem;
 }
 
 h2 {
@@ -83,7 +83,7 @@ h6 {
 
 /* Words for predictive text */
 .editable .suggestion .word {
-  display: inline-block;
+  display: inline;
   opacity: 0;
   transform: scale(0.95);
   transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease;
