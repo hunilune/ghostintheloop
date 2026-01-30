@@ -169,8 +169,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!suggestionSpan) {
       suggestionSpan = document.createElement("span");
-      suggestionSpan.className = "suggestion";
-      editor.appendChild(suggestionSpan);
+suggestionSpan.className = "suggestion";
+suggestionSpan.contentEditable = "false"; 
+editor.appendChild(suggestionSpan);
     }
 
     suggestionSpan.innerHTML = "";
@@ -233,8 +234,10 @@ document.addEventListener("DOMContentLoaded", () => {
     rotatingActive = true;
 
     suggestionSpan = document.createElement("span");
-    suggestionSpan.className = "suggestion";
-    editor.appendChild(suggestionSpan);
+suggestionSpan.className = "suggestion";
+suggestionSpan.contentEditable = "false"; 
+editor.appendChild(suggestionSpan);
+
 
     firstSentenceSuggestions.forEach(word => {
       const span = document.createElement("span");
