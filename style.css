@@ -29,13 +29,6 @@ body {
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 }
 
-h1 {
-  font-family: Cigars, serif;
-  font-weight: normal;
-  font-size: 2.6rem;
-  padding-top: 60px;
-}
-
 .editable h1 {
   font-family: Cigars, serif;
   font-weight: normal;
