@@ -135,43 +135,51 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * SHOW PREDICTION
    ******************************/
+  
   function showSuggestion(prediction) {
-    if (!editor) return;
+  if (!editor) return;
 
-    if (!suggestionSpan) {
-      suggestionSpan = document.createElement("span");
-      suggestionSpan.className = "suggestion";
-      editor.appendChild(suggestionSpan);
+  if (!suggestionSpan) {
+    suggestionSpan = document.createElement("span");
+    suggestionSpan.className = "suggestion";
+    editor.appendChild(suggestionSpan);
+  }
+
+  suggestionSpan.innerHTML = "";
+
+  const words = prediction.text.split(/\s+/);
+
+  words.forEach((word, i) => {
+    const span = document.createElement("span");
+    span.textContent = word.toLowerCase() + " ";
+    span.className = "word";
+
+    // Male/female color and scale
+    if (prediction.voice === "masc") {
+      span.style.color = "#3b6cff";
+      span.style.fontWeight = 600;
+      span.style.transform = `scale(${1 + typeCount * 0.02 + 0.05})`;
+    } else {
+      span.style.color = "#d44b8c";
+      span.style.fontWeight = 500;
+      span.style.transform = `scale(${Math.max(0.85, 1 - typeCount * 0.02)})`;
     }
 
-    suggestionSpan.innerHTML = "";
+    // Match paragraph styling
+    span.style.fontFamily = "Social, sans-serif";
+    span.style.fontSize = "1rem";
+    span.style.lineHeight = "1.4";
 
-    prediction.text.split(/\s+/).forEach(word => {
-      const span = document.createElement("span");
-      span.textContent = word.toLowerCase() + " ";
-      span.className = "word";
+    // Append to suggestion container
+    suggestionSpan.appendChild(span);
 
-      if (prediction.voice === "masc") {
-        span.style.color = "#3b6cff";
-        span.style.transform = `scale(${1 + typeCount * 0.02 + 0.05})`;
-        span.style.fontWeight = `${600 + typeCount * 5}`;
-      } else {
-        span.style.color = "#d44b8c";
-        span.style.transform = `scale(${Math.max(0.85, 1 - typeCount * 0.02)})`;
-        span.style.fontWeight = "500";
-      }
-
-      span.style.fontFamily = "inherit";
-      span.style.fontSize = "inherit";
-      span.style.lineHeight = "inherit";
-      span.style.opacity = "0";
-      span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-
-      setTimeout(() => { span.style.opacity = "1"; }, 10);
-
-      suggestionSpan.appendChild(span);
-    });
-  }
+    // Fade-in sequentially
+    setTimeout(() => {
+      span.style.opacity = "1";
+      span.style.transform = "scale(1)";
+    }, i * 100); // 100ms per word
+  });
+}
 
   /******************************
    * ACCEPT SUGGESTION
