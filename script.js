@@ -181,29 +181,50 @@ document.addEventListener("DOMContentLoaded", () => {
    * SHOW SUGGESTION
    ******************************/
   function showSuggestion(prediction) {
-    if (!suggestionSpan) return;
-    suggestionSpan.innerHTML = "";
-    setMode(prediction.voice);
+  if (!editor) return;
 
-    prediction.text.split(/\s+/).forEach((word, i) => {
-      const span = document.createElement("span");
-      span.textContent = word + " ";
-      span.className = "word";
-      span.style.opacity = 0;
-      span.style.transform = "scale(0.95)";
-      span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
-
-      if (prediction.voice === "masc") span.style.fontWeight = 600;
-      else span.style.fontWeight = 400;
-
-      suggestionSpan.appendChild(span);
-
-      setTimeout(() => {
-        span.style.opacity = 1;
-        span.style.transform = "scale(1)";
-      }, i * 120);
-    });
+  if (!suggestionSpan) {
+    // If suggestionSpan doesn't exist, create it
+    suggestionSpan = document.createElement("span");
+    suggestionSpan.className = "suggestion";
+    editor.parentNode.appendChild(suggestionSpan); // append to wrapper
   }
+
+  suggestionSpan.innerHTML = ""; // clear old suggestion
+  setMode(prediction.voice);
+
+  const words = prediction.text.split(/\s+/);
+
+  words.forEach((word, i) => {
+    const span = document.createElement("span");
+    span.textContent = word + " ";
+    span.style.fontFamily = "Office Times, serif";
+    span.style.lineHeight = "1.4";
+    span.style.opacity = 0;
+    span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
+
+    // **Restore masc/fem styling**
+    if (prediction.voice === "masc") {
+      span.style.fontWeight = 600; // bold
+      span.style.color = "rgba(0,0,0,0.35)";
+    } else {
+      span.style.fontWeight = 300; // lighter
+      span.style.color = "rgba(0,0,0,0.2)";
+    }
+
+    // Slight scale for animation
+    span.style.transform = prediction.voice === "masc" ? "scale(1.05)" : "scale(0.95)";
+
+    suggestionSpan.appendChild(span);
+
+    // Fade-in words sequentially
+    setTimeout(() => {
+      span.style.opacity = 1;
+      span.style.transform = "scale(1)";
+    }, i * 120);
+  });
+}
+
 
   /******************************
    * ACCEPT SUGGESTION
