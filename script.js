@@ -182,7 +182,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     prediction.text.split(/\s+/).forEach((word, i) => {
       const span = document.createElement("span");
-      span.textContent = word; // preserve capitalization
+      // lowercase for corpus predictions
+      span.textContent = word.toLowerCase() + " "; 
       span.style.fontFamily = "Office Times, serif";
       span.style.lineHeight = "1.4";
       span.style.opacity = 0;
@@ -216,7 +217,7 @@ document.addEventListener("DOMContentLoaded", () => {
     range.deleteContents();
     const frag = document.createDocumentFragment();
     Array.from(suggestionSpan.childNodes).forEach(node => {
-      frag.appendChild(document.createTextNode(node.textContent + " "));
+      frag.appendChild(document.createTextNode(node.textContent));
     });
     range.insertNode(frag);
     suggestionSpan.remove();
@@ -251,15 +252,16 @@ document.addEventListener("DOMContentLoaded", () => {
     suggestionSpan.innerHTML = "";
     firstSentenceSuggestions.forEach(word => {
       const span = document.createElement("span");
-      span.textContent = word; // no trailing space
+      span.textContent = word; 
       span.style.opacity = 0;
       span.style.fontWeight = 500;
       span.style.fontFamily = "Office Times, serif";
       span.style.transition = "opacity 0.6s ease, transform 0.6s ease";
       span.style.cursor = "pointer";
 
-      // Click to insert
-      span.addEventListener("click", () => insertSuggestion(span));
+      // Click to start typing
+      span.addEventListener("click", () => insertRotatingSuggestion(span));
+
       suggestionSpan.appendChild(span);
     });
 
@@ -282,18 +284,33 @@ document.addEventListener("DOMContentLoaded", () => {
     rotatingTimer = null;
   }
 
-  function insertSuggestion(span) {
-    const sel = window.getSelection();
-    const range = sel.getRangeAt(0);
-    const frag = document.createDocumentFragment();
-    frag.appendChild(document.createTextNode(span.textContent + " ")); // single space
-    range.insertNode(frag);
-
+  /******************************
+   * INSERT CLICKED ROTATING SUGGESTION
+   ******************************/
+  function insertRotatingSuggestion(span) {
     stopRotatingSuggestions();
     if (suggestionSpan) suggestionSpan.remove();
     suggestionSpan = null;
-    typeCount++;
+
+    // Reset "I am " placeholder
+    editor.innerText = "I am ";
     placeCaretAtEnd(editor);
+
+    // Insert clicked word after "I am "
+    const sel = window.getSelection();
+    const range = sel.getRangeAt(0);
+    const frag = document.createDocumentFragment();
+    frag.appendChild(document.createTextNode(span.textContent));
+    range.insertNode(frag);
+
+    // Move cursor after inserted word
+    range.setStartAfter(range.endContainer);
+    range.collapse(true);
+    sel.removeAllRanges();
+    sel.addRange(range);
+
+    editor.focus();
+    typeCount = 0; // start first word
   }
 
   /******************************
@@ -310,6 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
   if (editor && editor.innerText.trim() === "I am") startRotatingSuggestions();
 
   editor.addEventListener("focus", () => stopRotatingSuggestions());
+
   editor.addEventListener("input", () => {
     const text = editor.innerText.trim();
     if (rotatingActive && text !== "I am") stopRotatingSuggestions();
@@ -329,7 +347,7 @@ document.addEventListener("DOMContentLoaded", () => {
       if (rotatingActive && suggestionSpan) {
         const visibleSpan = Array.from(suggestionSpan.children)
           .find(s => parseFloat(s.style.opacity) > 0);
-        if (visibleSpan) insertSuggestion(visibleSpan);
+        if (visibleSpan) insertRotatingSuggestion(visibleSpan);
       } else {
         if (predictionTimer) clearTimeout(predictionTimer);
         acceptSuggestion();
