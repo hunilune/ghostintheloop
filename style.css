@@ -49,7 +49,7 @@ body {
 .inline-image {
   width: 120px;
   margin-top: 1rem;
-  margin-bottom: 1rem;
+  margin-bottom: 1.5rem;
   transition: margin-bottom 0.6s ease, filter 0.6s ease;
 }
 
