@@ -73,21 +73,23 @@ h6 { font-family: Social, sans-serif; font-weight: normal; font-size: 13px; opac
   font-family: Office Times, serif;
   line-height: 1.4;
   white-space: pre;
+  display: inline-block;  
   color: rgba(0,0,0,0.25);
 }
 
 #rotating-suggestion {
   font-family: "Office Times", serif;  /* font for suggestions */
   font-size: 18px;                     /* size */
-  color: rgba(0,0,0,0.7);             /* color, adjust opacity */
+  color: rgba(0,0,0,0.5);             /* color, adjust opacity */
   line-height: 1.4;
   display: inline-block;               /* keeps spacing clean */
 }
+
 /* Predictive words */
 .suggestion .word { display: inline; font-family: Office Times, serif; opacity: 0.7; transition: opacity 0.4s ease, transform 0.4s ease; }
 
-.mode-masc .suggestion .word { color: rgba(0,0,0,0.7); font-weight: 600; opacity: 1; }
-.mode-fem .suggestion .word { color: rgba(0,0,0,0.25); font-weight: 300; opacity: 0.25; }
+.mode-masc .suggestion { color: rgba(0,0,0,0.7); font-weight: 600; opacity: 1; }
+.mode-fem .suggestion { color: rgba(0,0,0,0.25); font-weight: 300; opacity: 0.25; }
 
 /* Typed (non-predictive) text */
 .editable { color: rgba(0, 0, 0, 0.7); }
