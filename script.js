@@ -172,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
 suggestionSpan.className = "suggestion";
 suggestionSpan.contentEditable = "false"; 
 editor.appendChild(suggestionSpan);
+      placeCaretAtEnd(editor);
     }
 
     suggestionSpan.innerHTML = "";
@@ -237,7 +238,7 @@ editor.appendChild(suggestionSpan);
 suggestionSpan.className = "suggestion";
 suggestionSpan.contentEditable = "false"; 
 editor.appendChild(suggestionSpan);
-
+    placeCaretAtEnd(editor);
 
     firstSentenceSuggestions.forEach(word => {
       const span = document.createElement("span");
