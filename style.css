@@ -36,6 +36,12 @@ h1 {
   padding-top: 60px;
 }
 
+.editable h1 {
+  font-family: Cigars, serif;
+  font-weight: normal;
+  font-size: 2.6rem !important;
+}
+
 h2 {
   font-family: Cigars, serif;
   font-weight: normal;
