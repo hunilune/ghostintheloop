@@ -182,42 +182,65 @@ document.addEventListener("DOMContentLoaded", () => {
    * RENDER SUGGESTION
    ******************************/
   function showSuggestion(prediction) {
-    if (!editor) return;
+  if (!editor) return;
 
-    if (!suggestionSpan) {
-      suggestionSpan = document.createElement("span");
-      suggestionSpan.className = "suggestion";
-      editor.appendChild(suggestionSpan);
-    }
-
-    suggestionSpan.innerHTML = "";
-
-    const words = prediction.text.split(/\s+/).map(w => {
-      const span = document.createElement("span");
-      span.textContent = w + " ";
-      span.className = "word";
-
-      if (prediction.voice === "masc" && activeVoice === "masc") {
-        span.classList.add("boost", "masc");
-        const scale = 1 + typeCount * 0.02;
-        span.style.transform = `scale(${scale})`;
-        span.style.fontWeight = `${600 + typeCount * 5}`;
-      } else if (prediction.voice === "masc" && activeVoice === "fem") {
-        span.classList.add("cross", "masc");
-        const scale = Math.max(0.7, 1 - typeCount * 0.02);
-        span.style.transform = `scale(${scale})`;
-        span.style.opacity = `${Math.max(0.35, 1 - typeCount * 0.04)}`;
-      } else {
-        span.classList.add("aligned", prediction.voice);
-        span.style.color = prediction.voice === "masc" ? "#3b6cff" : "#d44b8c";
-      }
-
-      return span;
-    });
-
-    words.forEach(w => suggestionSpan.appendChild(w));
+  // Create suggestion container if it doesn't exist
+  if (!suggestionSpan) {
+    suggestionSpan = document.createElement("span");
+    suggestionSpan.className = "suggestion";
+    editor.appendChild(suggestionSpan);
   }
 
+  // Clear previous suggestion
+  suggestionSpan.innerHTML = "";
+
+  // Decode HTML entities
+  const text = decodeHTMLEntities(prediction.text);
+
+  // Split text into words, but keep punctuation attached
+  // This regex splits on spaces but keeps punctuation with words
+  const words = text.match(/\S+\s*|[\n\r]+/g) || [];
+
+  words.forEach(word => {
+    const span = document.createElement("span");
+    span.textContent = word;
+
+    // Apply dynamic scaling for masc/fem voice
+    if (prediction.voice === "masc" && activeVoice === "masc") {
+      span.classList.add("boost", "masc");
+      const scale = 1 + typeCount * 0.02;
+      span.style.transform = `scale(${scale})`;
+      span.style.fontWeight = `${600 + typeCount * 5}`;
+    } else if (prediction.voice === "masc" && activeVoice === "fem") {
+      span.classList.add("cross", "masc");
+      const scale = Math.max(0.7, 1 - typeCount * 0.02);
+      span.style.transform = `scale(${scale})`;
+      span.style.opacity = `${Math.max(0.35, 1 - typeCount * 0.04)}`;
+    } else {
+      span.classList.add("aligned", prediction.voice);
+      span.style.color = prediction.voice === "masc" ? "#3b6cff" : "#d44b8c";
+    }
+
+    // Match the editor font & style exactly
+    span.style.fontFamily = "inherit";
+    span.style.fontSize = "inherit";
+    span.style.lineHeight = "inherit";
+    span.style.fontWeight = "inherit";
+    span.style.fontStyle = "inherit";
+    span.style.textTransform = "none"; // no auto capitalization
+
+    suggestionSpan.appendChild(span);
+  });
+}
+
+/******************************
+ * HTML ENTITY DECODER
+ ******************************/
+function decodeHTMLEntities(str) {
+  const textarea = document.createElement("textarea");
+  textarea.innerHTML = str;
+  return textarea.value;
+}
   /******************************
    * ACCEPT SUGGESTION
    ******************************/
