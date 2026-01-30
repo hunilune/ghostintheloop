@@ -76,6 +76,9 @@ h6 {
   opacity: 0.4;
   pointer-events: none;
   user-select: none;
+  font-family: inherit;
+  font-size: inherit;
+  line-height: inherit;
 }
 
 /* --- Word dynamics --- */
