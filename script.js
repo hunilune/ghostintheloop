@@ -212,6 +212,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const words = prediction.text.split(/\s+/);
 
+    setMode(prediction.voice);
+
     words.forEach((word, i) => {
       const span = document.createElement("span");
       span.textContent = word.toLowerCase() + " ";
@@ -239,6 +241,7 @@ document.addEventListener("DOMContentLoaded", () => {
         span.style.opacity = 1;
         span.style.transform = "scale(1)";
       }, i * 120);
+      
     });
   }
 
@@ -288,6 +291,10 @@ document.addEventListener("DOMContentLoaded", () => {
   img.dataset.offset = next;
 }
 
+  function setMode(voice) {
+  document.body.classList.remove("mode-masc", "mode-fem");
+  document.body.classList.add(`mode-${voice}`);
+}
 
   /******************************
    * INPUT EVENTS
