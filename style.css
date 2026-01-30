@@ -32,43 +32,18 @@ body {
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 }
 
-/* Writing surface overrides body centering */
+/* Writing surface */
 .writing-surface { display: flex; flex-direction: column; align-items: center; position: relative; }
 
-/* Image always centered, near top */
+/* Image */
 .inline-image { width: 120px; margin-top: 1rem; margin-bottom: 3rem; transition: margin-bottom 0.6s ease, filter 0.6s ease; }
 
-/* Editor centered */
-#editor { text-align: left; max-width: 700px; display: inline-block; position: relative;
-  caret-color: rgba(0,0,0,0.7); 
-        }
-
+/* Editor */
+#editor { text-align: left; max-width: 700px; display: inline-block; position: relative; caret-color: rgba(0,0,0,0.7); }
 .editor-wrapper { display: inline-block; position: relative; }
 
-.editor-wrapper {
-  position: relative;
-  display: inline-block;
-}
-
-#ghost {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  user-select: none;
-  white-space: pre;
-  font-family: Office Times, serif;
-  line-height: 1.4;
-  opacity: 0.4;
-  color: black;
-}
-
-.mode-fem #ghost { opacity: 0.25; }
-.mode-masc #ghost { opacity: 0.7; font-weight: 600; }
-
-/* H1 override for editable content */
-.editable h1,
-h1.editable {
+/* H1 */
+.editable h1, h1.editable {
   font-family: Faustina, serif;
   font-weight: normal;
   text-align: center;
@@ -78,43 +53,22 @@ h1.editable {
 
 h6 { font-family: Social, sans-serif; font-weight: normal; font-size: 13px; opacity: 0.75; text-align: center; padding-bottom: 4rem; }
 
-/* Paragraph styling */
-.paragraph { font-family: Office Times; max-width: 700px; margin: 0 auto; font-size: 1rem; padding-top: 4rem; padding-bottom: 2rem; text-wrap: pretty; }
-
 /* Editable area */
-.editable {
-  font-family: Office Times, serif;
-  font-size: 18px;
-  line-height: 1.4;
-  outline: none;
-}
+.editable { font-family: Office Times, serif; font-size: 18px; line-height: 1.4; outline: none; }
 
-/* Predictive text inline */
-.suggestion {
-  position: static;
-  pointer-events: none;
-  user-select: none;
-  opacity: 1;
-  font-family: Office Times, serif;
-  line-height: 1.4;
-  white-space: pre;
-  display: inline;
-  color: rgba(0,0,0,0.25);
-}
-
-/* Predictive words */
+/* Predictive text */
+.suggestion { pointer-events: none; user-select: none; font-family: Office Times, serif; line-height: 1.4; white-space: pre; display: inline; color: rgba(0,0,0,0.25); }
 .suggestion .word { display: inline; opacity: 0; transform: scale(0.96); transition: opacity 0.4s ease, transform 0.4s ease; }
 
+/* Masculine/feminine */
 .mode-masc .suggestion .word { color: rgba(0,0,0,0.7); font-weight: 600; opacity: 1; }
 .mode-fem .suggestion .word { color: rgba(0,0,0,0.25); font-weight: 300; opacity: 0.25; }
 
-/* Typed (non-predictive) text */
+/* Typed text */
 .editable { color: rgba(0, 0, 0, 0.7); }
 
 /* Notes */
 .note { font-family: Social; margin-top: 3rem; font-size: 0.8rem; opacity: 0.45; text-align: center; }
-
-/* Disable wrapping for notes */
 .no-wrap { float: none !important; shape-outside: none !important; }
 
 /* Accessibility */
