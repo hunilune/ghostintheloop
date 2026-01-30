@@ -5,8 +5,8 @@
 }
 
 @font-face {
-  font-family: 'Cigars';
-  src: url('HW Cigars Trial Regular.otf') format('opentype');
+  font-family: 'Office Times';
+  src: url('OfficeTimesRoundMono-Regular.otf') format('opentype');
 }
 
 /* Root variables */
@@ -31,14 +31,14 @@ body {
 /* H1 override for editable content */
 .editable h1,
   h1.editable {
-  font-family: Cigars, serif;
+  font-family: Office Times, serif;
   font-weight: normal;
   font-size: 1.7rem !important;
   margin: 0;
 }
 
 h2 {
-  font-family: Cigars, serif;
+  font-family: Office Times, serif;
   font-weight: normal;
   font-size: 2rem;
   padding-left: 80px;
@@ -53,7 +53,7 @@ h6 {
 
 /* Paragraph styling */
 .paragraph {
-  font-family: Social;
+  font-family: Office Times;
   max-width: 900px;
   font-size: 1rem;
   padding-top: 4rem;
@@ -66,7 +66,7 @@ h6 {
 .editable {
   min-height: 4rem;
   padding: 1rem;
-  font-family: Cigars, serif;
+  font-family: Office Times, serif;
   font-size: 1rem;
   line-height: 1.4;
   outline: none;
