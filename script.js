@@ -178,7 +178,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /******************************
    * RENDER SUGGESTION
-   ******************************/function showSuggestion(prediction) {
+   ******************************/
+   function showSuggestion(prediction) {
   if (!editor) return;
 
   // Create suggestion container if it doesn't exist
@@ -226,6 +227,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Append all words to the suggestion container
   words.forEach(w => suggestionSpan.appendChild(w));
 }
+
 
 /******************************
  * HTML ENTITY DECODER
