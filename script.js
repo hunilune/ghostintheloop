@@ -25,35 +25,30 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const firstSentenceSuggestions = ["sad", "lonely", "angry"];
   const MAX_OUTPUT_WORDS = 22;
-  const PREDICTION_DELAY = 800;
+  const PREDICTION_DELAY = 1000;
+
+  // keywords to auto-switch voices
+  const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
+  const FEM_KEYWORDS  = ["she", "her", "woman", "female", "girl", "mother", "sister"];
 
   /******************************
    * STATE
    ******************************/
   const editor = document.querySelector("#editor");
-  const suggestionSpan = editor.querySelector(".suggestion");
+  const rotatingEl = document.querySelector("#rotating-suggestion");
+  const predictionEl = document.querySelector("#prediction-suggestion");
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
   let typeCount = 0;
   let activeVoice = "masc";
+
   let rotating = false;
   let rotateIndex = 0;
   let rotateTimer = null;
   let predictionTimer = null;
-  let queuedInput = "";
 
-  /******************************
-   * CLEAN TEXT
-   ******************************/
-  function cleanText(text) {
-    return text
-      .replace(/&[a-z]+;/g, '')
-      .replace(/[^\w\s.,!?'-]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
-  }
+  if (!editor || !rotatingEl || !predictionEl) return;
 
   /******************************
    * LOAD CORPORA
@@ -65,12 +60,17 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
+
         let texts = [];
         if (Array.isArray(json)) {
-          texts = json.map(i => typeof i === "string" ? i : (i.title || "") + " " + (i.selftext || "")).filter(Boolean);
+          texts = json.map(i => {
+            if (typeof i === "string") return i;
+            return (i.title || "") + " " + (i.selftext || "");
+          }).filter(Boolean);
         } else if (json?.data?.children) {
           texts = json.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`).filter(Boolean);
         }
+
         collected.push(...texts);
       } catch (e) {
         console.warn("Skipped corpus", url, e);
@@ -82,15 +82,11 @@ document.addEventListener("DOMContentLoaded", () => {
   async function loadCorpora() {
     corpora.masc = await loadSide(CORPUS_URLS.masc);
     corpora.fem  = await loadSide(CORPUS_URLS.fem);
-    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length) corpora.fem = [...FALLBACK.fem];
-    ready = true;
 
-    if (queuedInput) {
-      const prediction = generatePrediction(cleanText(queuedInput));
-      showPrediction(prediction);
-      queuedInput = "";
-    }
+    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
+    if (!corpora.fem.length) corpora.fem  = [...FALLBACK.fem];
+
+    ready = true;
     console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
   loadCorpora();
@@ -107,7 +103,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function cycleRotate() {
     if (!rotating) return;
-    suggestionSpan.textContent = firstSentenceSuggestions[rotateIndex] + " ";
+    rotatingEl.textContent = firstSentenceSuggestions[rotateIndex] + " ";
     rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
     rotateTimer = setTimeout(cycleRotate, 900);
   }
@@ -115,60 +111,69 @@ document.addEventListener("DOMContentLoaded", () => {
   function stopRotating() {
     rotating = false;
     clearTimeout(rotateTimer);
-    suggestionSpan.textContent = "";
+    rotatingEl.textContent = "";
   }
 
   function insertRotatingSuggestion(word) {
     stopRotating();
-    editor.innerHTML = `<span class="mode-${activeVoice}">I am ${word} </span>`;
+    editor.innerText = "I am " + word + " ";
     placeCaretAtEnd(editor);
     typeCount = 1;
-
-    if (ready) {
-      const prediction = generatePrediction(cleanText(editor.innerText));
-      showPrediction(prediction);
-    } else {
-      queuedInput = editor.innerText;
-    }
+    updatePrediction(); // generate immediately
   }
 
   /******************************
    * PREDICTION
    ******************************/
+  function cleanText(text) {
+    return text
+      .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "")
+      .replace(/&[a-z]+;/gi, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function updateActiveVoice(text) {
+    const words = cleanText(text).split(/\s+/);
+    for (let w of words.slice(-3)) { // check last 3 words
+      if (MASC_KEYWORDS.includes(w)) { activeVoice = "masc"; return; }
+      if (FEM_KEYWORDS.includes(w))  { activeVoice = "fem";  return; }
+    }
+  }
+
   function generatePrediction(input) {
     if (!ready || !input) return "";
+
+    updateActiveVoice(input);
+
     const voice = activeVoice;
     const pool = corpora[voice];
-    const words = input.split(/\s+/);
-    let candidates = pool.filter(t => words.some(w => t.includes(w)));
+    const words = cleanText(input).split(/\s+/);
+
+    let candidates = pool.filter(t => words.some(w => cleanText(t).includes(w)));
     if (!candidates.length) candidates = pool;
 
-    let chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    chosen = cleanText(chosen);
-    return chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ") + " ";
+    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    return cleanText(chosen).split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ") + " ";
   }
 
   function showPrediction(text) {
-    suggestionSpan.textContent = "";
+    predictionEl.innerHTML = "";
     if (!text) return;
+
     text.split(/\s+/).forEach(word => {
       const span = document.createElement("span");
       span.textContent = word + " ";
       span.className = "word";
-      suggestionSpan.appendChild(span);
+      predictionEl.appendChild(span);
     });
   }
 
   function acceptPrediction() {
-    if (!suggestionSpan) return;
+    if (!predictionEl) return;
     const frag = document.createDocumentFragment();
-    Array.from(suggestionSpan.children).forEach(node => {
-      const span = document.createElement("span");
-      span.className = `mode-${activeVoice}`;
-      span.textContent = node.textContent;
-      frag.appendChild(span);
-    });
-    suggestionSpan.textContent = "";
+    Array.from(predictionEl.children).forEach(node => frag.appendChild(document.createTextNode(node.textContent)));
+    predictionEl.innerHTML = "";
     editor.appendChild(frag);
     placeCaretAtEnd(editor);
     typeCount++;
@@ -190,32 +195,35 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * INPUT EVENTS
    ******************************/
-  editor.addEventListener("input", () => {
-    const text = cleanText(editor.innerText);
-
-    if (!ready) {
-      queuedInput = text;
-      return;
-    }
-
-    if (text === "i am") startRotating();
-    else stopRotating();
-
-    if (text.endsWith(" ") && text.length > 3) {
+  function updatePrediction() {
+    const text = editor.innerText;
+    if (!rotating && text.trim().length > 0) {
       clearTimeout(predictionTimer);
       predictionTimer = setTimeout(() => {
-        const prediction = generatePrediction(text);
+        const prediction = generatePrediction(text.trim());
         showPrediction(prediction);
       }, PREDICTION_DELAY);
     }
+  }
+
+  editor.addEventListener("input", () => {
+    const text = editor.innerText;
+
+    if (text === "I am ") startRotating();
+    else stopRotating();
+
+    updatePrediction();
   });
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
       acceptPrediction();
+      updatePrediction();
     }
   });
 
-  if (editor.innerText.trim().toLowerCase() === "i am") startRotating();
+  // Initialize rotating if needed
+  if (editor.innerText.trim() === "I am") startRotating();
+
 });
