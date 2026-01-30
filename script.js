@@ -185,7 +185,6 @@ document.addEventListener("DOMContentLoaded", () => {
         span.style.transform = `scale(${Math.max(0.85, 1 - typeCount * 0.02)})`;
       }
       span.style.fontFamily = "Office Times, serif";
-      span.style.lineHeight = "1.4";
       span.style.opacity = 0;
       span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
       suggestionSpan.appendChild(span);
