@@ -220,11 +220,9 @@ document.addEventListener("DOMContentLoaded", () => {
       span.className = "word";
 
       if (prediction.voice === "masc") {
-        span.style.color = "#3b6cff";
         span.style.fontWeight = 600;
         span.style.transform = `scale(${1 + typeCount * 0.02 + 0.05})`;
       } else {
-        span.style.color = "#d44b8c";
         span.style.fontWeight = 500;
         span.style.transform = `scale(${Math.max(0.85, 1 - typeCount * 0.02)})`;
       }
