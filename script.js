@@ -28,8 +28,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const EMOTIONS = {
     sad:     { fem: 1.0, masc: 0.25 },
     lonely:  { fem: 0.9, masc: 0.3 },
-    anxious: { fem: 0.8, masc: 0.4 },
-    angry:   { fem: 0.4, masc: 1.0 },
+    anxious: { fem: 1, masc: 0.25 },
+    angry:   { fem: 0.25, masc: 1.0 },
     tired:   { fem: 0.6, masc: 0.6 }
   };
 
@@ -277,10 +277,6 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * Image
    ******************************/
-  
-  function pushImageDown() {
-  const img = document.querySelector(".inline-image");
-  if (!img) return;
 
   const current = parseFloat(img.dataset.offset || 0);
   const next = current + 12; // px per sentence
