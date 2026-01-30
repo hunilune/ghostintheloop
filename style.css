@@ -30,7 +30,6 @@
 body {
   background: #F0F0F0;
   cursor: url("Cursor.png"), auto;
-  text-align: center;
   padding-top: 7rem;
   padding-bottom: 4rem;
   line-height: 1.1;
@@ -72,7 +71,8 @@ h6 {
 /* Paragraph styling */
 .paragraph {
   font-family: Office Times;
-  max-width: 900px;
+  max-width: 700px;
+  margin: 0 auto;
   font-size: 1rem;
   padding-top: 4rem;
   padding-bottom: 2rem;
