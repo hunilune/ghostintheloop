@@ -32,8 +32,8 @@ body {
   h1.editable {
   font-family: Office Times, serif;
   font-weight: normal;
-  font-size: 33px !important;
-  letter-spacing: -0.5px;
+  font-size: 29px !important;
+  letter-spacing: -0.75px;
   margin: 0;
 }
 
@@ -46,9 +46,9 @@ h2 {
 h6 {
   font-family: Social, sans-serif;
   font-weight: normal;
-  font-size: 12px;
+  font-size: 13px;
   opacity: 0.75;
-  padding-bottom: 3rem;
+  padding-bottom: 4rem;
 }
 
 /* Paragraph styling */
@@ -63,10 +63,10 @@ h6 {
 
 /* Editable area */
 .editable {
-  min-height: 4rem;
+  /*! min-height: 4rem; */
   /*! padding: 1rem; */
   font-family: Office Times, serif;
-  font-size: 24px;
+  font-size: 18px;
   line-height: 1.4;
   outline: none;
   /*! white-space: pre-wrap; */
@@ -136,7 +136,7 @@ h6 {
   font-family: Social;
   margin-top: 3rem;
   font-size: 0.8rem;
-  opacity: 0.6;
+  opacity: 0.45;
 }
 
 .characters {
