@@ -15,15 +15,17 @@
 </head>
 <body class="mode-masc">
 
-  <h1 class="editable" id="editor" contenteditable="true">I am </h1>
+  <!-- H1 heading -->
+  <h1 class="editable">A Narrative</h1>
 
   <h6>Translated by an (A)ppar(I)tion</h6>
   
   <div class="writing-surface">
     <img src="Darwinesque.png" alt="God-like sketch" class="inline-image">
 
-    <!-- Rotating & predictive suggestions -->
+    <!-- Editor for writing, starts with "I am " -->
     <div class="editor-wrapper">
+      <div id="editor" class="editable" contenteditable="true">I am </div>
       <span id="rotating-suggestion"></span>
       <span id="prediction-suggestion"></span>
     </div>
