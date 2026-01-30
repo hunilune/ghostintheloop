@@ -1,5 +1,4 @@
 document.addEventListener("DOMContentLoaded", () => {
-
   /******************************
    * CONFIG
    ******************************/
@@ -36,10 +35,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let corpora = { masc: [], fem: [] };
   let ready = false;
   let activeVoice = "masc";
+  let typeCount = 0;
 
   const editor = document.querySelector("#editor");
-  let suggestionSpan = null;
-  let typeCount = 0;
+  const suggestionSpan = document.querySelector(".suggestion");
 
   /******************************
    * LOAD CORPORA
@@ -51,8 +50,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
-        const extracted = extractText(json);
-        collected.push(...extracted);
+        collected.push(...extractText(json));
       } catch (err) {
         console.warn("Skipped corpus due to error:", url, err);
       }
@@ -96,44 +94,31 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * Tidy up the predictive text 
+   * NORMALIZE
    ******************************/
   function normalize(arr) {
-  // Add common spelling corrections here
-  const corrections = {
-    teir: "their",
-    recieve: "receive",
-    definately: "definitely",
-    // add more as needed
-  };
+    const corrections = { teir: "their", recieve: "receive", definately: "definitely" };
 
-  return arr
-    // Decode HTML entities like &amp;
-    .map(t => decodeHTMLEntities(t))
-    .map(t => t.replace(/&[a-z]+;/gi, m => (m === "&amp;" ? "&" : "")))
-    // Remove emojis
-    .map(t => t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""))
-    // Normalize whitespace
-    .map(t => String(t).trim().replace(/\s+/g, " "))
-    // Apply spelling corrections
-    .map(t => {
-      Object.keys(corrections).forEach(key => {
-        const re = new RegExp(`\\b${key}\\b`, "gi");
-        t = t.replace(re, corrections[key]);
-      });
-      return t;
-    })
-    // Keep only reasonably long sentences
-    .filter(t => t.length > 20);
-}
+    return arr
+      .map(t => decodeHTMLEntities(t))
+      .map(t => t.replace(/&[a-z]+;/gi, m => (m === "&amp;" ? "&" : "")))
+      .map(t => t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""))
+      .map(t => String(t).trim().replace(/\s+/g, " "))
+      .map(t => {
+        Object.keys(corrections).forEach(key => {
+          const re = new RegExp(`\\b${key}\\b`, "gi");
+          t = t.replace(re, corrections[key]);
+        });
+        return t;
+      })
+      .filter(t => t.length > 20);
+  }
 
   /******************************
    * EMOTION DETECTION
    ******************************/
   function detectEmotion(text) {
-    for (const e in EMOTIONS) {
-      if (text.includes(e)) return e;
-    }
+    for (const e in EMOTIONS) if (text.includes(e)) return e;
     return null;
   }
 
@@ -142,10 +127,9 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function decideVoice(input) {
     const words = input.split(/\s+/);
-
-    // If first input contains an emotional word, bias female
     const firstInput = typeCount === 0;
     const emotion = detectEmotion(input);
+
     if (firstInput && emotion && EMOTIONS[emotion]?.fem > 0.7) return "fem";
 
     function score(corpus) {
@@ -165,7 +149,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * GENERATION
+   * GENERATE PREDICTION
    ******************************/
   function generate(input) {
     if (!ready || !input) return { text: "", voice: activeVoice };
@@ -174,13 +158,10 @@ document.addEventListener("DOMContentLoaded", () => {
     activeVoice = voice;
 
     const pool = corpora[voice];
-    const isFallback = pool === FALLBACK[voice];
-
     const words = input.split(/\s+/);
     let candidates = pool.filter(t => words.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
-    // Return only ONE sentence at a time
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
     const out = chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ");
 
@@ -197,49 +178,30 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * SHOW PREDICTION
+   * SHOW SUGGESTION
    ******************************/
   function showSuggestion(prediction) {
-    if (!editor) return;
-
-    if (!suggestionSpan) {
-      suggestionSpan = document.createElement("span");
-      suggestionSpan.className = "suggestion";
-      editor.appendChild(suggestionSpan);
-    }
-
+    if (!suggestionSpan) return;
     suggestionSpan.innerHTML = "";
-
-    const words = prediction.text.split(/\s+/);
-
     setMode(prediction.voice);
 
-    words.forEach((word, i) => {
+    prediction.text.split(/\s+/).forEach((word, i) => {
       const span = document.createElement("span");
-      span.textContent = word.toLowerCase() + " ";
+      span.textContent = word + " ";
       span.className = "word";
-
-      if (prediction.voice === "masc") {
-        span.style.fontWeight = 600;
-        span.style.transform = `scale(${1 + typeCount * 0.02 + 0.05})`;
-      } else {
-        span.style.fontWeight = 500;
-        span.style.transform = `scale(${Math.max(0.85, 1 - typeCount * 0.02)})`;
-      }
-
-      span.style.fontFamily = "Office Times, serif";
-      span.style.lineHeight = "1.4";
       span.style.opacity = 0;
-      span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
+      span.style.transform = "scale(0.95)";
+      span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+
+      if (prediction.voice === "masc") span.style.fontWeight = 600;
+      else span.style.fontWeight = 400;
 
       suggestionSpan.appendChild(span);
 
-      // Fade-in words sequentially
       setTimeout(() => {
         span.style.opacity = 1;
         span.style.transform = "scale(1)";
       }, i * 120);
-      
     });
   }
 
@@ -249,17 +211,17 @@ document.addEventListener("DOMContentLoaded", () => {
   function acceptSuggestion() {
     if (!suggestionSpan) return;
 
-    const sel = window.getSelection();
-    const range = sel.getRangeAt(0);
-    range.deleteContents();
-
     const frag = document.createDocumentFragment();
     Array.from(suggestionSpan.childNodes).forEach(node => frag.appendChild(node.cloneNode(true)));
 
+    // Insert at caret position
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
+    const range = sel.getRangeAt(0);
+    range.deleteContents();
     range.insertNode(frag);
-    suggestionSpan.remove();
-    suggestionSpan = null;
 
+    suggestionSpan.innerHTML = "";
     typeCount++;
     placeCaretAtEnd(editor);
   }
@@ -275,35 +237,27 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * Image
+   * MODE STYLING
    ******************************/
-
-  const current = parseFloat(img.dataset.offset || 0);
-  const next = current + 12; // px per sentence
-
-  img.style.marginTop = `${next}px`;
-  img.dataset.offset = next;
-}
-
   function setMode(voice) {
-  document.body.classList.remove("mode-masc", "mode-fem");
-  document.body.classList.add(`mode-${voice}`);
-}
+    document.body.classList.remove("mode-masc", "mode-fem");
+    document.body.classList.add(`mode-${voice}`);
+  }
 
   /******************************
    * INPUT EVENTS
    ******************************/
-
   editor.addEventListener("input", () => {
-  const text = editor.innerText.trim().toLowerCase();
-  const prediction = generate(text);
-  showSuggestion(prediction);
-});
+    const text = editor.innerText.trim();
+    if (!text) return;
+    const prediction = generate(text);
+    showSuggestion(prediction);
+  });
 
-  if (e.key === "Enter") {
-    e.preventDefault();
-    acceptSuggestion();
-  }
-});
-
+  editor.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      acceptSuggestion();
+    }
+  });
 });
