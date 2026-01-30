@@ -45,6 +45,27 @@ body {
 
 .editor-wrapper { display: inline-block; position: relative; }
 
+.editor-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+#ghost {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+  user-select: none;
+  white-space: pre;
+  font-family: Office Times, serif;
+  line-height: 1.4;
+  opacity: 0.4;
+  color: black;
+}
+
+.mode-fem #ghost { opacity: 0.25; }
+.mode-masc #ghost { opacity: 0.7; font-weight: 600; }
+
 /* H1 override for editable content */
 .editable h1,
 h1.editable {
