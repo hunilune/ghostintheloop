@@ -19,13 +19,13 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const FALLBACK = {
-    masc: ["Fallback male sentence"],
-    fem: ["Fallback female sentence"]
+    masc: ["fallback male sentence"],
+    fem: ["fallback female sentence"]
   };
 
   const firstSentenceSuggestions = ["sad", "lonely", "angry"];
   const MAX_OUTPUT_WORDS = 22;
-  const PREDICTION_DELAY = 1200;
+  const PREDICTION_DELAY = 800;
 
   /******************************
    * STATE
@@ -41,8 +41,19 @@ document.addEventListener("DOMContentLoaded", () => {
   let rotateIndex = 0;
   let rotateTimer = null;
   let predictionTimer = null;
+  let queuedInput = "";
 
-  let queuedInput = ""; // store input typed while loading
+  /******************************
+   * CLEAN TEXT
+   ******************************/
+  function cleanText(text) {
+    return text
+      .replace(/&[a-z]+;/g, '')
+      .replace(/[^\w\s.,!?'-]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }
 
   /******************************
    * LOAD CORPORA
@@ -74,14 +85,13 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
     if (!corpora.fem.length) corpora.fem = [...FALLBACK.fem];
     ready = true;
-    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
 
-    // Generate prediction for queued input if any
     if (queuedInput) {
-      const prediction = generatePrediction(queuedInput);
+      const prediction = generatePrediction(cleanText(queuedInput));
       showPrediction(prediction);
       queuedInput = "";
     }
+    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
   loadCorpora();
 
@@ -110,15 +120,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function insertRotatingSuggestion(word) {
     stopRotating();
-    editor.innerText = "I am " + word + " ";
+    editor.innerHTML = `<span class="mode-${activeVoice}">I am ${word} </span>`;
     placeCaretAtEnd(editor);
     typeCount = 1;
 
     if (ready) {
-      const prediction = generatePrediction(editor.innerText.trim());
+      const prediction = generatePrediction(cleanText(editor.innerText));
       showPrediction(prediction);
     } else {
-      queuedInput = editor.innerText.trim();
+      queuedInput = editor.innerText;
     }
   }
 
@@ -127,14 +137,14 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function generatePrediction(input) {
     if (!ready || !input) return "";
-
     const voice = activeVoice;
     const pool = corpora[voice];
     const words = input.split(/\s+/);
     let candidates = pool.filter(t => words.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    let chosen = candidates[Math.floor(Math.random() * candidates.length)];
+    chosen = cleanText(chosen);
     return chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ") + " ";
   }
 
@@ -152,7 +162,12 @@ document.addEventListener("DOMContentLoaded", () => {
   function acceptPrediction() {
     if (!suggestionSpan) return;
     const frag = document.createDocumentFragment();
-    Array.from(suggestionSpan.children).forEach(node => frag.appendChild(document.createTextNode(node.textContent)));
+    Array.from(suggestionSpan.children).forEach(node => {
+      const span = document.createElement("span");
+      span.className = `mode-${activeVoice}`;
+      span.textContent = node.textContent;
+      frag.appendChild(span);
+    });
     suggestionSpan.textContent = "";
     editor.appendChild(frag);
     placeCaretAtEnd(editor);
@@ -176,20 +191,20 @@ document.addEventListener("DOMContentLoaded", () => {
    * INPUT EVENTS
    ******************************/
   editor.addEventListener("input", () => {
-    const text = editor.innerText;
+    const text = cleanText(editor.innerText);
 
     if (!ready) {
       queuedInput = text;
       return;
     }
 
-    if (text === "I am ") startRotating();
+    if (text === "i am") startRotating();
     else stopRotating();
 
-    if (text.endsWith(" ") && text.trim().length > 3) {
+    if (text.endsWith(" ") && text.length > 3) {
       clearTimeout(predictionTimer);
       predictionTimer = setTimeout(() => {
-        const prediction = generatePrediction(text.trim());
+        const prediction = generatePrediction(text);
         showPrediction(prediction);
       }, PREDICTION_DELAY);
     }
@@ -202,6 +217,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  if (editor.innerText.trim() === "I am") startRotating();
-
+  if (editor.innerText.trim().toLowerCase() === "i am") startRotating();
 });
