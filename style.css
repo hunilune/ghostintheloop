@@ -184,13 +184,3 @@ h6 {
     transition: none !important;
   }
 }
-
-/* Masculine mode: image closer to text */
-.mode-masc .inline-image {
-  margin-bottom: 0.6rem;
-}
-
-/* Feminine mode: image repels text */
-.mode-fem .inline-image {
-  margin-bottom: 2.4rem;
-}
