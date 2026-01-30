@@ -24,27 +24,23 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const firstSentenceSuggestions = ["sad", "lonely", "angry"];
-  const PREDICTION_DELAY = 1200;
   const MAX_OUTPUT_WORDS = 22;
+  const PREDICTION_DELAY = 1200;
 
   /******************************
    * STATE
    ******************************/
   const editor = document.querySelector("#editor");
-  const ghost = document.querySelector("#ghost");
-  const ghostRotate = document.querySelector("#ghost-rotate");
+  const suggestionSpan = editor.querySelector(".suggestion");
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
-  let activeVoice = "masc";
   let typeCount = 0;
-
+  let activeVoice = "masc";
   let rotating = false;
   let rotateIndex = 0;
   let rotateTimer = null;
   let predictionTimer = null;
-
-  if (!editor || !ghost || !ghostRotate) return;
 
   /******************************
    * LOAD CORPORA
@@ -56,10 +52,9 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
-        // Flatten JSON to text array
-        collected.push(...json.map(item => item.title || item.selftext || item));
-      } catch (err) {
-        console.warn("Skipped corpus", url, err);
+        collected.push(...json.map(i => i.title || i.selftext || i));
+      } catch (e) {
+        console.warn("Skipped corpus", url, e);
       }
     }
     return collected.length ? collected : [];
@@ -70,28 +65,12 @@ document.addEventListener("DOMContentLoaded", () => {
     corpora.fem  = await loadSide(CORPUS_URLS.fem);
 
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length)  corpora.fem = [...FALLBACK.fem];
+    if (!corpora.fem.length) corpora.fem = [...FALLBACK.fem];
 
     ready = true;
     console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
-
   loadCorpora();
-
-  /******************************
-   * POSITIONING
-   ******************************/
-  function positionOverlay(el) {
-    const sel = window.getSelection();
-    if (!sel.rangeCount) return;
-    const range = sel.getRangeAt(0).cloneRange();
-    range.collapse(true);
-    const rect = range.getClientRects()[0];
-    if (!rect) return;
-    const editorRect = editor.getBoundingClientRect();
-    el.style.left = `${rect.left - editorRect.left}px`;
-    el.style.top  = `${rect.top - editorRect.top}px`;
-  }
 
   /******************************
    * ROTATING SUGGESTIONS
@@ -100,35 +79,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (rotating) return;
     rotating = true;
     rotateIndex = 0;
+    cycleRotate();
+  }
 
-    ghostRotate.style.opacity = 0.4;
-    ghostRotate.textContent = firstSentenceSuggestions[0];
-    positionOverlay(ghostRotate);
-
-    function cycle() {
-      if (!rotating) return;
-      ghostRotate.textContent = firstSentenceSuggestions[rotateIndex];
-      ghostRotate.style.opacity = 0.4;
-      ghostRotate.style.transform = "scale(1.05)";
-      positionOverlay(ghostRotate);
-
-      rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
-      rotateTimer = setTimeout(cycle, 900);
-    }
-
-    cycle();
+  function cycleRotate() {
+    if (!rotating) return;
+    suggestionSpan.textContent = firstSentenceSuggestions[rotateIndex] + " ";
+    rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
+    rotateTimer = setTimeout(cycleRotate, 900);
   }
 
   function stopRotating() {
     rotating = false;
     clearTimeout(rotateTimer);
-    ghostRotate.textContent = "";
-    ghostRotate.style.opacity = 0;
+    suggestionSpan.textContent = "";
   }
-
-  ghostRotate.addEventListener("click", () => {
-    insertRotatingSuggestion(ghostRotate.textContent);
-  });
 
   function insertRotatingSuggestion(word) {
     stopRotating();
@@ -138,45 +103,39 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * PREDICTIVE TEXT
+   * PREDICTION
    ******************************/
   function generatePrediction(input) {
-    if (!ready || !input || input.trim().length < 4) return "";
+    if (!ready || !input) return "";
 
-    const words = input.trim().split(/\s+/);
-
-    // Decide voice based on corpora match
-    function score(corpus) {
-      return corpus.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0.1), 0), 0);
-    }
-
-    const mScore = score(corpora.masc);
-    const fScore = score(corpora.fem);
-    activeVoice = mScore > fScore ? "masc" : (fScore > mScore ? "fem" : activeVoice);
-
-    const pool = corpora[activeVoice];
+    const voice = activeVoice;
+    const pool = corpora[voice];
+    const words = input.split(/\s+/);
     let candidates = pool.filter(t => words.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    return chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ");
+    return chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ") + " ";
   }
 
   function showPrediction(text) {
-    if (!text) {
-      ghost.textContent = "";
-      return;
-    }
-    ghost.textContent = text;
-    ghost.style.opacity = activeVoice === "masc" ? 0.7 : 0.35;
-    ghost.style.fontWeight = activeVoice === "masc" ? 600 : 300;
-    positionOverlay(ghost);
+    suggestionSpan.textContent = "";
+    if (!text) return;
+
+    text.split(/\s+/).forEach((word) => {
+      const span = document.createElement("span");
+      span.textContent = word + " ";
+      span.className = "word";
+      suggestionSpan.appendChild(span);
+    });
   }
 
   function acceptPrediction() {
-    if (!ghost.textContent) return;
-    editor.innerText += ghost.textContent;
-    ghost.textContent = "";
+    if (!suggestionSpan) return;
+    const frag = document.createDocumentFragment();
+    Array.from(suggestionSpan.children).forEach(node => frag.appendChild(document.createTextNode(node.textContent)));
+    suggestionSpan.textContent = "";
+    editor.appendChild(frag);
     placeCaretAtEnd(editor);
     typeCount++;
   }
@@ -186,35 +145,31 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function placeCaretAtEnd(el) {
     el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
     const range = document.createRange();
     range.selectNodeContents(el);
     range.collapse(false);
-    const sel = window.getSelection();
-    sel.removeAllRanges();
     sel.addRange(range);
   }
 
   /******************************
-   * EVENTS
+   * INPUT EVENTS
    ******************************/
   editor.addEventListener("input", () => {
-    const text = editor.innerText.trim();
+    const text = editor.innerText;
 
-    if (text === "I am") {
-      startRotating();
-      return;
-    } else {
-      stopRotating();
-    }
+    // Rotating suggestions for first sentence
+    if (text === "I am ") startRotating();
+    else stopRotating();
 
-    clearTimeout(predictionTimer);
-    if (text.endsWith(" ") && text.length > 3) {
+    // Continuous prediction after space
+    if (text.endsWith(" ") && text.trim().length > 3) {
+      clearTimeout(predictionTimer);
       predictionTimer = setTimeout(() => {
-        const prediction = generatePrediction(text);
+        const prediction = generatePrediction(text.trim());
         showPrediction(prediction);
       }, PREDICTION_DELAY);
-    } else {
-      ghost.textContent = "";
     }
   });
 
@@ -225,9 +180,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Start rotating suggestions on load if content is "I am"
-  if (editor.innerText.trim() === "I am") {
-    startRotating();
-  }
+  // Initialize rotating on load if needed
+  if (editor.innerText.trim() === "I am") startRotating();
 
 });
