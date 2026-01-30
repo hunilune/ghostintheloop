@@ -64,6 +64,7 @@ h6 {
 .editable {
   min-height: 4rem;
   padding: 1rem;
+  font-family: Cigars, serif;
   font-size: 1rem;
   line-height: 1.4;
   outline: none;
@@ -75,7 +76,7 @@ h6 {
 .editable .suggestion {
   pointer-events: none;
   user-select: none;
-  font-family: Social, sans-serif; /* matches paragraph font */
+  font-family: Cigars, serif; /* matches paragraph font */
   font-size: 1rem;
   line-height: 1.4;
 }
