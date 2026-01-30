@@ -19,6 +19,7 @@ body {
   font-family: serif;
   background: #F0F0F0;
   cursor: url("Cursor.png"), auto;
+  text-align: center;
   padding: 28px;
   padding-top: 7rem;
   padding-bottom: 1rem;
