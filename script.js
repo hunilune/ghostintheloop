@@ -265,4 +265,65 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * INSERT CLICKE*
+   * INSERT CLICKED ROTATING SUGGESTION
+   ******************************/
+  function insertRotatingSuggestion(span) {
+    stopRotatingSuggestions();
+
+    editor.innerText = "I am ";
+    placeCaretAtEnd(editor);
+
+    const sel = window.getSelection();
+    const range = sel.getRangeAt(0);
+    const frag = document.createDocumentFragment();
+    frag.appendChild(document.createTextNode(span.textContent));
+    range.insertNode(frag);
+
+    placeCaretAtEnd(editor);
+    typeCount = 0;
+  }
+
+  /******************************
+   * MODE STYLING
+   ******************************/
+  function setMode(voice) {
+    document.body.classList.remove("mode-masc", "mode-fem");
+    document.body.classList.add(`mode-${voice}`);
+  }
+
+  /******************************
+   * INPUT EVENTS
+   ******************************/
+  if (editor && editor.innerText.trim() === "I am") startRotatingSuggestions();
+
+  editor.addEventListener("keydown", (e) => {
+    if (rotatingActive && !["Enter"].includes(e.key)) stopRotatingSuggestions();
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (rotatingActive) {
+        const visibleSpan = Array.from(suggestionSpan.children)
+          .find(s => parseFloat(s.style.opacity) > 0);
+        if (visibleSpan) insertRotatingSuggestion(visibleSpan);
+      } else {
+        if (predictionTimer) clearTimeout(predictionTimer);
+        acceptSuggestion();
+      }
+    }
+  });
+
+  editor.addEventListener("input", () => {
+    const text = editor.innerText;
+    if (rotatingActive && text !== "I am") stopRotatingSuggestions();
+
+    const trimmed = text.trim();
+    if (!rotatingActive && text.endsWith(" ") && trimmed.length > 3) {
+      if (predictionTimer) clearTimeout(predictionTimer);
+      predictionTimer = setTimeout(() => {
+        const prediction = generate(trimmed);
+        showSuggestion(prediction);
+      }, PREDICTION_DELAY);
+    }
+  });
+
+});
