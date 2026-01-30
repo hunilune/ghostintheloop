@@ -23,7 +23,6 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const MAX_OUTPUT_WORDS = 22;
-
   const EMOTIONS = {
     sad:     { fem: 1.0, masc: 0.25 },
     lonely:  { fem: 0.9, masc: 0.3 },
@@ -39,6 +38,10 @@ document.addEventListener("DOMContentLoaded", () => {
   let suggestionSpan = null;
   let typeCount = 0;
 
+  // Debounce for delayed prediction
+  let predictionTimer = null;
+  const PREDICTION_DELAY = 2000; // 2 seconds
+
   /******************************
    * LOAD CORPORA
    ******************************/
@@ -49,8 +52,7 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
-        const extracted = extractText(json);
-        collected.push(...extracted);
+        collected.push(...extractText(json));
       } catch (err) {
         console.warn("Skipped corpus due to error:", url, err);
       }
@@ -72,7 +74,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCorpora();
 
   /******************************
-   * EXTRACT TEXT
+   * EXTRACT & NORMALIZE TEXT
    ******************************/
   function extractText(src) {
     if (Array.isArray(src)) {
@@ -88,9 +90,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return [];
   }
 
-  /******************************
-   * NORMALIZE TEXT
-   ******************************/
   function normalize(arr) {
     const corrections = { teir: "their", recieve: "receive", definately: "definitely" };
     return arr
@@ -145,7 +144,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * GENERATION
+   * GENERATE PREDICTION
    ******************************/
   function generate(input) {
     if (!ready || !input) return { text: "", voice: activeVoice };
@@ -171,23 +170,30 @@ document.addEventListener("DOMContentLoaded", () => {
       editor.appendChild(suggestionSpan);
     }
     suggestionSpan.innerHTML = "";
-    const words = prediction.text.split(/\s+/);
     setMode(prediction.voice);
-    words.forEach((word, i) => {
+
+    prediction.text.split(/\s+/).forEach((word, i) => {
       const span = document.createElement("span");
       span.textContent = word.toLowerCase() + " ";
-      span.className = "word";
-      if (prediction.voice === "masc") {
-        span.style.fontWeight = 600;
-        span.style.transform = `scale(${1 + typeCount * 0.02 + 0.05})`;
-      } else {
-        span.style.fontWeight = 500;
-        span.style.transform = `scale(${Math.max(0.85, 1 - typeCount * 0.02)})`;
-      }
       span.style.fontFamily = "Office Times, serif";
+      span.style.lineHeight = "1.4";
       span.style.opacity = 0;
       span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
+
+      // Stronger bold/faint for masc/fem
+      if (prediction.voice === "masc") {
+        span.style.fontWeight = 700;
+        span.style.color = "rgba(0,0,0,0.7)";
+        span.style.transform = "scale(1.1)";
+      } else {
+        span.style.fontWeight = 300;
+        span.style.color = "rgba(0,0,0,0.25)";
+        span.style.transform = "scale(0.9)";
+      }
+
       suggestionSpan.appendChild(span);
+
+      // Fade-in words sequentially
       setTimeout(() => {
         span.style.opacity = 1;
         span.style.transform = "scale(1)";
@@ -235,13 +241,20 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   editor.addEventListener("input", () => {
     const text = editor.innerText.trim().toLowerCase();
-    const prediction = generate(text);
-    showSuggestion(prediction);
+    if (!text) return;
+
+    // Delayed prediction
+    if (predictionTimer) clearTimeout(predictionTimer);
+    predictionTimer = setTimeout(() => {
+      const prediction = generate(text);
+      showSuggestion(prediction);
+    }, PREDICTION_DELAY);
   });
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
+      if (predictionTimer) clearTimeout(predictionTimer);
       acceptSuggestion();
     }
   });
