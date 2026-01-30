@@ -52,7 +52,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
-        collected.push(...json.map(i => i.title || i.selftext || i));
+        let texts = [];
+        if (Array.isArray(json)) {
+          texts = json.map(i => typeof i === "string" ? i : (i.title || "") + " " + (i.selftext || "")).filter(Boolean);
+        } else if (json?.data?.children) {
+          texts = json.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`).filter(Boolean);
+        }
+        collected.push(...texts);
       } catch (e) {
         console.warn("Skipped corpus", url, e);
       }
@@ -61,13 +67,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadCorpora() {
+    editor.style.visibility = "hidden"; // hide editor until corpora ready
     corpora.masc = await loadSide(CORPUS_URLS.masc);
     corpora.fem  = await loadSide(CORPUS_URLS.fem);
-
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
     if (!corpora.fem.length) corpora.fem = [...FALLBACK.fem];
-
     ready = true;
+    editor.style.visibility = "visible"; // show editor now
     console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
   loadCorpora();
@@ -121,8 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function showPrediction(text) {
     suggestionSpan.textContent = "";
     if (!text) return;
-
-    text.split(/\s+/).forEach((word) => {
+    text.split(/\s+/).forEach(word => {
       const span = document.createElement("span");
       span.textContent = word + " ";
       span.className = "word";
@@ -159,11 +164,11 @@ document.addEventListener("DOMContentLoaded", () => {
   editor.addEventListener("input", () => {
     const text = editor.innerText;
 
-    // Rotating suggestions for first sentence
+    if (!ready) return; // ignore input until corpora ready
+
     if (text === "I am ") startRotating();
     else stopRotating();
 
-    // Continuous prediction after space
     if (text.endsWith(" ") && text.trim().length > 3) {
       clearTimeout(predictionTimer);
       predictionTimer = setTimeout(() => {
@@ -180,7 +185,5 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize rotating on load if needed
   if (editor.innerText.trim() === "I am") startRotating();
-
 });
