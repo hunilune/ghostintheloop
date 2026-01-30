@@ -27,14 +27,13 @@ body {
 
 /* H1 override for editable content */
 .editable h1,
-h1.editable {
+  h1.editable {
   font-family: Cigars, serif;
   font-weight: normal;
-  font-size: 2.4rem !important; /* fixed size */
+  font-size: 2.4rem !important;
   margin: 0;
 }
 
-/* Other headings */
 h2 {
   font-family: Cigars, serif;
   font-weight: normal;
@@ -75,18 +74,18 @@ h6 {
 .editable .suggestion {
   pointer-events: none;
   user-select: none;
-  font-family: inherit;
-  font-size: inherit;
-  line-height: inherit;
+  font-family: Social, sans-serif; /* matches paragraph font */
+  font-size: 1rem;
+  line-height: 1.4;
 }
 
 /* Words for predictive text */
 .editable .suggestion .word {
   display: inline-block;
-  margin-right: 0.05em;
   opacity: 0;
   transform: scale(0.95);
-  transition: opacity 0.4s ease, transform 0.4s ease, font-weight 0.4s ease, color 0.4s ease;
+  transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease;
+  margin-right: 0.05em;
 }
 
 /* Output or Predictive Text */
