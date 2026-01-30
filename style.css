@@ -9,6 +9,18 @@
   src: url('OfficeTimesRoundMono-Regular.otf') format('opentype');
 }
 
+.fragment-mono-regular {
+  font-family: "Fragment Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
+}
+
+.fragment-mono-regular-italic {
+  font-family: "Fragment Mono", monospace;
+  font-weight: 400;
+  font-style: italic;
+}
+
 /* Root variables */
 :root {
   --fatigue: 0;
