@@ -6,14 +6,17 @@ document.addEventListener("DOMContentLoaded", () => {
   const CORPUS_URLS = {
     masc: [
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json",
-      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
+      "https://hunilune.github.io/ghostintheloop/AskMenOver30.json",
+      "https://hunilune.github.io/ghostintheloop/MensRights.json",
+      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json",
+      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json"
     ],
     fem: [
       "https://hunilune.github.io/ghostintheloop/AskWomen.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json",
+      "https://hunilune.github.io/ghostintheloop/AskFeminists.json",
+      "https://hunilune.github.io/ghostintheloop/Feminism.json",
       "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json",
-      "https://hunilune.github.io/ghostintheloop/AskFeminists.json"
+      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json"
     ]
   };
 
@@ -38,7 +41,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const editor = document.querySelector("#editor");
   let suggestionSpan = null;
-  let typeCount = 0; // Tracks number of inputs for dynamic scaling
+  let typeCount = 0;
 
   /******************************
    * LOAD CORPORA
@@ -49,12 +52,15 @@ document.addEventListener("DOMContentLoaded", () => {
     for (const url of CORPUS_URLS[side]) {
       try {
         const res = await fetch(url);
-        if (!res.ok) continue;
+        if (!res.ok) {
+          console.warn("Failed to fetch:", url);
+          continue;
+        }
         const json = await res.json();
         const extracted = extractText(json);
         collected.push(...extracted);
       } catch (err) {
-        console.warn("Skipped corpus:", url);
+        console.warn("Skipped corpus due to error:", url, err);
       }
     }
 
@@ -82,12 +88,22 @@ document.addEventListener("DOMContentLoaded", () => {
    * EXTRACT TEXT
    ******************************/
   function extractText(src) {
-    if (Array.isArray(src)) return src;
+    // If it's already an array
+    if (Array.isArray(src)) {
+      return src.map(item => {
+        if (typeof item === "string") return item;
+        if (item.title || item.selftext) return `${item.title || ""} ${item.selftext || ""}`;
+        return "";
+      }).filter(Boolean);
+    }
+
+    // Reddit-style
     if (Array.isArray(src?.data?.children)) {
       return src.data.children.map(c =>
         `${c.data.title || ""} ${c.data.selftext || ""}`
       );
     }
+
     return [];
   }
 
@@ -96,13 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function normalize(arr) {
     return arr
-      .map(t =>
-        String(t)
-          .toLowerCase()
-          .replace(/[^\w\s]/g, "")
-          .replace(/\s+/g, " ")
-          .trim()
-      )
+      .map(t => String(t).trim().replace(/\s+/g, " "))
       .filter(t => t.length > 20);
   }
 
@@ -117,7 +127,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * VOICE DECISION (WEIGHTED)
+   * VOICE DECISION
    ******************************/
   function decideVoice(input) {
     const words = input.split(/\s+/);
@@ -187,20 +197,17 @@ document.addEventListener("DOMContentLoaded", () => {
       span.textContent = w + " ";
       span.className = "word";
 
-      // Dynamic scaling based on typing count
       if (prediction.voice === "masc" && activeVoice === "masc") {
         span.classList.add("boost", "masc");
         const scale = 1 + typeCount * 0.02;
         span.style.transform = `scale(${scale})`;
         span.style.fontWeight = `${600 + typeCount * 5}`;
-      } 
-      else if (prediction.voice === "masc" && activeVoice === "fem") {
+      } else if (prediction.voice === "masc" && activeVoice === "fem") {
         span.classList.add("cross", "masc");
         const scale = Math.max(0.7, 1 - typeCount * 0.02);
         span.style.transform = `scale(${scale})`;
         span.style.opacity = `${Math.max(0.35, 1 - typeCount * 0.04)}`;
-      } 
-      else {
+      } else {
         span.classList.add("aligned", prediction.voice);
         span.style.color = prediction.voice === "masc" ? "#3b6cff" : "#d44b8c";
       }
@@ -227,11 +234,10 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     range.insertNode(frag);
-
     suggestionSpan.remove();
     suggestionSpan = null;
 
-    typeCount++; // Increment typing for scaling
+    typeCount++;
     placeCaretAtEnd(editor);
   }
 
