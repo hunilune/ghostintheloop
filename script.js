@@ -9,14 +9,12 @@ document.addEventListener("DOMContentLoaded", () => {
       "https://hunilune.github.io/ghostintheloop/AskMenOver30.json",
       "https://hunilune.github.io/ghostintheloop/MensRights.json",
       "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_masc_sample.json"
     ],
     fem: [
       "https://hunilune.github.io/ghostintheloop/AskWomen.json",
       "https://hunilune.github.io/ghostintheloop/AskFeminists.json",
       "https://hunilune.github.io/ghostintheloop/Feminism.json",
       "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json",
-      "https://hunilune.github.io/ghostintheloop/gutenberg_fem_sample.json"
     ]
   };
 
@@ -180,8 +178,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   /******************************
    * RENDER SUGGESTION
-   ******************************/
-  function showSuggestion(prediction) {
+   ******************************/function showSuggestion(prediction) {
   if (!editor) return;
 
   // Create suggestion container if it doesn't exist
@@ -194,43 +191,40 @@ document.addEventListener("DOMContentLoaded", () => {
   // Clear previous suggestion
   suggestionSpan.innerHTML = "";
 
-  // Decode HTML entities
-  const text = decodeHTMLEntities(prediction.text);
-
-  // Split text into words, but keep punctuation attached
-  // This regex splits on spaces but keeps punctuation with words
-  const words = text.match(/\S+\s*|[\n\r]+/g) || [];
-
-  words.forEach(word => {
+  // Split into words for dynamic effects
+  const words = prediction.text.split(/\s+/).map((word, i) => {
     const span = document.createElement("span");
-    span.textContent = word;
+    span.textContent = word.toLowerCase() + " "; // lowercase
+    span.className = "word";
 
-    // Apply dynamic scaling for masc/fem voice
-    if (prediction.voice === "masc" && activeVoice === "masc") {
-      span.classList.add("boost", "masc");
-      const scale = 1 + typeCount * 0.02;
+    // Dynamic scaling and color by voice
+    if (prediction.voice === "masc") {
+      span.style.color = "#3b6cff";
+      const scale = 1 + typeCount * 0.02 + 0.05; // slightly bigger
       span.style.transform = `scale(${scale})`;
       span.style.fontWeight = `${600 + typeCount * 5}`;
-    } else if (prediction.voice === "masc" && activeVoice === "fem") {
-      span.classList.add("cross", "masc");
-      const scale = Math.max(0.7, 1 - typeCount * 0.02);
-      span.style.transform = `scale(${scale})`;
-      span.style.opacity = `${Math.max(0.35, 1 - typeCount * 0.04)}`;
     } else {
-      span.classList.add("aligned", prediction.voice);
-      span.style.color = prediction.voice === "masc" ? "#3b6cff" : "#d44b8c";
+      span.style.color = "#d44b8c";
+      const scale = Math.max(0.85, 1 - typeCount * 0.02); // slightly smaller
+      span.style.transform = `scale(${scale})`;
+      span.style.fontWeight = "500";
     }
 
-    // Match the editor font & style exactly
+    // Match editor font and line-height
     span.style.fontFamily = "inherit";
     span.style.fontSize = "inherit";
     span.style.lineHeight = "inherit";
-    span.style.fontWeight = "inherit";
-    span.style.fontStyle = "inherit";
-    span.style.textTransform = "none"; // no auto capitalization
 
-    suggestionSpan.appendChild(span);
+    // Add blur-in / fade-in effect
+    span.style.opacity = "0";
+    span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
+    setTimeout(() => span.classList.add("visible"), 10);
+
+    return span;
   });
+
+  // Append all words to the suggestion container
+  words.forEach(w => suggestionSpan.appendChild(w));
 }
 
 /******************************
