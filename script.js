@@ -287,7 +287,7 @@ editor.appendChild(suggestionSpan);
 
     if (rotatingActive && text !== "I am") stopRotatingSuggestions();
 
-    if (!rotatingActive && text.endsWith(" ") && text.trim().length > 3) {
+    if (!rotatingActive && text.endsWith(",") && text.trim().length > 3) {
       predictionTimer = setTimeout(() => {
         const prediction = generate(text.trim());
         showSuggestion(prediction);
