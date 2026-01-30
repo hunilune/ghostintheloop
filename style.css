@@ -72,7 +72,8 @@ h6 { font-family: Social, sans-serif; font-weight: normal; font-size: 13px; opac
   pointer-events: none;
   font-family: Office Times, serif;
   line-height: 1.4;
-  white-space: pre;
+  white-space: nowrap;
+  display: inline;
   color: rgba(0,0,0,0.25);
 }
 
