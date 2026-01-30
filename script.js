@@ -96,19 +96,36 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * NORMALIZE & CLEAN TEXT
+   * Tidy up the predictive text 
    ******************************/
   function normalize(arr) {
-    return arr
-      .map(t => decodeHTMLEntities(t))
-      .map(t => t.replace(/&[a-z]+;/gi, m => {
-        if (m === "&amp;") return "&"; // fix &amp;
-        return "";
-      }))
-      .map(t => t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "")) // remove emojis
-      .map(t => String(t).trim().replace(/\s+/g, " "))
-      .filter(t => t.length > 20);
-  }
+  // Add common spelling corrections here
+  const corrections = {
+    teir: "their",
+    recieve: "receive",
+    definately: "definitely",
+    // add more as needed
+  };
+
+  return arr
+    // Decode HTML entities like &amp;
+    .map(t => decodeHTMLEntities(t))
+    .map(t => t.replace(/&[a-z]+;/gi, m => (m === "&amp;" ? "&" : "")))
+    // Remove emojis
+    .map(t => t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""))
+    // Normalize whitespace
+    .map(t => String(t).trim().replace(/\s+/g, " "))
+    // Apply spelling corrections
+    .map(t => {
+      Object.keys(corrections).forEach(key => {
+        const re = new RegExp(`\\b${key}\\b`, "gi");
+        t = t.replace(re, corrections[key]);
+      });
+      return t;
+    })
+    // Keep only reasonably long sentences
+    .filter(t => t.length > 20);
+}
 
   /******************************
    * EMOTION DETECTION
