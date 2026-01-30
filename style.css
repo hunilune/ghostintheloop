@@ -21,13 +21,6 @@
   font-style: italic;
 }
 
-.faustina-<uniquifier> {
-  font-family: "Faustina", serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-}
-
 /* Root variables */
 :root {
   --fatigue: 0;
@@ -43,7 +36,7 @@ body {
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 }
 
-/* Writing surface overrides body centering */
+/* Writing surface */
 .writing-surface {
   display: flex;
   flex-direction: column;
@@ -51,7 +44,7 @@ body {
   position: relative;
 }
 
-/* Image always centered, near top */
+/* Image always centered */
 .inline-image {
   width: 120px;
   margin-top: 1rem;
@@ -59,15 +52,15 @@ body {
   transition: margin-bottom 0.6s ease, filter 0.6s ease;
 }
 
-/* Editor centered */
-#editor {
-  text-align: center;
-  max-width: 700px;
+/* Editor container */
+.editor-wrapper {
+  display: inline-block;
+  position: relative;
 }
 
 /* H1 override for editable content */
 .editable h1,
-  h1.editable {
+h1.editable {
   font-family: Faustina, serif;
   font-weight: normal;
   text-align: center;
@@ -97,65 +90,50 @@ h6 {
 
 /* Editable area */
 .editable {
-  /*! min-height: 4rem; */
-  /*! padding: 1rem; */
   font-family: Office Times, serif;
   font-size: 18px;
   line-height: 1.4;
   outline: none;
-  /*! white-space: pre-wrap; */
+  color: rgba(0,0,0,0.7);
+  position: relative;
 }
 
 /* Predictive text */
-.editable .suggestion {
+.suggestion {
+  position: absolute;
+  top: 0;
+  left: 0;
   pointer-events: none;
-  user-select: none;
-  font-family: Office Times, serif; /* matches paragraph font */
-  font-size: inherit;
+  font-family: Office Times, serif;
   line-height: 1.4;
+  white-space: pre; /* preserve spacing exactly */
+  color: rgba(0,0,0,0.25); /* default faint text */
 }
 
-/* Words for predictive text */
-/* Predictive words */
-.editable .suggestion .word {
+/* Individual predictive words */
+.suggestion .word {
   display: inline;
   opacity: 0;
   transform: scale(0.96);
   transition: opacity 0.4s ease, transform 0.4s ease;
 }
 
-.mode-masc .suggestion .word { opacity: 0.8; }
-.mode-fem  .suggestion .word { opacity: 0.3; }
-
-/* Masculine prediction: assertive, solid */
-.mode-masc .editable .suggestion .word {
-  color: #000;
+/* Mode styling */
+.mode-masc .suggestion .word {
+  color: rgba(0,0,0,0.7);
   font-weight: 600;
-  opacity: 1;
 }
 
-/* Feminine prediction: quieter, lighter */
-.mode-fem .editable .suggestion .word {
-  color: #000;
+.mode-fem .suggestion .word {
+  color: rgba(0,0,0,0.25);
   font-weight: 300;
-  opacity: 0.25;
 }
 
-/* Typed (non-predictive) text */
-.editable {
-  color: rgba(0, 0, 0, 0.7);
-}
-
-/* Output or Predictive Text */
+/* Output or Predicted Text */
 .predicted {
   display: block;
   margin-top: 0.5em;
-  line-height: 1.4;
-  font-family: Office Times, serif; /* matches paragraph font */
-  transition:
-    transform 0.45s ease,
-    opacity 0.45s ease,
-    filter 0.45s ease;
+  font-family: Office Times, serif;
   font-size: calc(48px - (var(--fatigue) * 0.03));
   line-height: calc(1.6 - (var(--fatigue) * 0.05));
   font-weight: calc(400 - (var(--fatigue) * 20));
@@ -163,7 +141,6 @@ h6 {
 }
 
 /* Notes and misc */
-
 .note {
   font-family: Social;
   margin-top: 3rem;
@@ -172,19 +149,12 @@ h6 {
   text-align: center;
 }
 
-/* Explicitly disable wrapping */
-.no-wrap {
-  float: none !important;
-  shape-outside: none !important;
-}
-
 .characters {
- font-family: Social;
+  font-family: Social;
   margin-top: 3rem;
   font-size: 0.8rem;
   opacity: 0.4;
 }
-
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
@@ -192,4 +162,3 @@ h6 {
     transition: none !important;
   }
 }
-    
