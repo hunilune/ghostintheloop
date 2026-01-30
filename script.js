@@ -327,7 +327,7 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * INPUT EVENTS
    ******************************/
-  if (editor && editor.innerText.trim() === "I am") startRotatingSuggestions();
+  if (editor && editor.innerText.trim() === "I am ") startRotatingSuggestions();
 
   editor.addEventListener("keydown", (e) => {
     // Stop rotating suggestions if typing
@@ -356,7 +356,7 @@ document.addEventListener("DOMContentLoaded", () => {
   editor.addEventListener("input", () => {
     const text = editor.innerText;
 
-    if (rotatingActive && text !== "I am") stopRotatingSuggestions();
+    if (rotatingActive && text !== "I am ") stopRotatingSuggestions();
 
     if (!rotatingActive && text) {
       // Only generate prediction after space following typed text
