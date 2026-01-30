@@ -32,7 +32,7 @@ body {
   font-family: Cigars, serif;
   font-weight: normal;
   font-size: 1.7rem !important;
-  margin-top: 2rem;
+  margin: 0;
 }
 
 h2 {
