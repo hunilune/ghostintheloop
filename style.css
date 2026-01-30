@@ -181,21 +181,10 @@ document.addEventListener("DOMContentLoaded", () => {
     prediction.text.split(/\s+/).forEach((word, i) => {
       const span = document.createElement("span");
       span.textContent = word.toLowerCase() + " ";
-      span.style.fontFamily = "Office Times, serif";
-      span.style.lineHeight = "1.4";
+      span.className = "word"; // CSS handles bold/faint
       span.style.opacity = 0;
-      span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
-
-      if (prediction.voice === "masc") {
-        span.style.fontWeight = 700;
-        span.style.color = "rgba(0,0,0,0.7)";
-        span.style.transform = "scale(1.1)";
-      } else {
-        span.style.fontWeight = 300;        
-        span.style.color = "rgba(0,0,0,0.25)";
-        span.style.transform = "scale(0.9)";
-      }
-
+      span.style.transform = "scale(0.96)";
+      span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
       suggestionSpan.appendChild(span);
 
       setTimeout(() => {
@@ -229,7 +218,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const sel = window.getSelection();
     sel.removeAllRanges();
 
-    // Move cursor to the very end
     let node = el;
     while (node.lastChild) node = node.lastChild;
     const range = document.createRange();
@@ -256,14 +244,11 @@ document.addEventListener("DOMContentLoaded", () => {
     firstSentenceSuggestions.forEach((word, i) => {
       const span = document.createElement("span");
       span.textContent = i < firstSentenceSuggestions.length - 1 ? word + " " : word; // NO trailing space on last
+      span.className = "word";
       span.style.opacity = 0;
-      span.style.fontFamily = "Office Times, serif";
-      span.style.lineHeight = "1.4";
+      span.style.transform = "scale(0.9)";
       span.style.transition = "opacity 0.6s ease, transform 0.6s ease";
       span.style.cursor = "pointer";
-      span.style.fontWeight = 300;
-      span.style.color = "rgba(0,0,0,0.25)";
-      span.style.transform = "scale(0.9)";
       span.addEventListener("click", () => insertRotatingSuggestion(span));
       suggestionSpan.appendChild(span);
     });
@@ -351,7 +336,6 @@ document.addEventListener("DOMContentLoaded", () => {
     if (rotatingActive && text !== "I am") stopRotatingSuggestions();
 
     if (!rotatingActive && text) {
-      // Only trigger prediction if last char typed is space AND text after "I am "
       if (text.endsWith(" ") && text.trim().length > 3) {
         if (predictionTimer) clearTimeout(predictionTimer);
         predictionTimer = setTimeout(() => {
