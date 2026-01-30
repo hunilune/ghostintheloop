@@ -20,9 +20,8 @@ body {
   background: #F0F0F0;
   cursor: url("Cursor.png"), auto;
   text-align: center;
-  padding: 28px;
   padding-top: 7rem;
-  padding-bottom: 1rem;
+  padding-bottom: 4rem;
   line-height: 1.1;
   transition: all 0.6s ease;
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
@@ -33,21 +32,23 @@ body {
   h1.editable {
   font-family: Office Times, serif;
   font-weight: normal;
-  font-size: 48px !important;
+  font-size: 33px !important;
+  letter-spacing: -0.5px;
   margin: 0;
 }
 
 h2 {
-  font-family: Social, sans-serif;
-  font-weight: normal;
-  font-size: 40px;
+  /*! font-family: Social, sans-serif; */
+  /*! font-weight: normal; */
+  /*! font-size: 40px; */
 }
 
 h6 {
   font-family: Social, sans-serif;
   font-weight: normal;
-  font-size: 24px;
+  font-size: 12px;
   opacity: 0.75;
+  padding-bottom: 3rem;
 }
 
 /* Paragraph styling */
@@ -57,19 +58,18 @@ h6 {
   font-size: 1rem;
   padding-top: 4rem;
   padding-bottom: 2rem;
-  padding-left: 88px;
   text-wrap: pretty;
 }
 
 /* Editable area */
 .editable {
   min-height: 4rem;
-  padding: 1rem;
+  /*! padding: 1rem; */
   font-family: Office Times, serif;
-  font-size: 48px;
+  font-size: 24px;
   line-height: 1.4;
   outline: none;
-  white-space: pre-wrap;
+  /*! white-space: pre-wrap; */
 }
 
 /* Predictive text */
@@ -85,6 +85,7 @@ h6 {
 .editable .suggestion .word {
   display: inline;
   opacity: 0;
+  font-family: Office Times, serif; /* matches paragraph font */
   transform: scale(0.95);
   transition: opacity 0.4s ease, transform 0.4s ease, color 0.4s ease;
   margin-right: 0.05em;
@@ -95,6 +96,7 @@ h6 {
   display: block;
   margin-top: 0.5em;
   line-height: 1.4;
+  font-family: Office Times, serif; /* matches paragraph font */
   transition:
     transform 0.45s ease,
     opacity 0.45s ease,
@@ -129,22 +131,21 @@ h6 {
 }
 
 /* Notes and misc */
+
 .note {
   font-family: Social;
   margin-top: 3rem;
-  font-size: 0.9rem;
+  font-size: 0.8rem;
   opacity: 0.6;
-  padding-left: 80px;
 }
 
 .characters {
-  font-family: PT Mono;
+  font-family: Social;
   max-width: 900px;
   margin-top: 3rem;
-  font-size: 0.5rem;
-  text-align: right;
-  opacity: 0.6;
-  padding-left: 80px;
+  font-size: 0.75rem;
+  text-align: left;
+  opacity: 0.7;
 }
 
 /* Accessibility */
