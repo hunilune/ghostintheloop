@@ -304,15 +304,9 @@ document.addEventListener("DOMContentLoaded", () => {
   showSuggestion(prediction);
 });
 
-  editor.addEventListener("keydown", e => {
-  if (e.key === "." || e.key === "!" || e.key === "?") {
-    setTimeout(pushImageDown, 50);
-  }
-
   if (e.key === "Enter") {
     e.preventDefault();
     acceptSuggestion();
-    pushImageDown();
   }
 });
 
