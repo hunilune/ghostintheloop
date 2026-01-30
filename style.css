@@ -33,23 +33,21 @@ body {
   h1.editable {
   font-family: Office Times, serif;
   font-weight: normal;
-  font-size: 1.7rem !important;
+  font-size: 48px !important;
   margin: 0;
 }
 
 h2 {
   font-family: Social, sans-serif;
   font-weight: normal;
-  font-size: 1rem;
-  padding-left: 80px;
+  font-size: 40px;
 }
 
 h6 {
   font-family: Social, sans-serif;
   font-weight: normal;
-  font-size: 0.9rem;
+  font-size: 24px;
   opacity: 0.75;
-  padding-left: 88px;
 }
 
 /* Paragraph styling */
@@ -68,10 +66,9 @@ h6 {
   min-height: 4rem;
   padding: 1rem;
   font-family: Office Times, serif;
-  font-size: 1rem;
+  font-size: 48px;
   line-height: 1.4;
   outline: none;
-  padding-left: 80px;
   white-space: pre-wrap;
 }
 
@@ -79,8 +76,8 @@ h6 {
 .editable .suggestion {
   pointer-events: none;
   user-select: none;
-  font-family: Cigars, serif; /* matches paragraph font */
-  font-size: 1rem;
+  font-family: Office Times, serif; /* matches paragraph font */
+  font-size: inherit;
   line-height: 1.4;
 }
 
@@ -102,7 +99,7 @@ h6 {
     transform 0.45s ease,
     opacity 0.45s ease,
     filter 0.45s ease;
-  font-size: calc(1rem - (var(--fatigue) * 0.03));
+  font-size: calc(48px - (var(--fatigue) * 0.03));
   line-height: calc(1.6 - (var(--fatigue) * 0.05));
   font-weight: calc(400 - (var(--fatigue) * 20));
   transition: all 0.4s ease;
