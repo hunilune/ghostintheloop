@@ -8,45 +8,39 @@ document.addEventListener("DOMContentLoaded", () => {
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
       "https://hunilune.github.io/ghostintheloop/AskMenOver30.json",
       "https://hunilune.github.io/ghostintheloop/MensRights.json",
-      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json",
+      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
     ],
     fem: [
       "https://hunilune.github.io/ghostintheloop/AskWomen.json",
       "https://hunilune.github.io/ghostintheloop/AskFeminists.json",
       "https://hunilune.github.io/ghostintheloop/Feminism.json",
-      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json",
+      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json"
     ]
   };
 
   const FALLBACK = {
-    masc: ["Fallback male sentence for testing"],
-    fem: ["Fallback female sentence for testing"]
+    masc: ["Fallback male sentence for testing."],
+    fem: ["Fallback female sentence for testing."]
   };
 
   const MAX_OUTPUT_WORDS = 22;
-  const EMOTIONS = {
-    sad:     { fem: 1.0, masc: 0.25 },
-    lonely:  { fem: 0.9, masc: 0.3 },
-    anxious: { fem: 0.8, masc: 0.4 },
-    angry:   { fem: 0.4, masc: 1.0 },
-    tired:   { fem: 0.6, masc: 0.6 }
-  };
+  const PREDICTION_DELAY = 2000;
+  const firstSentenceSuggestions = ["sad ", "lonely ", "angry"];
 
+  /******************************
+   * STATE
+   ******************************/
   let corpora = { masc: [], fem: [] };
   let ready = false;
   let activeVoice = "masc";
+  let typeCount = 0;
+  let predictionTimer = null;
+  let rotatingTimer = null;
+  let rotatingIndex = 0;
+  let rotatingActive = false;
 
   const editor = document.querySelector("#editor");
   let suggestionSpan = null;
-  let typeCount = 0;
-
-  let predictionTimer = null;
-  const PREDICTION_DELAY = 2000;
-
-  let rotatingTimer = null;
-  let rotatingIndex = 0;
-  const firstSentenceSuggestions = ["sad ", "lonely ", "angry"];
-  let rotatingActive = false;
 
   /******************************
    * LOAD CORPORA
@@ -60,18 +54,18 @@ document.addEventListener("DOMContentLoaded", () => {
         const json = await res.json();
         collected.push(...extractText(json));
       } catch (err) {
-        console.warn("Skipped corpus due to error:", url, err);
+        console.warn("Skipped corpus:", url, err);
       }
     }
-    return normalize(collected);
+    return collected.length ? normalize(collected) : [];
   }
 
   async function loadCorpora() {
     corpora.masc = await loadSide(CORPUS_URLS.masc);
-    corpora.fem  = await loadSide(CORPUS_URLS.fem);
+    corpora.fem = await loadSide(CORPUS_URLS.fem);
 
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length)  corpora.fem = [...FALLBACK.fem];
+    if (!corpora.fem.length) corpora.fem = [...FALLBACK.fem];
 
     ready = true;
     console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
@@ -79,14 +73,11 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadCorpora();
 
-  /******************************
-   * EXTRACT & NORMALIZE TEXT
-   ******************************/
   function extractText(src) {
     if (Array.isArray(src)) {
-      return src.map(item => {
-        if (typeof item === "string") return item;
-        if (item.title || item.selftext) return `${item.title || ""} ${item.selftext || ""}`;
+      return src.map(i => {
+        if (typeof i === "string") return i;
+        if (i.title || i.selftext) return `${i.title || ""} ${i.selftext || ""}`;
         return "";
       }).filter(Boolean);
     }
@@ -97,56 +88,16 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function normalize(arr) {
-    const corrections = { teir: "their", recieve: "receive", definately: "definitely" };
     return arr
-      .map(t => decodeHTMLEntities(t))
-      .map(t => t.replace(/&[a-z]+;/gi, m => (m === "&amp;" ? "&" : "")))
-      .map(t => t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""))
       .map(t => String(t).trim().replace(/\s+/g, " "))
-      .map(t => {
-        Object.keys(corrections).forEach(key => {
-          const re = new RegExp(`\\b${key}\\b`, "gi");
-          t = t.replace(re, corrections[key]);
-        });
-        return t;
-      })
       .filter(t => t.length > 20);
-  }
-
-  function decodeHTMLEntities(str) {
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = str;
-    return textarea.value;
-  }
-
-  /******************************
-   * EMOTION DETECTION
-   ******************************/
-  function detectEmotion(text) {
-    for (const e in EMOTIONS) if (text.includes(e)) return e;
-    return null;
   }
 
   /******************************
    * VOICE DECISION
    ******************************/
   function decideVoice(input) {
-    const words = input.split(/\s+/);
-    const firstInput = typeCount === 0;
-    const emotion = detectEmotion(input);
-
-    if (firstInput && emotion && EMOTIONS[emotion]?.fem > 0.7) return "fem";
-
-    function score(corpus) {
-      return corpus.reduce((sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0.1), 0), 0);
-    }
-
-    const mScore = score(corpora.masc);
-    const fScore = score(corpora.fem);
-
-    if (mScore > fScore) return "masc";
-    if (fScore > mScore) return "fem";
-    return activeVoice;
+    return activeVoice; // can extend with scoring/emotion logic
   }
 
   /******************************
@@ -161,8 +112,7 @@ document.addEventListener("DOMContentLoaded", () => {
     let candidates = pool.filter(t => words.some(w => t.includes(w)));
     if (!candidates.length) candidates = pool;
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    const out = chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ");
-    return { text: out, voice };
+    return { text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "), voice };
   }
 
   /******************************
@@ -176,6 +126,7 @@ document.addEventListener("DOMContentLoaded", () => {
       suggestionSpan.className = "suggestion";
       editor.appendChild(suggestionSpan);
     }
+
     suggestionSpan.innerHTML = "";
     setMode(prediction.voice);
 
@@ -188,8 +139,8 @@ document.addEventListener("DOMContentLoaded", () => {
       span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
 
       if (prediction.voice === "masc") {
-        span.style.fontWeight = 600;
-        span.style.color = "rgba(0,0,0,0.8)";
+        span.style.fontWeight = 700;
+        span.style.color = "rgba(0,0,0,0.7)";
       } else {
         span.style.fontWeight = 300;
         span.style.color = "rgba(0,0,0,0.25)";
@@ -211,11 +162,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const frag = document.createDocumentFragment();
     Array.from(suggestionSpan.children).forEach(node => frag.appendChild(document.createTextNode(node.textContent)));
+
     suggestionSpan.innerHTML = "";
     editor.appendChild(frag);
-
     placeCaretAtEnd(editor);
-    typeCount++;
   }
 
   function placeCaretAtEnd(el) {
@@ -242,7 +192,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     suggestionSpan.innerHTML = "";
-
     firstSentenceSuggestions.forEach((word, i) => {
       const span = document.createElement("span");
       span.textContent = i < firstSentenceSuggestions.length - 1 ? word + " " : word;
@@ -251,7 +200,6 @@ document.addEventListener("DOMContentLoaded", () => {
       span.style.transform = "scale(0.9)";
       span.style.transition = "opacity 0.6s ease, transform 0.6s ease";
       span.style.cursor = "pointer";
-      span.style.fontFamily = "Office Times, serif";
       span.addEventListener("click", () => insertRotatingSuggestion(span));
       suggestionSpan.appendChild(span);
     });
@@ -265,7 +213,6 @@ document.addEventListener("DOMContentLoaded", () => {
       rotatingIndex = (rotatingIndex + 1) % spans.length;
       rotatingTimer = setTimeout(cycle, 1000);
     }
-
     cycle();
   }
 
@@ -288,7 +235,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const frag = document.createDocumentFragment();
     frag.appendChild(document.createTextNode(span.textContent));
     range.insertNode(frag);
-    range.collapse(false);
+    range.setStartAfter(range.endContainer);
+    range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
 
@@ -310,29 +258,24 @@ document.addEventListener("DOMContentLoaded", () => {
   if (editor && editor.innerText.trim() === "I am") startRotatingSuggestions();
 
   editor.addEventListener("keydown", (e) => {
-    if (rotatingActive && !["Enter"].includes(e.key)) {
-      stopRotatingSuggestions();
-      if (suggestionSpan) { suggestionSpan.remove(); suggestionSpan = null; }
-    }
+    if (rotatingActive && !["Enter"].includes(e.key)) stopRotatingSuggestions();
 
     if (e.key === "Enter") {
       e.preventDefault();
-      if (rotatingActive && suggestionSpan) {
-        const visibleSpan = Array.from(suggestionSpan.children).find(s => parseFloat(s.style.opacity) > 0);
-        if (visibleSpan) insertRotatingSuggestion(visibleSpan);
-      } else {
-        if (predictionTimer) clearTimeout(predictionTimer);
-        acceptSuggestion();
-      }
+      acceptSuggestion();
+      typeCount = 0;
+      setMode(activeVoice); // preserve masc/fem styling
     }
   });
 
   editor.addEventListener("input", () => {
-    const text = editor.innerText;
+    const text = editor.innerText.replace(/\n/g, "");
+
     if (rotatingActive && text !== "I am") stopRotatingSuggestions();
 
-    if (!rotatingActive && text) {
-      if (text.endsWith(" ") && text.trim().length > 3) {
+    if (!rotatingActive && text.trim().length > 3) {
+      // generate prediction on any trailing whitespace (space, tab)
+      if (/\s$/.test(text)) {
         if (predictionTimer) clearTimeout(predictionTimer);
         predictionTimer = setTimeout(() => {
           const prediction = generate(text.trim());
