@@ -42,6 +42,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let rotateTimer = null;
   let predictionTimer = null;
 
+  let queuedInput = ""; // store input typed while loading
+
   /******************************
    * LOAD CORPORA
    ******************************/
@@ -67,14 +69,19 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadCorpora() {
-    editor.style.visibility = "hidden"; // hide editor until corpora ready
     corpora.masc = await loadSide(CORPUS_URLS.masc);
     corpora.fem  = await loadSide(CORPUS_URLS.fem);
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
     if (!corpora.fem.length) corpora.fem = [...FALLBACK.fem];
     ready = true;
-    editor.style.visibility = "visible"; // show editor now
     console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
+
+    // Generate prediction for queued input if any
+    if (queuedInput) {
+      const prediction = generatePrediction(queuedInput);
+      showPrediction(prediction);
+      queuedInput = "";
+    }
   }
   loadCorpora();
 
@@ -106,6 +113,13 @@ document.addEventListener("DOMContentLoaded", () => {
     editor.innerText = "I am " + word + " ";
     placeCaretAtEnd(editor);
     typeCount = 1;
+
+    if (ready) {
+      const prediction = generatePrediction(editor.innerText.trim());
+      showPrediction(prediction);
+    } else {
+      queuedInput = editor.innerText.trim();
+    }
   }
 
   /******************************
@@ -164,7 +178,10 @@ document.addEventListener("DOMContentLoaded", () => {
   editor.addEventListener("input", () => {
     const text = editor.innerText;
 
-    if (!ready) return; // ignore input until corpora ready
+    if (!ready) {
+      queuedInput = text;
+      return;
+    }
 
     if (text === "I am ") startRotating();
     else stopRotating();
@@ -186,4 +203,5 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   if (editor.innerText.trim() === "I am") startRotating();
+
 });
