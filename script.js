@@ -19,8 +19,8 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const FALLBACK = {
-    masc: ["Fallback male sentence"],
-    fem: ["Fallback female sentence"]
+    masc: ["fallback male sentence"],
+    fem: ["fallback female sentence"]
   };
 
   const firstSentenceSuggestions = ["sad", "lonely", "angry"];
@@ -46,30 +46,32 @@ document.addEventListener("DOMContentLoaded", () => {
    * LOAD CORPORA
    ******************************/
   async function loadSide(urls) {
-    const collected = [];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) continue;
-        const json = await res.json();
-        collected.push(...json.map(i => i.title || i.selftext || i));
-      } catch (e) {
-        console.warn("Skipped corpus", url, e);
+  const collected = [];
+  for (const url of urls) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) continue;
+      const json = await res.json();
+      
+      // Robust extraction
+      let texts = [];
+      if (Array.isArray(json)) {
+        texts = json.map(i => {
+          if (typeof i === "string") return i;
+          return (i.title || "") + " " + (i.selftext || "");
+        }).filter(Boolean);
+      } else if (json?.data?.children) {
+        texts = json.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`).filter(Boolean);
       }
+
+      collected.push(...texts);
+
+    } catch (e) {
+      console.warn("Skipped corpus", url, e);
     }
-    return collected.length ? collected : [];
   }
-
-  async function loadCorpora() {
-    corpora.masc = await loadSide(CORPUS_URLS.masc);
-    corpora.fem  = await loadSide(CORPUS_URLS.fem);
-
-    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length) corpora.fem = [...FALLBACK.fem];
-
-    ready = true;
-    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
-  }
+  return collected.length ? collected : [];
+}
   loadCorpora();
 
   /******************************
