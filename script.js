@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Rotating ghost suggestions
   let rotatingTimer = null;
   let rotatingIndex = 0;
-  const firstSentenceSuggestions = ["sad ", "lonely ", "wondering"];
+  const firstSentenceSuggestions = ["sad ", "lonely ", "angry"];
   let rotatingActive = false;
 
   /******************************
@@ -172,6 +172,7 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function showSuggestion(prediction) {
     if (!editor) return;
+
     if (!suggestionSpan) {
       suggestionSpan = document.createElement("span");
       suggestionSpan.className = "suggestion";
@@ -182,21 +183,19 @@ document.addEventListener("DOMContentLoaded", () => {
 
     prediction.text.split(/\s+/).forEach((word, i) => {
       const span = document.createElement("span");
-      // lowercase for corpus predictions
-      span.textContent = word.toLowerCase() + " "; 
-      span.style.fontFamily = "Office Times, serif";
-      span.style.lineHeight = "1.4";
+      span.textContent = word.toLowerCase() + " ";
+      span.className = "word";
       span.style.opacity = 0;
-      span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
+      span.style.transform = "scale(0.96)";
+      span.style.transition = "opacity 0.4s ease, transform 0.4s ease";
 
+      // Styling for masc vs fem
       if (prediction.voice === "masc") {
         span.style.fontWeight = 700;
         span.style.color = "rgba(0,0,0,0.7)";
-        span.style.transform = "scale(1.1)";
       } else {
         span.style.fontWeight = 300;
         span.style.color = "rgba(0,0,0,0.25)";
-        span.style.transform = "scale(0.9)";
       }
 
       suggestionSpan.appendChild(span);
@@ -212,27 +211,36 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   function acceptSuggestion() {
     if (!suggestionSpan) return;
+
     const sel = window.getSelection();
     const range = sel.getRangeAt(0);
-    range.deleteContents();
-    const frag = document.createDocumentFragment();
-    Array.from(suggestionSpan.childNodes).forEach(node => {
-      frag.appendChild(document.createTextNode(node.textContent));
-    });
-    range.insertNode(frag);
+
+    // Remove ghost/predictive suggestions before inserting
     suggestionSpan.remove();
     suggestionSpan = null;
+
+    // Insert text content
+    const frag = document.createDocumentFragment();
+    Array.from(editor.querySelectorAll(".word")).forEach(node => {
+      frag.appendChild(document.createTextNode(node.textContent));
+    });
+    range.deleteContents();
+    range.insertNode(frag);
+
     typeCount++;
     placeCaretAtEnd(editor);
   }
 
   function placeCaretAtEnd(el) {
     el.focus();
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
     const sel = window.getSelection();
     sel.removeAllRanges();
+
+    let node = el;
+    while (node.lastChild) node = node.lastChild;
+    const range = document.createRange();
+    range.setStart(node, node.textContent.length);
+    range.collapse(true);
     sel.addRange(range);
   }
 
@@ -250,25 +258,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     suggestionSpan.innerHTML = "";
-    firstSentenceSuggestions.forEach(word => {
+
+    firstSentenceSuggestions.forEach((word, i) => {
       const span = document.createElement("span");
-      span.textContent = word; 
+      span.textContent = i < firstSentenceSuggestions.length - 1 ? word + " " : word; // no trailing space on last
+      span.className = "word";
       span.style.opacity = 0;
-      span.style.fontWeight = 500;
-      span.style.fontFamily = "Office Times, serif";
+      span.style.transform = "scale(0.9)";
       span.style.transition = "opacity 0.6s ease, transform 0.6s ease";
       span.style.cursor = "pointer";
-
-      // Click to start typing
+      span.style.fontFamily = "Office Times, serif";
       span.addEventListener("click", () => insertRotatingSuggestion(span));
-
       suggestionSpan.appendChild(span);
     });
 
     function cycle() {
       if (!rotatingActive) return;
       const spans = Array.from(suggestionSpan.children);
-      spans.forEach(s => s.style.opacity = 0);
+      spans.forEach(s => { s.style.opacity = 0; s.style.transform = "scale(0.9)"; });
       spans[rotatingIndex].style.opacity = 1;
       spans[rotatingIndex].style.transform = "scale(1.05)";
       rotatingIndex = (rotatingIndex + 1) % spans.length;
@@ -292,25 +299,21 @@ document.addEventListener("DOMContentLoaded", () => {
     if (suggestionSpan) suggestionSpan.remove();
     suggestionSpan = null;
 
-    // Reset "I am " placeholder
     editor.innerText = "I am ";
     placeCaretAtEnd(editor);
 
-    // Insert clicked word after "I am "
     const sel = window.getSelection();
     const range = sel.getRangeAt(0);
     const frag = document.createDocumentFragment();
     frag.appendChild(document.createTextNode(span.textContent));
     range.insertNode(frag);
-
-    // Move cursor after inserted word
     range.setStartAfter(range.endContainer);
     range.collapse(true);
     sel.removeAllRanges();
     sel.addRange(range);
 
     editor.focus();
-    typeCount = 0; // start first word
+    typeCount = 0;
   }
 
   /******************************
@@ -326,24 +329,19 @@ document.addEventListener("DOMContentLoaded", () => {
    ******************************/
   if (editor && editor.innerText.trim() === "I am") startRotatingSuggestions();
 
-  editor.addEventListener("focus", () => stopRotatingSuggestions());
-
-  editor.addEventListener("input", () => {
-    const text = editor.innerText.trim();
-    if (rotatingActive && text !== "I am") stopRotatingSuggestions();
-
-    if (!rotatingActive && text) {
-      if (predictionTimer) clearTimeout(predictionTimer);
-      predictionTimer = setTimeout(() => {
-        const prediction = generate(text);
-        showSuggestion(prediction);
-      }, PREDICTION_DELAY);
-    }
-  });
-
   editor.addEventListener("keydown", (e) => {
+    // Stop rotating suggestions if typing
+    if (rotatingActive && !["Enter"].includes(e.key)) {
+      stopRotatingSuggestions();
+      if (suggestionSpan) {
+        suggestionSpan.remove();
+        suggestionSpan = null;
+      }
+    }
+
     if (e.key === "Enter") {
       e.preventDefault();
+      // Accept prediction or visible rotating suggestion
       if (rotatingActive && suggestionSpan) {
         const visibleSpan = Array.from(suggestionSpan.children)
           .find(s => parseFloat(s.style.opacity) > 0);
@@ -351,6 +349,23 @@ document.addEventListener("DOMContentLoaded", () => {
       } else {
         if (predictionTimer) clearTimeout(predictionTimer);
         acceptSuggestion();
+      }
+    }
+  });
+
+  editor.addEventListener("input", () => {
+    const text = editor.innerText;
+
+    if (rotatingActive && text !== "I am") stopRotatingSuggestions();
+
+    if (!rotatingActive && text) {
+      // Only generate prediction after space following typed text
+      if (text.endsWith(" ") && text.trim().length > 3) {
+        if (predictionTimer) clearTimeout(predictionTimer);
+        predictionTimer = setTimeout(() => {
+          const prediction = generate(text.trim());
+          showSuggestion(prediction);
+        }, PREDICTION_DELAY);
       }
     }
   });
