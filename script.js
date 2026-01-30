@@ -40,7 +40,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Debounce for delayed prediction
   let predictionTimer = null;
-  const PREDICTION_DELAY = 2000; // 2 seconds
+  const PREDICTION_DELAY = 1000; // 1 second
 
   /******************************
    * LOAD CORPORA
