@@ -129,13 +129,13 @@ h6 {
 /* Feminine prediction: quieter, lighter */
 .mode-fem .editable .suggestion .word {
   color: #000;
-  font-weight: 400;
-  opacity: 0.45;
+  font-weight: 300;
+  opacity: 0.25;
 }
 
 /* Typed (non-predictive) text */
 .editable {
-  color: rgba(0, 0, 0, 0.75);
+  color: rgba(0, 0, 0, 0.7);
 }
 
 /* Output or Predictive Text */
