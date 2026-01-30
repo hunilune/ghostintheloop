@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Rotating ghost suggestions
   let rotatingTimer = null;
   let rotatingIndex = 0;
-  const firstSentenceSuggestions = ["sad", "lonely", "wondering"];
+  const firstSentenceSuggestions = ["sad ", "lonely ", "wondering"];
   let rotatingActive = false;
 
   /******************************
