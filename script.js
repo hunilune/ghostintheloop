@@ -38,7 +38,8 @@ document.addEventListener("DOMContentLoaded", () => {
   let typeCount = 0;
 
   const editor = document.querySelector("#editor");
-  const suggestionSpan = document.querySelector(".suggestion");
+  const wrapper = editor.parentElement; // .editor-wrapper
+  let suggestionSpan = document.querySelector(".suggestion");
 
   /******************************
    * LOAD CORPORA
@@ -75,7 +76,7 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCorpora();
 
   /******************************
-   * EXTRACT TEXT
+   * EXTRACT & NORMALIZE
    ******************************/
   function extractText(src) {
     if (Array.isArray(src)) {
@@ -93,9 +94,6 @@ document.addEventListener("DOMContentLoaded", () => {
     return [];
   }
 
-  /******************************
-   * NORMALIZE
-   ******************************/
   function normalize(arr) {
     const corrections = { teir: "their", recieve: "receive", definately: "definitely" };
 
@@ -112,6 +110,12 @@ document.addEventListener("DOMContentLoaded", () => {
         return t;
       })
       .filter(t => t.length > 20);
+  }
+
+  function decodeHTMLEntities(str) {
+    const textarea = document.createElement("textarea");
+    textarea.innerHTML = str;
+    return textarea.value;
   }
 
   /******************************
@@ -169,62 +173,69 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * HTML ENTITY DECODER
+   * CARET COORDINATES
    ******************************/
-  function decodeHTMLEntities(str) {
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = str;
-    return textarea.value;
+  function getCaretCoordinates() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return { x: 0, y: 0 };
+    const range = sel.getRangeAt(0).cloneRange();
+    
+    const span = document.createElement("span");
+    span.textContent = "\u200b"; // zero-width space
+    range.insertNode(span);
+
+    const rect = span.getBoundingClientRect();
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const coords = { x: rect.left - wrapperRect.left, y: rect.top - wrapperRect.top };
+    span.remove();
+    return coords;
   }
 
   /******************************
-   * SHOW SUGGESTION
+   * SHOW PREDICTION
    ******************************/
   function showSuggestion(prediction) {
-  if (!editor) return;
-
-  if (!suggestionSpan) {
-    // If suggestionSpan doesn't exist, create it
-    suggestionSpan = document.createElement("span");
-    suggestionSpan.className = "suggestion";
-    editor.parentNode.appendChild(suggestionSpan); // append to wrapper
-  }
-
-  suggestionSpan.innerHTML = ""; // clear old suggestion
-  setMode(prediction.voice);
-
-  const words = prediction.text.split(/\s+/);
-
-  words.forEach((word, i) => {
-    const span = document.createElement("span");
-    span.textContent = word + " ";
-    span.style.fontFamily = "Office Times, serif";
-    span.style.lineHeight = "1.4";
-    span.style.opacity = 0;
-    span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
-
-    // **Restore masc/fem styling**
-    if (prediction.voice === "masc") {
-      span.style.fontWeight = 600; // bold
-      span.style.color = "rgba(0,0,0,0.35)";
-    } else {
-      span.style.fontWeight = 300; // lighter
-      span.style.color = "rgba(0,0,0,0.2)";
+    if (!suggestionSpan) {
+      suggestionSpan = document.createElement("span");
+      suggestionSpan.className = "suggestion";
+      wrapper.appendChild(suggestionSpan);
     }
 
-    // Slight scale for animation
-    span.style.transform = prediction.voice === "masc" ? "scale(1.05)" : "scale(0.95)";
+    suggestionSpan.innerHTML = "";
+    setMode(prediction.voice);
 
-    suggestionSpan.appendChild(span);
+    const caret = getCaretCoordinates();
+    suggestionSpan.style.left = caret.x + "px";
+    suggestionSpan.style.top  = caret.y + "px";
 
-    // Fade-in words sequentially
-    setTimeout(() => {
-      span.style.opacity = 1;
-      span.style.transform = "scale(1)";
-    }, i * 120);
-  });
-}
+    prediction.text.split(/\s+/).forEach((word, i) => {
+      const span = document.createElement("span");
+      span.textContent = word + " ";
+      span.style.fontFamily = "Office Times, serif";
+      span.style.lineHeight = "1.4";
+      span.style.opacity = 0;
+      span.style.transition = "opacity 0.4s ease, transform 0.4s ease, color 0.4s ease";
 
+      // Restore masc/fem styling
+      if (prediction.voice === "masc") {
+        span.style.fontWeight = 600;
+        span.style.color = "rgba(0,0,0,0.35)";
+        span.style.transform = "scale(1.05)";
+      } else {
+        span.style.fontWeight = 300;
+        span.style.color = "rgba(0,0,0,0.2)";
+        span.style.transform = "scale(0.95)";
+      }
+
+      suggestionSpan.appendChild(span);
+
+      // Fade-in words sequentially
+      setTimeout(() => {
+        span.style.opacity = 1;
+        span.style.transform = "scale(1)";
+      }, i * 120);
+    });
+  }
 
   /******************************
    * ACCEPT SUGGESTION
@@ -235,7 +246,6 @@ document.addEventListener("DOMContentLoaded", () => {
     const frag = document.createDocumentFragment();
     Array.from(suggestionSpan.childNodes).forEach(node => frag.appendChild(node.cloneNode(true)));
 
-    // Insert at caret position
     const sel = window.getSelection();
     if (!sel.rangeCount) return;
     const range = sel.getRangeAt(0);
