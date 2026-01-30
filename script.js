@@ -19,34 +19,34 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const FALLBACK = {
-    masc: ["Fallback male sentence for testing"],
-    fem: ["Fallback female sentence for testing"]
+    masc: ["men often express vulnerability through frustration rather than sadness"],
+    fem: ["women are often socialised to explain emotions in relational terms"]
   };
 
   const MAX_OUTPUT_WORDS = 22;
+  const PREDICTION_DELAY = 1200;
+
   const EMOTIONS = {
-    sad:     { fem: 1.0, masc: 0.25 },
+    sad:     { fem: 1.0, masc: 0.2 },
     lonely:  { fem: 0.9, masc: 0.3 },
     anxious: { fem: 0.8, masc: 0.4 },
-    angry:   { fem: 0.4, masc: 1.0 },
+    angry:   { fem: 0.3, masc: 1.0 },
     tired:   { fem: 0.6, masc: 0.6 }
   };
 
+  /******************************
+   * STATE
+   ******************************/
   let corpora = { masc: [], fem: [] };
   let ready = false;
   let activeVoice = "masc";
-
-  const editor = document.querySelector("#editor");
-  let suggestionSpan = null;
+  let predictionTimer = null;
   let typeCount = 0;
 
-  let predictionTimer = null;
-  const PREDICTION_DELAY = 2000;
+  const editor = document.querySelector("#editor");
+  const ghost = document.querySelector("#ghost");
 
-  let rotatingTimer = null;
-  let rotatingIndex = 0;
-  const firstSentenceSuggestions = ["sad", "lonely", "angry"];
-  let rotatingActive = false;
+  if (!editor || !ghost) return;
 
   /******************************
    * LOAD CORPORA
@@ -59,9 +59,7 @@ document.addEventListener("DOMContentLoaded", () => {
         if (!res.ok) continue;
         const json = await res.json();
         collected.push(...extractText(json));
-      } catch (err) {
-        console.warn("Skipped corpus:", url);
-      }
+      } catch {}
     }
     return normalize(collected);
   }
@@ -70,8 +68,8 @@ document.addEventListener("DOMContentLoaded", () => {
     corpora.masc = await loadSide(CORPUS_URLS.masc);
     corpora.fem  = await loadSide(CORPUS_URLS.fem);
 
-    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
+    if (!corpora.masc.length) corpora.masc = FALLBACK.masc;
+    if (!corpora.fem.length)  corpora.fem  = FALLBACK.fem;
 
     ready = true;
   }
@@ -79,71 +77,81 @@ document.addEventListener("DOMContentLoaded", () => {
   loadCorpora();
 
   /******************************
-   * EXTRACT & NORMALIZE
+   * TEXT PROCESSING
    ******************************/
   function extractText(src) {
     if (Array.isArray(src)) {
-      return src.map(item => {
-        if (typeof item === "string") return item;
-        if (item.title || item.selftext) return `${item.title || ""} ${item.selftext || ""}`;
-        return "";
-      }).filter(Boolean);
+      return src.map(item =>
+        typeof item === "string"
+          ? item
+          : `${item.title || ""} ${item.selftext || ""}`
+      );
     }
     if (Array.isArray(src?.data?.children)) {
-      return src.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`);
+      return src.data.children.map(c =>
+        `${c.data.title || ""} ${c.data.selftext || ""}`
+      );
     }
     return [];
   }
 
   function normalize(arr) {
+    const corrections = {
+      teir: "their",
+      recieve: "receive",
+      definately: "definitely"
+    };
+
     return arr
-      .map(t => decodeHTMLEntities(t))
+      .map(decodeHTMLEntities)
       .map(t => t.replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, ""))
-      .map(t => t.trim().replace(/\s+/g, " "))
+      .map(t => t.replace(/\s+/g, " ").trim())
+      .map(t => {
+        Object.entries(corrections).forEach(([bad, good]) => {
+          t = t.replace(new RegExp(`\\b${bad}\\b`, "gi"), good);
+        });
+        return t;
+      })
       .filter(t => t.length > 20);
   }
 
   function decodeHTMLEntities(str) {
-    const textarea = document.createElement("textarea");
-    textarea.innerHTML = str;
-    return textarea.value;
+    const t = document.createElement("textarea");
+    t.innerHTML = str;
+    return t.value;
   }
 
   /******************************
-   * EMOTION / VOICE
+   * VOICE SELECTION
    ******************************/
   function detectEmotion(text) {
-    for (const e in EMOTIONS) if (text.includes(e)) return e;
-    return null;
+    return Object.keys(EMOTIONS).find(e => text.includes(e)) || null;
   }
 
   function decideVoice(input) {
-    const words = input.split(/\s+/);
-    const firstInput = typeCount === 0;
     const emotion = detectEmotion(input);
-
-    if (firstInput && emotion && EMOTIONS[emotion]?.fem > 0.7) return "fem";
-
-    function score(corpus) {
-      return corpus.reduce(
-        (sum, line) => sum + words.reduce((s, w) => s + (line.includes(w) ? 1 : 0.1), 0),
-        0
-      );
+    if (typeCount === 0 && emotion && EMOTIONS[emotion].fem > 0.7) {
+      return "fem";
     }
 
-    const mScore = score(corpora.masc);
-    const fScore = score(corpora.fem);
+    function score(corpus) {
+      return corpus.reduce((sum, line) =>
+        sum + input.split(/\s+/).reduce((s, w) =>
+          s + (line.includes(w) ? 1 : 0.1), 0
+        ), 0);
+    }
 
-    if (mScore > fScore) return "masc";
-    if (fScore > mScore) return "fem";
-    return activeVoice;
+    const m = score(corpora.masc);
+    const f = score(corpora.fem);
+
+    return m > f ? "masc" : f > m ? "fem" : activeVoice;
   }
 
   /******************************
    * GENERATION
    ******************************/
   function generate(input) {
-    if (!ready || !input) return null;
+    if (!ready) return null;
 
     const voice = decideVoice(input);
     activeVoice = voice;
@@ -156,141 +164,77 @@ document.addEventListener("DOMContentLoaded", () => {
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
     return {
-      text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" "),
-      voice
+      voice,
+      text: chosen.split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ")
     };
   }
 
   /******************************
-   * SHOW PREDICTION
+   * GHOST RENDERING (KEY PART)
    ******************************/
   function showSuggestion(prediction) {
-    if (!editor || !prediction?.text) return;
+    if (!prediction) return;
 
-    if (!suggestionSpan) {
-      suggestionSpan = document.createElement("span");
-suggestionSpan.className = "suggestion";
-suggestionSpan.contentEditable = "false"; 
-editor.appendChild(suggestionSpan);
-    }
+    ghost.textContent = prediction.text.toLowerCase();
+    document.body.classList.toggle("mode-masc", prediction.voice === "masc");
+    document.body.classList.toggle("mode-fem", prediction.voice === "fem");
 
-    suggestionSpan.innerHTML = "";
-    setMode(prediction.voice);
+    positionGhost();
+  }
 
-    prediction.text.split(/\s+/).forEach((word, i) => {
-      const span = document.createElement("span");
-      span.textContent = word + " ";
-      span.className = "word";
-      span.style.opacity = 0;
-      span.style.transition = "opacity 0.4s ease";
+  function positionGhost() {
+    const sel = window.getSelection();
+    if (!sel.rangeCount) return;
 
-      if (prediction.voice === "masc") {
-        span.style.fontWeight = 600;
-        span.style.color = "#000";
-      } else {
-        span.style.fontWeight = 400;
-        span.style.opacity = 0.45;
-      }
+    const range = sel.getRangeAt(0).cloneRange();
+    range.collapse(true);
 
-      suggestionSpan.appendChild(span);
-      setTimeout(() => span.style.opacity = 1, i * 120);
-    });
+    const rect = range.getClientRects()[0];
+    if (!rect) return;
+
+    const editorRect = editor.getBoundingClientRect();
+
+    ghost.style.left = `${rect.left - editorRect.left}px`;
+    ghost.style.top  = `${rect.top - editorRect.top}px`;
+  }
+
+  function clearGhost() {
+    ghost.textContent = "";
   }
 
   /******************************
    * ACCEPT
    ******************************/
   function acceptSuggestion() {
-    if (!suggestionSpan) return;
+    if (!ghost.textContent) return;
 
-    const frag = document.createDocumentFragment();
-    Array.from(suggestionSpan.children).forEach(n =>
-      frag.appendChild(document.createTextNode(n.textContent))
-    );
-
-    suggestionSpan.remove();
-    suggestionSpan = null;
-    editor.appendChild(frag);
-
+    editor.innerText += ghost.textContent;
+    clearGhost();
     placeCaretAtEnd(editor);
     typeCount++;
   }
 
   function placeCaretAtEnd(el) {
     el.focus();
-    const sel = window.getSelection();
-    sel.removeAllRanges();
-    const range = document.createRange();
-    range.selectNodeContents(el);
-    range.collapse(false);
-    sel.addRange(range);
+    const r = document.createRange();
+    r.selectNodeContents(el);
+    r.collapse(false);
+    const s = window.getSelection();
+    s.removeAllRanges();
+    s.addRange(r);
   }
 
   /******************************
-   * ROTATING GHOST
-   ******************************/
-  function startRotatingSuggestions() {
-    if (rotatingActive || !editor) return;
-    rotatingActive = true;
-
-    suggestionSpan = document.createElement("span");
-suggestionSpan.className = "suggestion";
-suggestionSpan.contentEditable = "false"; 
-editor.appendChild(suggestionSpan);
-
-    firstSentenceSuggestions.forEach(word => {
-      const span = document.createElement("span");
-      span.textContent = word + " ";
-      span.className = "word";
-      span.style.opacity = 0;
-      suggestionSpan.appendChild(span);
-    });
-
-    function cycle() {
-      if (!rotatingActive) return;
-      const spans = [...suggestionSpan.children];
-      spans.forEach(s => s.style.opacity = 0);
-      spans[rotatingIndex].style.opacity = 1;
-      rotatingIndex = (rotatingIndex + 1) % spans.length;
-      rotatingTimer = setTimeout(cycle, 1000);
-    }
-
-    cycle();
-  }
-
-  function stopRotatingSuggestions() {
-    rotatingActive = false;
-    if (rotatingTimer) clearTimeout(rotatingTimer);
-    rotatingTimer = null;
-  }
-
-  /******************************
-   * MODE
-   ******************************/
-  function setMode(voice) {
-    document.body.classList.remove("mode-masc", "mode-fem");
-    document.body.classList.add(`mode-${voice}`);
-  }
-
-  /******************************
-   * INPUT EVENTS
+   * EVENTS
    ******************************/
   editor.addEventListener("input", () => {
-    if (predictionTimer) {
-      clearTimeout(predictionTimer);
-      predictionTimer = null;
-    }
+    clearGhost();
+    if (predictionTimer) clearTimeout(predictionTimer);
 
-    if (suggestionSpan) suggestionSpan.innerHTML = "";
-
-    const text = editor.innerText;
-
-    if (rotatingActive && text !== "I am") stopRotatingSuggestions();
-
-    if (!rotatingActive && text.endsWith(",") && text.trim().length > 3) {
+    const text = editor.innerText.trim();
+    if (text.endsWith(" ") && text.length > 3) {
       predictionTimer = setTimeout(() => {
-        const prediction = generate(text.trim());
-        showSuggestion(prediction);
+        showSuggestion(generate(text));
       }, PREDICTION_DELAY);
     }
   });
@@ -298,13 +242,8 @@ editor.appendChild(suggestionSpan);
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
       e.preventDefault();
-      if (predictionTimer) clearTimeout(predictionTimer);
       acceptSuggestion();
     }
   });
-
-  if (editor && editor.innerText.trim() === "I am") {
-    startRotatingSuggestions();
-  }
 
 });
