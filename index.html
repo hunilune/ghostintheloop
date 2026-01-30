@@ -1,32 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
-<title>an (a)ppar(i)tion</title>
-<link rel="icon" href="Favicon.png">
-  
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&display=swap" rel="stylesheet">
-  
+  <title>an (a)ppar(i)tion</title>
+  <link rel="icon" href="Favicon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-
-<link rel="stylesheet" href="style.css">
-<script src="script.js"></script>
+<body>
 
   <h1 class="editable" contenteditable="true" data-slot="1">John Doe</h1> 
-  
   <h6>Translated by an (A)ppar(I)tion</h6>
   
-<div class="writing-surface">
-  <img src="Darwinesque.png" alt="God-like sketch" class="inline-image">
+  <div class="writing-surface">
+    <img src="Darwinesque.png" alt="God-like sketch" class="inline-image">
 
-  <div id="editor" class="editable" contenteditable="true">
-    I am
+    <div class="editor-wrapper">
+      <div id="editor" class="editable" contenteditable="true">I am</div>
+      <div class="suggestion"></div>
+    </div>
   </div>
-</div>
 
-<div class="note no-wrap">
-  Prone to mistakes due to bias
-</div>
-    
+  <div class="note no-wrap">
+    Prone to mistakes due to bias
+  </div>
+
+  <script src="script.js"></script>
+</body>
 </html>
