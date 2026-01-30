@@ -3,9 +3,20 @@
   font-family: 'Social';
   src: url('ABCSocialCyrillic-Regular-Trial.otf') format('opentype');
 }
+
 @font-face {
   font-family: 'Office Times';
   src: url('OfficeTimesRoundMono-Regular.otf') format('opentype');
+}
+
+.fragment-mono-regular { font-family: "Fragment Mono", monospace; font-weight: 400; font-style: normal; }
+.fragment-mono-regular-italic { font-family: "Fragment Mono", monospace; font-weight: 400; font-style: italic; }
+
+.faustina-<uniquifier> {
+  font-family: "Faustina", serif;
+  font-optical-sizing: auto;
+  font-weight: <weight>;
+  font-style: normal;
 }
 
 /* Root variables */
@@ -19,68 +30,67 @@ body {
   line-height: 1.1;
   transition: all 0.6s ease;
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
-  display: flex;
-  justify-content: center;
+  text-align: center; /* center everything */
 }
 
 /* Writing surface */
 .writing-surface { display: flex; flex-direction: column; align-items: center; position: relative; }
 
-/* Editor Wrapper */
-.editor-wrapper {
-  position: relative;
-  display: inline-block;
-  text-align: center;
-}
+/* Image always centered, near top */
+.inline-image { width: 120px; margin-top: 1rem; margin-bottom: 3rem; transition: margin-bottom 0.6s ease, filter 0.6s ease; }
 
-/* Editor */
-#editor {
-  max-width: 700px;
+/* Editor wrapper */
+.editor-wrapper { position: relative; display: inline-block; }
+
+/* Editable H1 */
+.editable, h1.editable {
+  font-family: "Faustina", serif;
+  font-weight: normal;
+  font-size: 33px;
   text-align: center;
-  font-family: 'Office Times', serif;
-  font-size: 18px;
-  line-height: 1.4;
-  caret-color: rgba(0,0,0,0.7);
   outline: none;
-  display: inline-block;
-  min-height: 2em;
+  margin: 0 auto;
+  line-height: 1.3;
+  caret-color: rgba(0,0,0,0.7);
 }
 
-/* Suggestion overlays */
-.suggestion-overlay {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;
-  user-select: none;
-  font-family: 'Office Times', serif;
+/* Paragraph styling */
+.paragraph { 
+  font-family: "Office Times", serif; 
+  max-width: 700px; 
+  margin: 0 auto; 
+  font-size: 1rem; 
+  padding-top: 4rem; 
+  padding-bottom: 2rem; 
+  text-wrap: pretty; 
+}
+
+/* Predictive suggestion styling */
+#rotating-suggestion, #prediction-suggestion {
+  display: inline-block;
+  font-family: "Office Times", serif;
   line-height: 1.4;
   white-space: pre;
-  transition: opacity 0.4s ease, transform 0.4s ease;
+  color: black;
+  user-select: none;
+  pointer-events: none;
 }
 
-/* Prediction words */
-.suggestion-overlay .word {
-  display: inline;
-  opacity: 0;
-  transform: scale(0.96);
-  transition: opacity 0.4s ease, transform 0.4s ease;
-}
+#rotating-suggestion { opacity: 0.6; }
+#prediction-suggestion { opacity: 0.4; }
 
-/* Masculine/feminine styling */
-.mode-masc .suggestion-overlay .word { color: rgba(0,0,0,0.7); font-weight: 600; opacity: 1; }
-.mode-fem  .suggestion-overlay .word { color: rgba(0,0,0,0.25); font-weight: 300; opacity: 0.25; }
+/* Word spans */
+.word { display: inline; }
 
-/* Rotating suggestions */
-#rotating-suggestion {
-  opacity: 0.4;
-  font-weight: 400;
-}
+/* Masculine / Feminine styling */
+.mode-masc #prediction-suggestion { opacity: 0.7; font-weight: 600; }
+.mode-fem  #prediction-suggestion { opacity: 0.25; font-weight: 300; }
 
 /* Notes */
 .note { font-family: Social; margin-top: 3rem; font-size: 0.8rem; opacity: 0.45; text-align: center; }
 
+/* Disable wrapping for notes */
+.no-wrap { float: none !important; shape-outside: none !important; }
+
 /* Accessibility */
-@media (prefers-reduced-motion: reduce) {
-  * { transition: none !important; }
-}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
