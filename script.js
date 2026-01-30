@@ -299,6 +299,13 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * INPUT EVENTS
    ******************************/
+
+  editor.addEventListener("input", () => {
+  const text = editor.innerText.trim().toLowerCase();
+  const prediction = generate(text);
+  showSuggestion(prediction);
+});
+
   editor.addEventListener("keydown", e => {
   if (e.key === "." || e.key === "!" || e.key === "?") {
     setTimeout(pushImageDown, 50);
