@@ -27,14 +27,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const MAX_OUTPUT_WORDS = 22;
   const PREDICTION_DELAY = 1000;
 
-  const EMOTIONS = {
-    sad:     { fem: 1.0, masc: 0.25 },
-    lonely:  { fem: 0.9, masc: 0.3 },
-    anxious: { fem: 0.8, masc: 0.4 },
-    angry:   { fem: 0.4, masc: 1.0 },
-    tired:   { fem: 0.6, masc: 0.6 }
-  };
-
   const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
   const FEM_KEYWORDS  = ["she", "her", "woman", "female", "girl", "mother", "sister"];
 
@@ -162,11 +154,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  function detectEmotion(text) {
-    for (const e in EMOTIONS) if (text.includes(e)) return e;
-    return null;
-  }
-
   function generatePrediction(input) {
     if (!ready || !input) return "";
 
@@ -178,12 +165,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
     let candidates = pool.filter(t => words.some(w => cleanText(t).includes(w)));
     if (!candidates.length) candidates = pool;
-
-    const emotion = detectEmotion(input);
-    if (emotion) {
-      const allow = EMOTIONS[emotion]?.[voice] ?? 0.5;
-      if (Math.random() > allow) return "";
-    }
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
     return cleanText(chosen).split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ") + " ";
