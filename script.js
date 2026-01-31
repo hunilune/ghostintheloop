@@ -8,13 +8,13 @@ document.addEventListener("DOMContentLoaded", () => {
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
       "https://hunilune.github.io/ghostintheloop/AskMenOver30.json",
       "https://hunilune.github.io/ghostintheloop/MensRights.json",
-      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json",
+      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
     ],
     fem: [
       "https://hunilune.github.io/ghostintheloop/AskWomen.json",
       "https://hunilune.github.io/ghostintheloop/AskFeminists.json",
       "https://hunilune.github.io/ghostintheloop/Feminism.json",
-      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json",
+      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json"
     ]
   };
 
@@ -23,11 +23,11 @@ document.addEventListener("DOMContentLoaded", () => {
     fem: ["fallback female sentence"]
   };
 
-  const firstSentenceSuggestions = [" sad", " lonely", " angry"];
+  const firstSentenceSuggestions = ["sad", "lonely", "angry"];
   const MAX_OUTPUT_WORDS = 22;
   const PREDICTION_DELAY = 1000;
 
-   const EMOTIONS = {
+  const EMOTIONS = {
     sad:     { fem: 1.0, masc: 0.25 },
     lonely:  { fem: 0.9, masc: 0.3 },
     anxious: { fem: 0.8, masc: 0.4 },
@@ -35,7 +35,6 @@ document.addEventListener("DOMContentLoaded", () => {
     tired:   { fem: 0.6, masc: 0.6 }
   };
 
-  // keywords to auto-switch voices
   const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
   const FEM_KEYWORDS  = ["she", "her", "woman", "female", "girl", "mother", "sister"];
 
@@ -68,23 +67,13 @@ document.addEventListener("DOMContentLoaded", () => {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
-
-        let texts = [];
-        if (Array.isArray(json)) {
-          texts = json.map(i => {
-            if (typeof i === "string") return i;
-            return (i.title || "") + " " + (i.selftext || "");
-          }).filter(Boolean);
-        } else if (json?.data?.children) {
-          texts = json.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`).filter(Boolean);
-        }
-
+        const texts = extractText(json);
         collected.push(...texts);
       } catch (e) {
         console.warn("Skipped corpus", url, e);
       }
     }
-    return collected.length ? collected : [];
+    return normalize(collected);
   }
 
   async function loadCorpora() {
@@ -92,12 +81,36 @@ document.addEventListener("DOMContentLoaded", () => {
     corpora.fem  = await loadSide(CORPUS_URLS.fem);
 
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length) corpora.fem  = [...FALLBACK.fem];
+    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
 
     ready = true;
     console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
+
   loadCorpora();
+
+  /******************************
+   * EXTRACT & NORMALIZE
+   ******************************/
+  function extractText(src) {
+    if (Array.isArray(src)) return src;
+    if (Array.isArray(src?.data?.children)) {
+      return src.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`);
+    }
+    return [];
+  }
+
+  function normalize(arr) {
+    return arr
+      .map(t =>
+        String(t)
+          .toLowerCase()
+          .replace(/[^\w\s]/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter(t => t.length > 20);
+  }
 
   /******************************
    * ROTATING SUGGESTIONS
@@ -127,22 +140,7 @@ document.addEventListener("DOMContentLoaded", () => {
     editor.innerText = "I am " + word + " ";
     placeCaretAtEnd(editor);
     typeCount = 1;
-    updatePrediction(); // generate immediately
-  }
-
-  /******************************
-   * EXTRACT TEXT
-   ******************************/
-  function extractText(src) {
-    if (Array.isArray(src)) return src;
-
-    if (Array.isArray(src?.data?.children)) {
-      return src.data.children.map(c =>
-        `${c.data.title || ""} ${c.data.selftext || ""}`
-      );
-    }
-
-    return [];
+    updatePrediction();
   }
 
   /******************************
@@ -158,10 +156,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateActiveVoice(text) {
     const words = cleanText(text).split(/\s+/);
-    for (let w of words.slice(-3)) { // check last 3 words
+    for (let w of words.slice(-3)) {
       if (MASC_KEYWORDS.includes(w)) { activeVoice = "masc"; return; }
       if (FEM_KEYWORDS.includes(w))  { activeVoice = "fem";  return; }
     }
+  }
+
+  function detectEmotion(text) {
+    for (const e in EMOTIONS) if (text.includes(e)) return e;
+    return null;
   }
 
   function generatePrediction(input) {
@@ -176,6 +179,12 @@ document.addEventListener("DOMContentLoaded", () => {
     let candidates = pool.filter(t => words.some(w => cleanText(t).includes(w)));
     if (!candidates.length) candidates = pool;
 
+    const emotion = detectEmotion(input);
+    if (emotion) {
+      const allow = EMOTIONS[emotion]?.[voice] ?? 0.5;
+      if (Math.random() > allow) return "";
+    }
+
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
     return cleanText(chosen).split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ") + " ";
   }
@@ -183,7 +192,6 @@ document.addEventListener("DOMContentLoaded", () => {
   function showPrediction(text) {
     predictionEl.innerHTML = "";
     if (!text) return;
-
     text.split(/\s+/).forEach(word => {
       const span = document.createElement("span");
       span.textContent = word + " ";
@@ -193,7 +201,6 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function acceptPrediction() {
-    if (!predictionEl) return;
     const frag = document.createDocumentFragment();
     Array.from(predictionEl.children).forEach(node => frag.appendChild(document.createTextNode(node.textContent)));
     predictionEl.innerHTML = "";
@@ -216,7 +223,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   /******************************
-   * INPUT EVENTS
+   * UPDATE PREDICTION
    ******************************/
   function updatePrediction() {
     const text = editor.innerText;
@@ -229,12 +236,13 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
+  /******************************
+   * INPUT EVENTS
+   ******************************/
   editor.addEventListener("input", () => {
     const text = editor.innerText;
-
     if (text === "I am ") startRotating();
     else stopRotating();
-
     updatePrediction();
   });
 
@@ -246,7 +254,6 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Initialize rotating if needed
   if (editor.innerText.trim() === "I am") startRotating();
 
 });
