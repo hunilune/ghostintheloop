@@ -116,6 +116,8 @@ h6 {
   display: inline;
   opacity: 0.7;
   transition: font-weight 0.3s ease, opacity 0.3s ease, letter-spacing 0.3s ease;
+      margin-right: 0.2ch;
+
 }
 
 /* Words aligned with voice */
