@@ -90,6 +90,12 @@ h6 {
   font-family: "Office Times", serif;
 }
 
+.editor-wrapper {
+  width: min(90vw, 46ch);
+  margin: 0 auto;
+  text-align: center;
+}
+
 /* Rotating suggestion */
 #rotating-suggestion {
   font-family: "Office Times", serif;
