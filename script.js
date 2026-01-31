@@ -23,9 +23,17 @@ document.addEventListener("DOMContentLoaded", () => {
     fem: ["fallback female sentence"]
   };
 
-  const firstSentenceSuggestions = ["sad", "lonely", "angry"];
+  const firstSentenceSuggestions = [" sad", " lonely", " angry"];
   const MAX_OUTPUT_WORDS = 22;
   const PREDICTION_DELAY = 1000;
+
+   const EMOTIONS = {
+    sad:     { fem: 1.0, masc: 0.25 },
+    lonely:  { fem: 0.9, masc: 0.3 },
+    anxious: { fem: 0.8, masc: 0.4 },
+    angry:   { fem: 0.4, masc: 1.0 },
+    tired:   { fem: 0.6, masc: 0.6 }
+  };
 
   // keywords to auto-switch voices
   const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
@@ -120,6 +128,21 @@ document.addEventListener("DOMContentLoaded", () => {
     placeCaretAtEnd(editor);
     typeCount = 1;
     updatePrediction(); // generate immediately
+  }
+
+  /******************************
+   * EXTRACT TEXT
+   ******************************/
+  function extractText(src) {
+    if (Array.isArray(src)) return src;
+
+    if (Array.isArray(src?.data?.children)) {
+      return src.data.children.map(c =>
+        `${c.data.title || ""} ${c.data.selftext || ""}`
+      );
+    }
+
+    return [];
   }
 
   /******************************
