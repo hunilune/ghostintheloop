@@ -129,7 +129,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function insertRotatingSuggestion(word) {
     stopRotating();
-    editor.innerText = "I am " + word + " ";
+    editor.innerText = "I am " + word;
     placeCaretAtEnd(editor);
     typeCount = 1;
     updatePrediction();
@@ -173,6 +173,14 @@ document.addEventListener("DOMContentLoaded", () => {
   function showPrediction(text) {
     predictionEl.innerHTML = "";
     if (!text) return;
+
+
+  // spacer that visually creates the space
+  const spacer = document.createElement("span");
+  spacer.textContent = " ";
+  spacer.className = "prediction-space";
+  predictionEl.appendChild(spacer);
+
     text.split(/\s+/).forEach(word => {
       const span = document.createElement("span");
       span.textContent = word + " ";
@@ -180,6 +188,8 @@ document.addEventListener("DOMContentLoaded", () => {
       predictionEl.appendChild(span);
     });
   }
+
+
 
   function acceptPrediction() {
     const frag = document.createDocumentFragment();
@@ -220,12 +230,16 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * INPUT EVENTS
    ******************************/
-  editor.addEventListener("input", () => {
-    const text = editor.innerText;
-    if (text === "I am ") startRotating();
-    else stopRotating();
-    updatePrediction();
-  });
+ editor.addEventListener("input", () => {
+  predictionEl.innerHTML = ""; // ← add this line
+
+  const text = editor.innerText;
+  if (text === "I am ") startRotating();
+  else stopRotating();
+
+  updatePrediction();
+});
+
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
