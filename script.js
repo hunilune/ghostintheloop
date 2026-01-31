@@ -28,7 +28,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const PREDICTION_DELAY = 1000;
 
   const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
-  const FEM_KEYWORDS  = ["she", "her", "woman", "female", "girl", "mother", "sister"];
+  const FEM_KEYWORDS  = ["sad", "her", "woman", "female", "girl", "mother", "sister"];
 
   /******************************
    * STATE
@@ -36,6 +36,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const editor = document.querySelector("#editor");
   const rotatingEl = document.querySelector("#rotating-suggestion");
   const predictionEl = document.querySelector("#prediction-suggestion");
+
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
@@ -129,7 +130,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function insertRotatingSuggestion(word) {
     stopRotating();
-    editor.innerText = "I am " + word;
+editor.innerText = "I am ";
+editor.append(" ", word);
     placeCaretAtEnd(editor);
     typeCount = 1;
     updatePrediction();
@@ -167,38 +169,53 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!candidates.length) candidates = pool;
 
     const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-    return cleanText(chosen).split(/\s+/).slice(0, MAX_OUTPUT_WORDS).join(" ") + " ";
+
+return cleanText(chosen)
+  .split(/\s+/)
+  .slice(0, MAX_OUTPUT_WORDS)
+  .join(" ");
   }
 
   function showPrediction(text) {
     predictionEl.innerHTML = "";
     if (!text) return;
 
+    text.split(/\s+/).forEach((word, i) => {
+    const span = document.createElement("span");
+    span.textContent = word + " ";
+    span.className = `word ${activeVoice}`;
+    span.style.animationDelay = `${i * 60}ms`;
+    predictionEl.appendChild(span);
+  });
+}
 
-  // spacer that visually creates the space
-  const spacer = document.createElement("span");
-  spacer.textContent = " ";
-  spacer.className = "prediction-space";
-  predictionEl.appendChild(spacer);
+ function acceptPrediction() {
+  const frag = document.createDocumentFragment();
 
-    text.split(/\s+/).forEach(word => {
-      const span = document.createElement("span");
-      span.textContent = word + " ";
-      span.className = "word";
-      predictionEl.appendChild(span);
-    });
-  }
+  Array.from(predictionEl.children).forEach(node => {
+    // clone the word span
+    const clone = node.cloneNode(true);
 
+    // mark as committed
+    clone.classList.add("committed");
 
+    // remove animation and reset opacity/filter
+    clone.style.animation = "none";
+    clone.style.opacity = "";
+    clone.style.filter = "";
 
-  function acceptPrediction() {
-    const frag = document.createDocumentFragment();
-    Array.from(predictionEl.children).forEach(node => frag.appendChild(document.createTextNode(node.textContent)));
-    predictionEl.innerHTML = "";
-    editor.appendChild(frag);
-    placeCaretAtEnd(editor);
-    typeCount++;
-  }
+    frag.appendChild(clone);
+  });
+
+  predictionEl.innerHTML = "";
+  editor.appendChild(frag);
+
+  // insert a space after the prediction
+  editor.appendChild(document.createTextNode(" "));
+
+  placeCaretAtEnd(editor);
+  typeCount++;
+}
 
   /******************************
    * CARET
@@ -234,7 +251,7 @@ document.addEventListener("DOMContentLoaded", () => {
   predictionEl.innerHTML = ""; // ← add this line
 
   const text = editor.innerText;
-  if (text === "I am ") startRotating();
+if (text.trim() === "I am") startRotating();
   else stopRotating();
 
   updatePrediction();
