@@ -31,7 +31,7 @@ body {
   background: #F9F8F4;
   padding-top: 7rem;
   padding-bottom: 4rem;
-  line-height: 1.1;
+  line-height: 1.2;
   transition: all 0.6s ease;
   filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
   font-family: "Office Times", serif;
@@ -45,7 +45,6 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  position: relative;
 }
 
 /* Inline image at top */
@@ -86,10 +85,8 @@ h6 {
   font-size: 1.2rem;
   line-height: 1.4;
   outline: none;
-  white-space: pre-wrap;
-  text-align: left;
-  max-width: 700px;
-  display: inline-block;
+  text-align: center;
+  display: inline;
   font-family: "Office Times", serif;
 }
 
@@ -98,19 +95,19 @@ h6 {
   font-family: "Office Times", serif;
   font-size: 1.2rem;
   color: rgba(0,0,0,0.5);
-  display: inline-block;
+  display: inline;
 }
 
 /* Prediction container */
 #prediction-suggestion {
   font-family: "Office Times", serif;
   font-size: 1.2rem;
-  display: inline-block;
+  display: inline;
 }
 
 /* Each predictive word */
 #prediction-suggestion .word {
-  display: inline-block;
+  display: inline;
   opacity: 0.7;
   transition: font-weight 0.3s ease, opacity 0.3s ease, letter-spacing 0.3s ease;
 }
@@ -133,18 +130,6 @@ h6 {
   color: #c44;
   font-style: italic;
   opacity: 0.8;
-}
-
-/* -----------------------
-   Paragraphs
------------------------- */
-.paragraph {
-  font-family: "Office Times", serif;
-  max-width: 700px;
-  margin: 0 auto;
-  font-size: 1rem;
-  padding-top: 4rem;
-  padding-bottom: 2rem;
 }
 
 /* -----------------------
