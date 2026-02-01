@@ -196,7 +196,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     predictionEl.innerHTML = "";
     editor.appendChild(frag);
-    editor.appendChild(document.createTextNode(" "));
+// add a proper space after the prediction
+const space = document.createTextNode(" ");
+editor.appendChild(space);
     placeCaretAtEnd(editor);
     typeCount++;
   }
