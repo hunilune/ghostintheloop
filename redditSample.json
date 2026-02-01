@@ -1,9 +1,3 @@
-{
-  "data": {
-    "children": [
-      { "data": { "title": "I feel stressed", "selftext": "Everyone expects me to perform." } },
-      { "data": { "title": "Advice needed", "selftext": "How do I manage obligations?" } },
-      { "data": { "title": "Relationship advice", "selftext": "I am struggling with boundaries." } }
-    ]
-  }
-}
+version https://git-lfs.github.com/spec/v1
+oid sha256:862a27b4883ca409a7e6da207d4fbe5f4facc7557cb0d370ab98c442a219a8a1
+size 334
