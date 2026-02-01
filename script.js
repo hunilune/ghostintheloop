@@ -55,28 +55,42 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * LOAD CORPORA
    ******************************/
-  const BASE_URL = "https://raw.githubusercontent.com/hunilune/ghostintheloop/main/";
+/******************************
+ * LOAD CORPORA FROM GITHUB API
+ ******************************/
+const BASE_API_URL = "https://api.github.com/repos/hunilune/ghostintheloop/contents/";
 
-async function loadSide(files) {
-  const collected = [];
-  for (const file of files) {
-    try {
-      const res = await fetch(BASE_URL + file);
-      if (!res.ok) {
-        console.warn("Skipped corpus", file, res.status);
-        continue;
-      }
-      const json = await res.json();
-      const texts = extractText(json);
-      collected.push(...texts);
-    } catch (e) {
-      console.warn("Skipped corpus", file, e);
-    }
+async function fetchJSONFromGitHub(file) {
+  try {
+    const res = await fetch(BASE_API_URL + file);
+    if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
+
+    const apiData = await res.json();
+
+    // content is Base64 encoded, decode it
+    if (!apiData.content) throw new Error(`No content for ${file}`);
+    const decoded = atob(apiData.content.replace(/\n/g, ""));
+    return JSON.parse(decoded);  // return actual JSON object
+  } catch (err) {
+    console.warn("Skipped corpus", file, err);
+    return []; // return empty array on failure to avoid breaking
   }
-  return normalize(collected);
 }
 
-  async function loadCorpora() {
+async function loadSide(files) {
+  // fetch all files in parallel
+  const results = await Promise.all(
+    files.map(async (file) => {
+      const json = await fetchJSONFromGitHub(file);
+      return extractText(json);  // use your existing extractText function
+    })
+  );
+
+  // flatten array of arrays and normalize
+  return normalize(results.flat());
+}
+
+async function loadCorpora() {
   corpora.masc = await loadSide(CORPUS_URLS.masc);
   corpora.fem  = await loadSide(CORPUS_URLS.fem);
 
@@ -91,8 +105,8 @@ async function loadSide(files) {
   });
 }
 
+// start loading corpora
 loadCorpora();
-
 
   /******************************
    * EXTRACT & NORMALIZE
