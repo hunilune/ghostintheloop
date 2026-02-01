@@ -4,19 +4,21 @@ document.addEventListener("DOMContentLoaded", () => {
    * CONFIG
    ******************************/
   const CORPUS_URLS = {
-    masc: [
-      "https://hunilune.github.io/ghostintheloop/AskMen.json",
-      "https://hunilune.github.io/ghostintheloop/AskMenOver30.json",
-      "https://hunilune.github.io/ghostintheloop/MensRights.json",
-      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
-    ],
-    fem: [
-      "https://hunilune.github.io/ghostintheloop/AskWomen.json",
-      "https://hunilune.github.io/ghostintheloop/AskFeminists.json",
-      "https://hunilune.github.io/ghostintheloop/Feminism.json",
-      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json"
-    ]
-  };
+  masc: [
+    "AskMen.json",
+    "AskMenOver30.json",
+    "MensRights.json",
+    "PurplePillDebate.json",
+    "IncelTear.json"
+  ],
+  fem: [
+    "AskWomen.json",
+    "AskFeminists.json",
+    "Feminism.json",
+    "TwoXChromosomes.json",
+    "gutenberg_fem_sample.json"
+  ]
+};
 
   const FALLBACK = {
     masc: ["fallback male sentence"],
@@ -28,7 +30,7 @@ document.addEventListener("DOMContentLoaded", () => {
   const PREDICTION_DELAY = 1000;
 
   const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
-  const FEM_KEYWORDS  = ["sad", "her", "woman", "female", "girl", "mother", "sister"];
+  const FEM_KEYWORDS  = ["sad", "lonely", "depressed", "scared", "girl", "mother", "sister"];
 
   /******************************
    * STATE
@@ -53,34 +55,44 @@ document.addEventListener("DOMContentLoaded", () => {
   /******************************
    * LOAD CORPORA
    ******************************/
-  async function loadSide(urls) {
-    const collected = [];
-    for (const url of urls) {
-      try {
-        const res = await fetch(url);
-        if (!res.ok) continue;
-        const json = await res.json();
-        const texts = extractText(json);
-        collected.push(...texts);
-      } catch (e) {
-        console.warn("Skipped corpus", url, e);
+  const BASE_URL = "https://raw.githubusercontent.com/hunilune/ghostintheloop/main/";
+
+async function loadSide(files) {
+  const collected = [];
+  for (const file of files) {
+    try {
+      const res = await fetch(BASE_URL + file);
+      if (!res.ok) {
+        console.warn("Skipped corpus", file, res.status);
+        continue;
       }
+      const json = await res.json();
+      const texts = extractText(json);
+      collected.push(...texts);
+    } catch (e) {
+      console.warn("Skipped corpus", file, e);
     }
-    return normalize(collected);
   }
+  return normalize(collected);
+}
 
   async function loadCorpora() {
-    corpora.masc = await loadSide(CORPUS_URLS.masc);
-    corpora.fem  = await loadSide(CORPUS_URLS.fem);
+  corpora.masc = await loadSide(CORPUS_URLS.masc);
+  corpora.fem  = await loadSide(CORPUS_URLS.fem);
 
-    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
+  // fallback if empty
+  if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
+  if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
 
-    ready = true;
-    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
-  }
+  ready = true;
+  console.log("Corpora ready:", {
+    masc: corpora.masc.length,
+    fem: corpora.fem.length
+  });
+}
 
-  loadCorpora();
+loadCorpora();
+
 
   /******************************
    * EXTRACT & NORMALIZE
