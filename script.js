@@ -1,22 +1,22 @@
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
 
   /******************************
    * CONFIG
    ******************************/
   const CORPUS_URLS = {
   masc: [
-    "AskMen.json",
-    "AskMenOver30.json",
-    "MensRights.json",
-    "PurplePillDebate.json",
-    "IncelTear.json"
+    "https://www.reddit.com/r/AskMen.json",
+    "https://www.reddit.com/r/AskMenOver30.json",
+    "https://www.reddit.com/r/MensRights.json",
+    "https://www.reddit.com/r/PurplePillDebate.json",
+    "https://www.reddit.com/r/IncelTear.json"
   ],
   fem: [
-    "AskWomen.json",
-    "AskFeminists.json",
-    "Feminism.json",
-    "TwoXChromosomes.json",
-    "gutenberg_fem_sample.json"
+    "https://www.reddit.com/r/AskWomen.json",
+    "https://www.reddit.com/r/AskFeminists.json",
+    "https://www.reddit.com/r/Feminism.json",
+    "https://www.reddit.com/r/TwoXChromosomes.json",
+    // optional Gutenberg samples can stay on GitHub
   ]
 };
 
@@ -52,37 +52,36 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!editor || !rotatingEl || !predictionEl) return;
 
-  /******************************
-   * LOAD CORPORA
-   ******************************/
 /******************************
- * LOAD CORPORA FROM GITHUB API
+ * LOAD CORPORA
  ******************************/
-const BASE_API_URL = "https://api.github.com/repos/hunilune/ghostintheloop/contents/";
-
-async function fetchJSONFromGitHub(file) {
+async function fetchJSON(url) {
   try {
-    const res = await fetch(BASE_API_URL + file);
-    if (!res.ok) throw new Error(`Failed to fetch ${file}: ${res.status}`);
-
-    const apiData = await res.json();
-
-    // content is Base64 encoded, decode it
-    if (!apiData.content) throw new Error(`No content for ${file}`);
-    const decoded = atob(apiData.content.replace(/\n/g, ""));
-    return JSON.parse(decoded);  // return actual JSON object
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`Failed to fetch ${url}: ${res.status}`);
+    const json = await res.json();
+    return json;
   } catch (err) {
-    console.warn("Skipped corpus", file, err);
-    return []; // return empty array on failure to avoid breaking
+    console.warn("Skipped corpus", url, err);
+    return [];
   }
 }
 
-async function loadSide(files) {
-  // fetch all files in parallel
+async function loadSide(urls) {
   const results = await Promise.all(
-    files.map(async (file) => {
-      const json = await fetchJSONFromGitHub(file);
-      return extractText(json);  // use your existing extractText function
+    urls.map(async (url) => {
+      const json = await fetchJSON(url);
+
+      // If it's a Reddit JSON object, extract posts
+      if (json?.data?.children) {
+        return json.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`);
+      }
+
+      // Otherwise, assume it's already an array of text
+      if (Array.isArray(json)) return json;
+
+      // fallback empty
+      return [];
     })
   );
 
@@ -90,23 +89,14 @@ async function loadSide(files) {
   return normalize(results.flat());
 }
 
-async function loadCorpora() {
   corpora.masc = await loadSide(CORPUS_URLS.masc);
-  corpora.fem  = await loadSide(CORPUS_URLS.fem);
-
-  // fallback if empty
-  if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-  if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
-
-  ready = true;
+corpora.fem  = await loadSide(CORPUS_URLS.fem);
+  
+ready = true;
   console.log("Corpora ready:", {
     masc: corpora.masc.length,
     fem: corpora.fem.length
   });
-}
-
-// start loading corpora
-loadCorpora();
 
   /******************************
    * EXTRACT & NORMALIZE
