@@ -185,30 +185,20 @@ return cleanText(chosen)
   });
 }
 
- function acceptPrediction() {
+function acceptPrediction() {
+  const needsSpace = !editor.innerText.endsWith(" ");
+
+  if (needsSpace) {
+    editor.append(" ");
+  }
+
   const frag = document.createDocumentFragment();
-
   Array.from(predictionEl.children).forEach(node => {
-    // clone the word span
-    const clone = node.cloneNode(true);
-
-    // mark as committed
-    clone.classList.add("committed");
-
-    // remove animation and reset opacity/filter
-    clone.style.animation = "none";
-    clone.style.opacity = "";
-    clone.style.filter = "";
-
-    frag.appendChild(clone);
+    frag.appendChild(document.createTextNode(node.textContent.trim()));
   });
 
-  predictionEl.innerHTML = "";
   editor.appendChild(frag);
-
-  // insert a space after the prediction
-  editor.appendChild(document.createTextNode(" "));
-
+  predictionEl.innerHTML = "";
   placeCaretAtEnd(editor);
   typeCount++;
 }
