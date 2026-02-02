@@ -173,35 +173,46 @@ return cleanText(chosen)
   }
 
   function showPrediction(text) {
-  predictionEl.innerHTML = "";
-  if (!text) return;
-
-  text.split(/\s+/).forEach(word => {
-    const span = document.createElement("span");
-    span.textContent = word;
-    span.className = "word";
-    predictionEl.appendChild(span);
-  });
-}
-
-function acceptPrediction() {
-  const words = Array.from(predictionEl.children)
-    .map(node => node.textContent);
-
-  if (!words.length) return;
-
-  // ensure exactly one space before prediction
-  if (!editor.innerText.endsWith(" ")) {
-    editor.append(" ");
+    removeGhost();
+    if (!text) return;
+  
+    const ghost = document.createElement("span");
+    ghost.className = `ghost ${activeVoice}`; 
+    ghost.contentEditable = "false";
+  
+    text.split(/\s+/).forEach((word, i) => {
+      const w = document.createElement("span");
+      w.className = `ghost-word ${activeVoice}`; 
+      w.textContent = word + " ";
+      w.style.animationDelay = `${i * 40}ms`;
+      ghost.appendChild(w);
+    });
+  
+    editor.appendChild(ghost);
+    placeCaretAtEnd(editor);
   }
+  
 
-  editor.append(words.join(" "));
-  editor.append(" "); // trailing space so user can keep typing
-
-  predictionEl.innerHTML = "";
-  placeCaretAtEnd(editor);
-  typeCount++;
-}
+  function acceptPrediction() {
+    const ghost = editor.querySelector(".ghost");
+    if (!ghost) return;
+  
+    Array.from(ghost.children).forEach(w => {
+      // Make sure it has the expected classes
+      w.classList.add("committed");
+      w.classList.add("word"); // ← add this!
+      // remove ghost-specific animation styles
+      w.style.animation = "none";
+      w.style.opacity = "";
+      w.style.filter = "";
+      editor.appendChild(w);
+    });
+  
+    ghost.remove();
+    editor.appendChild(document.createTextNode(" "));
+    placeCaretAtEnd(editor);
+  }  
+  
 
   /* Caret */
   
@@ -230,15 +241,21 @@ function acceptPrediction() {
 
   /* Input behaviour */
   
- editor.addEventListener("input", () => {
-  predictionEl.innerHTML = ""; // ← add this line
+  editor.addEventListener("input", () => {
+    removeGhost();
+  
+    const text = editor.innerText;
+    if (text.trim() === "I am") startRotating();
+    else stopRotating();
+  
+    updatePrediction();
+  });  
 
-  const text = editor.innerText;
-if (text.trim() === "I am") startRotating();
-  else stopRotating();
+function removeGhost() {
+  const ghost = editor.querySelector(".ghost");
+  if (ghost) ghost.remove();
+}
 
-  updatePrediction();
-});
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
