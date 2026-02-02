@@ -1,8 +1,7 @@
 document.addEventListener("DOMContentLoaded", () => {
 
-  /******************************
-   * CONFIG
-   ******************************/
+  /* Corpus URLs */
+  
   const CORPUS_URLS = {
     masc: [
       "https://hunilune.github.io/ghostintheloop/AskMen.json",
@@ -30,9 +29,8 @@ document.addEventListener("DOMContentLoaded", () => {
   const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
   const FEM_KEYWORDS  = ["sad", "her", "woman", "female", "girl", "mother", "sister"];
 
-  /******************************
-   * STATE
-   ******************************/
+  /* Initiliase */
+  
   const editor = document.querySelector("#editor");
   const rotatingEl = document.querySelector("#rotating-suggestion");
   const predictionEl = document.querySelector("#prediction-suggestion");
@@ -50,9 +48,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   if (!editor || !rotatingEl || !predictionEl) return;
 
-  /******************************
-   * LOAD CORPORA
-   ******************************/
+  /* Load corpora */
+  
   async function loadSide(urls) {
     const collected = [];
     for (const url of urls) {
@@ -82,9 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   loadCorpora();
 
-  /******************************
-   * EXTRACT & NORMALIZE
-   ******************************/
+  /* Extract */
+  
   function extractText(src) {
     if (Array.isArray(src)) return src;
     if (Array.isArray(src?.data?.children)) {
@@ -92,6 +88,8 @@ document.addEventListener("DOMContentLoaded", () => {
     }
     return [];
   }
+
+  /* Normalise */
 
   function normalize(arr) {
     return arr
@@ -105,9 +103,8 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter(t => t.length > 20);
   }
 
-  /******************************
-   * ROTATING SUGGESTIONS
-   ******************************/
+  /* Rotating suggestions */
+  
   function startRotating() {
     if (rotating) return;
     rotating = true;
@@ -137,9 +134,8 @@ editor.append(" ", word);
     updatePrediction();
   }
 
-  /******************************
-   * PREDICTION
-   ******************************/
+  /* Prediction */
+  
   function cleanText(text) {
     return text
       .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "")
@@ -217,9 +213,7 @@ return cleanText(chosen)
   typeCount++;
 }
 
-  /******************************
-   * CARET
-   ******************************/
+  /* Caret */
   function placeCaretAtEnd(el) {
     el.focus();
     const sel = window.getSelection();
@@ -230,9 +224,8 @@ return cleanText(chosen)
     sel.addRange(range);
   }
 
-  /******************************
-   * UPDATE PREDICTION
-   ******************************/
+  /* Updating the prediction */
+  
   function updatePrediction() {
     const text = editor.innerText;
     if (!rotating && text.trim().length > 0) {
@@ -244,9 +237,8 @@ return cleanText(chosen)
     }
   }
 
-  /******************************
-   * INPUT EVENTS
-   ******************************/
+  /* Input behaviour */
+  
  editor.addEventListener("input", () => {
   predictionEl.innerHTML = ""; // ← add this line
 
@@ -256,7 +248,6 @@ if (text.trim() === "I am") startRotating();
 
   updatePrediction();
 });
-
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
