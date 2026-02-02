@@ -33,8 +33,6 @@ document.addEventListener("DOMContentLoaded", () => {
   
   const editor = document.querySelector("#editor");
   const rotatingEl = document.querySelector("#rotating-suggestion");
-  const predictionEl = document.querySelector("#prediction-suggestion");
-
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
@@ -46,7 +44,7 @@ document.addEventListener("DOMContentLoaded", () => {
   let rotateTimer = null;
   let predictionTimer = null;
 
-  if (!editor || !rotatingEl || !predictionEl) return;
+  if (!editor || !rotatingEl) return;
 
   /* Load corpora */
   
@@ -73,11 +71,44 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
     if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
 
+  buildNextWordMap(corpora.masc, "masc");
+  buildNextWordMap(corpora.fem, "fem");
+
     ready = true;
     console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
 
   loadCorpora();
+
+  /* Word map */
+
+  let nextWordMap = { masc: {}, fem: {} };
+
+function buildNextWordMap(texts, voice) {
+  const map = {};
+
+  texts.forEach(sentence => {
+    const words = sentence.split(/\s+/);
+
+    for (let i = 0; i < words.length - 1; i++) {
+      const key = words[i];               // 1-gram
+      const next = words[i + 1];
+
+      if (!map[key]) map[key] = [];
+      map[key].push(next);
+    }
+
+    for (let i = 0; i < words.length - 2; i++) {
+      const key = words[i] + " " + words[i + 1]; // 2-gram
+      const next = words[i + 2];
+
+      if (!map[key]) map[key] = [];
+      map[key].push(next);
+    }
+  });
+
+  nextWordMap[voice] = map;
+}
 
   /* Extract */
   
@@ -154,22 +185,38 @@ editor.append(" ", word);
 
   function generatePrediction(input) {
     if (!ready || !input) return "";
-
+  
     updateActiveVoice(input);
-
+  
     const voice = activeVoice;
-    const pool = corpora[voice];
+    const map = nextWordMap[voice];
     const words = cleanText(input).split(/\s+/);
-
-    let candidates = pool.filter(t => words.some(w => cleanText(t).includes(w)));
-    if (!candidates.length) candidates = pool;
-
-    const chosen = candidates[Math.floor(Math.random() * candidates.length)];
-
-return cleanText(chosen)
-  .split(/\s+/)
-  .slice(0, MAX_OUTPUT_WORDS)
-  .join(" ");
+  
+    const lastTwo = words.slice(-2).join(" ");
+    const lastOne = words.slice(-1)[0];
+  
+    let candidates =
+      map[lastTwo] ||
+      map[lastOne] ||
+      [];
+  
+    if (!candidates.length) return "";
+  
+    // pick 1–3 words
+    const result = [];
+    let currentKey = lastTwo;
+  
+    for (let i = 0; i < 3; i++) {
+      const options = map[currentKey] || map[lastOne];
+      if (!options || !options.length) break;
+  
+      const next = options[Math.floor(Math.random() * options.length)];
+      result.push(next);
+  
+      currentKey = currentKey.split(" ").slice(-1).concat(next).join(" ");
+    }
+  
+    return result.join(" ");
   }
 
   function showPrediction(text) {
@@ -177,14 +224,14 @@ return cleanText(chosen)
     if (!text) return;
   
     const ghost = document.createElement("span");
-    ghost.className = `ghost ${activeVoice}`; 
+    ghost.className = `ghost ${activeVoice}`; // apply masc/fem to the ghost container
     ghost.contentEditable = "false";
   
     text.split(/\s+/).forEach((word, i) => {
       const w = document.createElement("span");
-      w.className = `ghost-word ${activeVoice}`; 
+      w.className = `ghost-word ${activeVoice}`; // apply masc/fem per word
       w.textContent = word + " ";
-      w.style.animationDelay = `${i * 40}ms`;
+      w.style.animationDelay = `${i * 40}ms`; // stagger animation like before
       ghost.appendChild(w);
     });
   
@@ -229,25 +276,30 @@ return cleanText(chosen)
   /* Updating the prediction */
   
   function updatePrediction() {
-    const text = editor.innerText;
-    if (!rotating && text.trim().length > 0) {
-      clearTimeout(predictionTimer);
-      predictionTimer = setTimeout(() => {
-        const prediction = generatePrediction(text.trim());
-        showPrediction(prediction);
-      }, PREDICTION_DELAY);
-    }
+    if (rotating || !ready) return;
+  
+    const text = editor.innerText.replace(/\s+/g, " ").trim();
+    if (!text) return;
+  
+    clearTimeout(predictionTimer);
+    predictionTimer = setTimeout(() => {
+      const prediction = generatePrediction(text);
+      showPrediction(prediction);
+    }, PREDICTION_DELAY);
   }
-
+  
   /* Input behaviour */
   
   editor.addEventListener("input", () => {
+    const text = editor.innerText.replace(/\s+/g, " ").trim();
+  
+    if (text === "I am") {
+      startRotating();
+      return; // ← stop here
+    }
+  
+    stopRotating();
     removeGhost();
-  
-    const text = editor.innerText;
-    if (text.trim() === "I am") startRotating();
-    else stopRotating();
-  
     updatePrediction();
   });  
 
