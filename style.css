@@ -1,12 +1,3 @@
-/* Variable font */
-
-.faustina-<uniquifier> {
-  font-family: "Faustina", serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
-}
-
 /* Root variables */
 
 :root {
@@ -19,14 +10,14 @@ body {
 	background: #FFE062;
 	padding-top: 7rem;
 	padding-bottom: 4rem;
-	line-height: 1.3;
+	line-height: 1.2;
 	transition: all 0.6s ease;
 	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
-	font-family: Henry, serif;
+	font-family: Lancelot, serif;
 	color: rgba(0, 0, 0, 0.7);
 }
 
-/* Writing area */
+/* Writing */
 
 .writing-surface {
 	display: flex;
@@ -44,11 +35,12 @@ body {
 }
 
 /* Headers */
+
 h1 {
-	font-family: Henry, serif;
+	font-family: Lancelot, serif;
 	font-weight: normal;
 	text-align: center;
-	font-size: 3.5rem;
+	font-size: 4.5rem;
 	margin: 0;
 	padding-top: 0;
 	font-weight: 475;
@@ -58,12 +50,13 @@ h6 {
 	font-family: Inter, sans-serif;
 	font-weight: normal;
 	font-size: 0.9rem;
-	opacity: 0.75;
+	opacity: 0.75px;
 	text-align: center;
 	margin-bottom: 4rem;
 }
 
 /* Editor */
+
 .editor-wrapper {
 	width: min(90vw, 46ch);
 	margin: 0 auto;
@@ -74,7 +67,7 @@ h6 {
 	display: inline;
 	min-height: 4rem;
 	padding: 1rem;
-	font-size: 1.2rem;
+	font-size: 1.35rem;
 	outline: none;
 	text-align: left;
 	font-family: Lancelot, serif;
@@ -83,27 +76,31 @@ h6 {
 }
 
 /* Rotating suggestion */
+
 #rotating-suggestion {
 	font-family: Lancelot, serif;
-	font-size: 1.2rem;
+	font-size: 1.35rem;
 	color: rgba(0, 0, 0, 0.5);
 	display: inline-block;
 }
 
 /* Prediction container */
+
 #prediction-suggestion {
 	font-family: Lancelot, serif;
-	font-size: 1.2rem;
+	font-size: 1.35rem;
 	display: inline;
 }
 
 /* Words aligned with voice */
+
 #prediction-suggestion .word.masc,
 #prediction-suggestion .word.fem {
 	font-weight: 600;
 }
 
 /* Committed words inside editor */
+
 .editable .word.committed {
 	animation: none !important;
 	transform: none !important;
@@ -124,6 +121,7 @@ h6 {
 }
 
 /* Accessibility */
+
 @media (prefers-reduced-motion: reduce) {
 	* {
 		transition: none !important;
@@ -191,8 +189,9 @@ h6 {
 }
 
 /* Staggering for masculine corpus */
+
 .ghost-word.masc:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 60ms); /* stagger appearance */
+  animation-delay: calc(var(--i, 0) * 60ms);
 }
 
 .ghost.masc .ghost-word.masc,
@@ -200,7 +199,6 @@ h6 {
 .ghost.masc .ghost-word.masc {
 	font-weight: 600;
 	color: rgba(0, 0, 0, 0.9);
-	/* masculine color */
 }
 
 /* Words get smaller for masculine corpus */
@@ -211,7 +209,7 @@ h6 {
 }
 
 .ghost-word.fem {
-  display: inline-block;       /* needed for transform */
+  display: inline-block;      
   animation: ghostShrink 0.8s ease forwards;
 }
 
@@ -238,7 +236,8 @@ h6 {
 	text-align: center;
 }
 
-/* Prevent notes from wrapping weirdly */
+/* Prevent notes from wrapping oddly */
+
 .no-wrap {
 	float: none !important;
 	shape-outside: none !important;
