@@ -173,37 +173,38 @@ return cleanText(chosen)
   }
 
   function showPrediction(text) {
-    predictionEl.innerHTML = "";
-    if (!text) return;
+  predictionEl.innerHTML = "";
+  if (!text) return;
 
-    text.split(/\s+/).forEach((word, i) => {
+  text.split(/\s+/).forEach(word => {
     const span = document.createElement("span");
-    span.textContent = word + " ";
-    span.className = `word ${activeVoice}`;
-    span.style.animationDelay = `${i * 60}ms`;
+    span.textContent = word;
+    span.className = "word";
     predictionEl.appendChild(span);
   });
 }
 
 function acceptPrediction() {
-  const needsSpace = !editor.innerText.endsWith(" ");
+  const words = Array.from(predictionEl.children)
+    .map(node => node.textContent);
 
-  if (needsSpace) {
+  if (!words.length) return;
+
+  // ensure exactly one space before prediction
+  if (!editor.innerText.endsWith(" ")) {
     editor.append(" ");
   }
 
-  const frag = document.createDocumentFragment();
-  Array.from(predictionEl.children).forEach(node => {
-    frag.appendChild(document.createTextNode(node.textContent.trim()));
-  });
+  editor.append(words.join(" "));
+  editor.append(" "); // trailing space so user can keep typing
 
-  editor.appendChild(frag);
   predictionEl.innerHTML = "";
   placeCaretAtEnd(editor);
   typeCount++;
 }
 
   /* Caret */
+  
   function placeCaretAtEnd(el) {
     el.focus();
     const sel = window.getSelection();
