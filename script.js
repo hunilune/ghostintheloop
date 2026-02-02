@@ -22,12 +22,36 @@ document.addEventListener("DOMContentLoaded", () => {
     fem: ["fallback female sentence"]
   };
 
-  const firstSentenceSuggestions = ["sad", "lonely", "angry"];
+  const firstSentenceSuggestions = ["feeling sad", "feeling lonely", "feeling angry", "feeling powerful"];
   const MAX_OUTPUT_WORDS = 22;
   const PREDICTION_DELAY = 1000;
 
-  const MASC_KEYWORDS = ["he", "him", "man", "male", "boy", "father", "brother"];
-  const FEM_KEYWORDS  = ["sad", "her", "woman", "female", "girl", "mother", "sister"];
+  const MASC_KEYWORDS = [
+    "he", "him", "man", "male", "boy", "guy", "father", "brother",
+    "strong", "brave", "angry", "confident", "competitive",
+    "ambitious", "independent", "assertive", "bold", "dominant",
+    "tough", "leader", "risk", "courageous", "powerful", "proud",
+    "work", "challenged", "adventure", "adventurous", "victorious", "fearless",
+    "focused", "strategic", "stoic", "protective",
+    "honour", "honor", "strong", "strength", "win", "winner", "boastful", "goal", "responsible", "fighter",
+    "decision", "determined", "bravery", "aggressive", "competitive",
+    "challenge", "action", "drive", "ambition", "dominance", "dominant", "mastery",
+    "endurance", "achievement", "control", "authority", "boldness",
+    "fearless", "risk-taking", "adventurous", "leader", "powerful",
+    "pride", "resolve", "focus", "courageous", "toughness", "handsome",
+    "protector", "defend", "responsibility", "responsible"
+  ];
+  
+  const FEM_KEYWORDS = [
+    "she", "her", "woman", "female", "girl", "mother", "sister",
+    "sad", "lonely", "lost", "fearful", "worried", "soft", "tender",
+    "sensitive", "emotional", "gentle", "nurturing", "caring",
+    "shy", "beautiful", "loving", "compassionate", "intuitive",
+    "delicate", "vulnerable", "romantic", "affection", "dream",
+    "fragile", "sentimental", "cry", "soft-spoken", "fear", "helpless",
+    "graceful", "affectionate", "whisper", "happiness", "nurture",
+    "empathetic", "sensitive", "cooperative", "emotional", "docile"
+  ];
 
   /* Initiliase */
   
