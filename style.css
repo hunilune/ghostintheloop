@@ -1,226 +1,219 @@
 /* Fonts */
 @font-face {
-	font-family: 'Social';
-	src: url('ABCSocialCyrillic-Regular-Trial.otf') format('opentype');
+  font-family: 'Social';
+  src: url('ABCSocialCyrillic-Regular-Trial.otf') format('opentype');
 }
 
 @font-face {
-	font-family: 'Office Times';
-	src: url('OfficeTimesRoundMono-Regular.otf') format('opentype');
+  font-family: 'Office Times';
+  src: url('OfficeTimesRoundMono-Regular.otf') format('opentype');
 }
 
 .fragment-mono-regular {
-	font-family: "Fragment Mono", monospace;
-	font-weight: 400;
-	font-style: normal;
+  font-family: "Fragment Mono", monospace;
+  font-weight: 400;
+  font-style: normal;
 }
 
 .fragment-mono-regular-italic {
-	font-family: "Fragment Mono", monospace;
-	font-weight: 400;
-	font-style: italic;
+  font-family: "Fragment Mono", monospace;
+  font-weight: 400;
+  font-style: italic;
 }
 
 .faustina-regular {
-	font-family: "Faustina", serif;
-	font-optical-sizing: auto;
-	font-weight: normal;
-	font-style: normal;
+  font-family: "Faustina", serif;
+  font-optical-sizing: auto;
+  font-weight: normal;
+  font-style: normal;
 }
 
 /* Root variables */
 :root {
-	--fatigue: 0;
+  --fatigue: 0;
 }
 
 /* ----------------------- Body ------------------------ */
 body {
-	background: #F9F8F4;
-	padding-top: 7rem;
-	padding-bottom: 4rem;
-	line-height: 1.3;
-	transition: all 0.6s ease;
-	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
-	font-family: "Office Times", serif;
-	color: rgba(0, 0, 0, 0.7);
+  background: #F9F8F4;
+  padding-top: 7rem;
+  padding-bottom: 4rem;
+  line-height: 1.3;
+  transition: all 0.6s ease;
+  filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
+  font-family: "Office Times", serif;
+  color: rgba(0, 0, 0, 0.7);
 }
 
 /* ----------------------- Writing Surface ------------------------ */
 .writing-surface {
-	display: flex;
-	flex-direction: column;
-	align-items: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 /* Inline image at top */
 .inline-image {
-	width: 120px;
-	margin-top: 1rem;
-	margin-bottom: 3rem;
-	transition: margin-bottom 0.6s ease, filter 0.6s ease;
+  width: 120px;
+  margin-top: 1rem;
+  margin-bottom: 3rem;
+  transition: margin-bottom 0.6s ease, filter 0.6s ease;
 }
 
 /* ----------------------- Headers ------------------------ */
 h1 {
-	font-family: Faustina, serif;
-	font-weight: normal;
-	text-align: center;
-	font-size: 2.6rem;
-	margin: 0;
-	padding-top: 0;
+  font-family: Faustina, serif;
+  font-weight: normal;
+  text-align: center;
+  font-size: 2.6rem;
+  margin: 0;
+  padding-top: 0;
 }
 
 h6 {
-	font-family: Social, sans-serif;
-	font-weight: normal;
-	font-size: 0.9rem;
-	opacity: 0.75;
-	text-align: center;
-	margin-bottom: 4rem;
+  font-family: Social, sans-serif;
+  font-weight: normal;
+  font-size: 0.9rem;
+  opacity: 0.75;
+  text-align: center;
+  margin-bottom: 4rem;
 }
 
 /* ----------------------- Editor ------------------------ */
 .editor-wrapper {
-	width: min(90vw, 46ch);
-	margin: 0 auto;
-	text-align: center;
+  width: min(90vw, 46ch);
+  margin: 0 auto;
+  text-align: center;
 }
 
 .editable {
-	display: inline;
-	min-height: 4rem;
-	padding: 1rem;
-	font-size: 1.2rem;
-	line-height: 1.4;
-	outline: none;
-	text-align: left;
-	font-family: "Office Times", serif;
-	white-space: pre-wrap;
-	cursor: text;
+  display: inline;
+  min-height: 4rem;
+  padding: 1rem;
+  font-size: 1.2rem;
+  line-height: 1.4;
+  outline: none;
+  text-align: left;
+  font-family: "Office Times", serif;
+  white-space: pre-wrap;
+  cursor: text;
 }
 
 /* Rotating suggestion */
 #rotating-suggestion {
-	font-family: "Office Times", serif;
-	font-size: 1.2rem;
-	color: rgba(0, 0, 0, 0.5);
-	display: inline-block;
+  font-family: "Office Times", serif;
+  font-size: 1.2rem;
+  color: rgba(0, 0, 0, 0.5);
+  display: inline-block;
 }
 
 /* Prediction container */
 #prediction-suggestion {
-	font-family: "Office Times", serif;
-	font-size: 1.2rem;
-	display: inline;
+  font-family: "Office Times", serif;
+  font-size: 1.2rem;
+  display: inline;
 }
 
 /* Words aligned with voice */
 #prediction-suggestion .word.masc,
 #prediction-suggestion .word.fem {
-	font-weight: 600;
+  font-weight: 600;
 }
 
 /* Committed words inside editor */
 .editable .word.committed {
-	animation: none !important;
-	transform: none !important;
-	opacity: 1 !important;
-	filter: none !important;
+  animation: none !important;
+  transform: none !important;
+  opacity: 1 !important;
+  filter: none !important;
 }
 
 .editable .word.committed.masc {
-	color: rgba(0, 0, 0, 0.9);
-	font-weight: 600;
-	letter-spacing: 0.01em;
+  color: rgba(0, 0, 0, 0.9);
+  font-weight: 600;
+  letter-spacing: 0.01em;
 }
 
 .editable .word.committed.fem {
-	color: rgba(0, 0, 0, 0.35);
-	font-weight: 300;
-	letter-spacing: 0;
+  color: rgba(0, 0, 0, 0.35);
+  font-weight: 300;
+  letter-spacing: 0;
 }
 
 /* Accessibility */
 @media (prefers-reduced-motion: reduce) {
-	* {
-		transition: none !important;
-	}
+  * {
+    transition: none !important;
+  }
 }
 
 /* Prediction Animation */
+
 .ghost {
-	display: inline;
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: ghostIn 0.45s ease forwards;
-	white-space: pre-wrap;
-	pointer-events: none;
+  display: inline;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(0.1em);
+  animation: ghostIn 0.45s ease forwards;
+  white-space: pre-wrap;
+  pointer-events: none;
 }
 
 @keyframes ghostIn {
-	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
-	}
+  to {
+    opacity: 0.7;
+    filter: blur(0);
+    transform: translateY(0);
+  }
 }
 
-.ghost-word {
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: wordIn 0.45s ease forwards;
-}
-
-.ghost-word:nth-child(n) {
-	animation-delay: calc(var(--i, 0) * 40ms);
-}
-
-#prediction-suggestion .ghost {
-	display: inline !important;
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: wordIn 0.45s ease forwards;
-	margin-right: 0.7ch;
+#prediction-suggestion .word {
+  display: inline !important;
+  opacity: 0;
+  filter: blur(6px);
+  transform: translateY(0.1em);
+  animation: wordIn 0.45s ease forwards;
+  margin-right: 0.7ch;
 }
 
 @keyframes wordIn {
-	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
-	}
+  to {
+    opacity: 0.7;
+    filter: blur(0);
+    transform: translateY(0);
+  }
 }
 
-#prediction-suggestion .ghost.masc .ghost-word.masc,
-#prediction-suggestion .ghost.masc,
-.ghost.masc .ghost-word.masc {
-	font-weight: 600;
-	color: rgba(0, 0, 0, 0.9);
-	/* masculine color */
+#prediction-suggestion .word.masc,
+#prediction-suggestion .word.fem {
+  font-weight: 600;
 }
 
-#prediction-suggestion .ghost.fem .ghost-word.fem,
-#prediction-suggestion .ghost.fem,
-.ghost.fem .ghost-word.fem {
-	font-weight: 300;
-	color: rgba(0, 0, 0, 0.8);
-	/* feminine color */
+/* Discouraged / cross-coded words */
+#prediction-suggestion.cross .word.masc,
+#prediction-suggestion.cross .word.fem {
+  font-weight: 300;
+  opacity: 0.45;
+}
+
+/* Neutral or no-support words */
+#prediction-suggestion .word.no-support {
+  color: #c44;
+  font-style: italic;
+  opacity: 0.8;
 }
 
 /* ----------------------- Notes ------------------------ */
 .note {
-	font-family: Social, sans-serif;
-	margin-top: 3rem;
-	font-size: 0.8rem;
-	opacity: 0.45;
-	text-align: center;
+  font-family: Social, sans-serif;
+  margin-top: 3rem;
+  font-size: 0.8rem;
+  opacity: 0.45;
+  text-align: center;
 }
 
 /* Prevent notes from wrapping weirdly */
 .no-wrap {
-	float: none !important;
-	shape-outside: none !important;
+  float: none !important;
+  shape-outside: none !important;
 }
