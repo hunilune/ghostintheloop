@@ -169,7 +169,7 @@ function buildNextWordMap(texts, voice) {
 
   function cycleRotate() {
     if (!rotating) return;
-    rotatingEl.textContent = firstSentenceSuggestions[rotateIndex] + " ";
+    rotatingEl.textContent = firstSentenceSuggestions[rotateIndex];
     rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
     rotateTimer = setTimeout(cycleRotate, 900);
   }
@@ -182,12 +182,21 @@ function buildNextWordMap(texts, voice) {
 
   function insertRotatingSuggestion(word) {
     stopRotating();
-editor.innerText = "I am ";
-editor.append(" ", word);
+  
+    editor.textContent = "I am " + word;
+    editor.appendChild(document.createTextNode(" "));
+  
     placeCaretAtEnd(editor);
     typeCount = 1;
     updatePrediction();
+  }  
+
+  function ensureTrailingSpace(el) {
+    if (!el.textContent.endsWith(" ")) {
+      el.appendChild(document.createTextNode(" "));
+    }
   }
+  
 
   /* Prediction */
   
@@ -247,43 +256,50 @@ editor.append(" ", word);
     removeGhost();
     if (!text) return;
   
+    if (!editor.textContent.endsWith(" ")) {
+      editor.appendChild(document.createTextNode(" "));
+    }
+  
     const ghost = document.createElement("span");
-    ghost.className = `ghost ${activeVoice}`; // apply masc/fem to the ghost container
+    ghost.className = `ghost ${activeVoice}`;
     ghost.contentEditable = "false";
   
     text.split(/\s+/).forEach((word, i) => {
       const w = document.createElement("span");
-      w.className = `ghost-word ${activeVoice}`; // apply masc/fem per word
-      w.textContent = word + " ";
-      w.style.animationDelay = `${i * 40}ms`; // stagger animation like before
+      w.className = `ghost-word ${activeVoice}`;
+      w.textContent = word;
+      w.style.animationDelay = `${i * 40}ms`;
+  
       ghost.appendChild(w);
+      ghost.appendChild(document.createTextNode(" "));
     });
   
     editor.appendChild(ghost);
     placeCaretAtEnd(editor);
-  }
+  }  
   
-
   function acceptPrediction() {
     const ghost = editor.querySelector(".ghost");
     if (!ghost) return;
   
-    Array.from(ghost.children).forEach(w => {
-      // Make sure it has the expected classes
-      w.classList.add("committed");
-      w.classList.add("word"); // ← add this!
-      // remove ghost-specific animation styles
-      w.style.animation = "none";
-      w.style.opacity = "";
-      w.style.filter = "";
-      editor.appendChild(w);
+    Array.from(ghost.childNodes).forEach(node => {
+      if (node.nodeType === Node.TEXT_NODE) {
+        editor.appendChild(node.cloneNode());
+      } else {
+        node.classList.add("committed", "word");
+        node.style.animation = "none";
+        editor.appendChild(node);
+      }
     });
   
     ghost.remove();
-    editor.appendChild(document.createTextNode(" "));
+  
+    if (!editor.textContent.endsWith(" ")) {
+      editor.appendChild(document.createTextNode(" "));
+    }
+  
     placeCaretAtEnd(editor);
   }  
-  
 
   /* Caret */
   
@@ -319,7 +335,7 @@ editor.append(" ", word);
   
     if (text === "I am") {
       startRotating();
-      return; // ← stop here
+      return;
     }
   
     stopRotating();
@@ -327,11 +343,13 @@ editor.append(" ", word);
     updatePrediction();
   });  
 
-function removeGhost() {
-  const ghost = editor.querySelector(".ghost");
-  if (ghost) ghost.remove();
-}
-
+  function removeGhost() {
+    const ghost = editor.querySelector(".ghost");
+    if (ghost) {
+      ghost.remove();
+      placeCaretAtEnd(editor);
+    }
+  }
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
