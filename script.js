@@ -169,10 +169,13 @@ function buildNextWordMap(texts, voice) {
 
   function cycleRotate() {
     if (!rotating) return;
-    rotatingEl.textContent = firstSentenceSuggestions[rotateIndex];
+  
+    const suggestion = firstSentenceSuggestions[rotateIndex];
+    rotatingEl.innerText = "\u00A0" + suggestion; // ← non-breaking space
+  
     rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
     rotateTimer = setTimeout(cycleRotate, 900);
-  }
+  }  
 
   function stopRotating() {
     rotating = false;
@@ -256,10 +259,6 @@ function buildNextWordMap(texts, voice) {
     removeGhost();
     if (!text) return;
   
-    if (!editor.textContent.endsWith(" ")) {
-      editor.appendChild(document.createTextNode(" "));
-    }
-  
     const ghost = document.createElement("span");
     ghost.className = `ghost ${activeVoice}`;
     ghost.contentEditable = "false";
@@ -267,16 +266,16 @@ function buildNextWordMap(texts, voice) {
     text.split(/\s+/).forEach((word, i) => {
       const w = document.createElement("span");
       w.className = `ghost-word ${activeVoice}`;
-      w.textContent = word;
+      w.textContent = word; // no trailing space
       w.style.animationDelay = `${i * 40}ms`;
-  
       ghost.appendChild(w);
-      ghost.appendChild(document.createTextNode(" "));
     });
   
+    // Append after the last text node to stay inline
     editor.appendChild(ghost);
     placeCaretAtEnd(editor);
-  }  
+  }
+  
   
   function acceptPrediction() {
     const ghost = editor.querySelector(".ghost");
