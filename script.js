@@ -22,7 +22,7 @@ document.addEventListener("DOMContentLoaded", () => {
     fem: ["fallback female sentence"]
   };
 
-  const firstSentenceSuggestions = ["feeling sad", "feeling lonely", "feeling angry", "feeling powerful"];
+  const firstSentenceSuggestions = ["sad", "lonely", "angry"];
   const MAX_OUTPUT_WORDS = 22;
   const PREDICTION_DELAY = 1000;
 
