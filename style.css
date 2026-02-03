@@ -18,9 +18,9 @@
 
 body {
 	background: #fff;
-	padding-top: 4rem;
+	padding-top: 3rem;
 	padding-bottom: 4rem;
-	font-weight: 350;
+	font-weight: normal;
 	line-height: 1.2;
 	transition: all 0.6s ease;
 	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
@@ -73,7 +73,7 @@ h1 {
 	color: black;
 	font-size: 1.6rem;
 	margin: 0;
-	padding-left: 4rem;
+	padding-left: 3rem;
 	padding-top: 0;
 }
 
@@ -83,7 +83,7 @@ h6 {
 	font-size: 1.6rem;
 	opacity: 0.75px;
 	text-align: left;
-	padding-left: 4rem;
+	padding-left: 3rem;
 	margin-bottom: 4rem;
 }
 
@@ -91,7 +91,7 @@ h6 {
 
 .editor-wrapper {
 	width: min(50vw, 75ch);
-	padding-left: 4rem;
+	padding-left: 6rem;
 	/*margin: 0 auto;*/
 	text-align: left;
 }
@@ -150,7 +150,7 @@ h6 {
 
 .editable .word.committed.fem {
 	color: rgba(0, 0, 0, 0.35);
-	font-weight: 200;
+	font-weight: 250;
 	letter-spacing: 0;
 }
 
@@ -235,7 +235,7 @@ h6 {
 	color: rgba(0, 0, 0, 0.9);
 }
 
-/* Words get smaller for masculine corpus */
+/* Words get smaller for feminine corpus */
 
 @keyframes ghostShrink {
   from { opacity: 0; transform: scale(1); }
@@ -248,6 +248,7 @@ h6 {
 }
 
 /* Stagger for feminine corpus */
+
 .ghost-word.fem:nth-child(n) {
   animation-delay: calc(var(--i, 0) * 60ms);
 }
@@ -255,20 +256,19 @@ h6 {
 #prediction-suggestion .ghost.fem .ghost-word.fem,
 #prediction-suggestion .ghost.fem,
 .ghost.fem .ghost-word.fem {
-	font-weight: 300;
-	color: rgba(0, 0, 0, 0.8);
-	/* feminine color */
+	font-weight: 350;
+	color: rgba(0, 0, 0, 0.6);
 }
 
 /* Notes */
 
 .note {
 	font-family: Inter, sans-serif;
-	margin-top: 3.4rem;
-	font-size: 1.2rem;
-	font-weight: 400;
+	margin-top: 3.8rem;
+	font-size: 1rem;
+	font-weight: 345;
 	opacity: 0.65;
-		padding-left: 4rem;
+	padding-left: 6rem;
 	text-align: left;
 }
 
