@@ -64,7 +64,7 @@ h6 {
 }
 
 .editable {
-	display: inline;
+	display: inline-block;
 	min-height: 4rem;
 	padding: 1rem;
 	font-size: 1.35rem;
@@ -81,7 +81,9 @@ h6 {
 	font-family: Lancelot, serif;
 	font-size: 1.35rem;
 	color: rgba(0, 0, 0, 0.5);
-	display: inline-block;
+	display: inline;
+		white-space: no-wrap;
+
 }
 
 /* Prediction container */
@@ -136,7 +138,7 @@ h6 {
 	filter: blur(6px);
 	transform: translateY(0.1em);
 	animation: ghostIn 0.45s ease forwards;
-	white-space: pre-wrap;
+	white-space: no-wrap;
 	pointer-events: none;
 }
 
@@ -149,10 +151,12 @@ h6 {
 }
 
 .ghost-word {
+	display: inline;
 	opacity: 0;
 	filter: blur(6px);
 	transform: translateY(0.1em);
 	animation: wordIn 0.45s ease forwards;
+	margin-right: 0.3ch
 }
 
 .ghost-word:nth-child(n) {
