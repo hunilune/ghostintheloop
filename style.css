@@ -18,7 +18,7 @@
 
 body {
 	background: #FEFEFE;
-	padding-top: 3rem;
+	padding-top: 5rem;
 	padding-bottom: 3rem;
 	font-weight: normal;
 	line-height: 1.2;
@@ -66,9 +66,6 @@ a:active {
 
 .inline-image {
 	width: 0px;
-	margin-top: 1rem;
-	margin-bottom: 3rem;
-	transition: margin-bottom 0.6s ease, filter 0.6s ease;
 }
 
 /* Headers */
@@ -91,7 +88,7 @@ h6 {
 	opacity: 0.75px;
 	text-align: left;
 	padding-left: 3rem;
-	margin-bottom: 4rem;
+	margin-bottom: 7rem;
 }
 
 /* Editor */
@@ -119,9 +116,9 @@ h6 {
 /* Rotating suggestion */
 
 #rotating-suggestion {
-	font-family: inter, sans-serif;
+	font-family: Inter, serif;
 	font-size: 1.6rem;
-	color: rgba(0, 0, 0, 0.5);
+	color: rgba(100, 0, 255, 0.4);
 	display: inline-block;
 }
 
@@ -150,14 +147,14 @@ h6 {
 }
 
 .editable .word.committed.masc {
-	color: rgba(0, 0, 0, 0.9);
+	color: rgba(0, 0, 255, 0.9);
 	font-weight: 500;
 	letter-spacing: 0.01em;
 }
 
 .editable .word.committed.fem {
-	color: rgba(0, 0, 0, 0.35);
-	font-weight: 250;
+	color: rgba(255, 0, 0, 0.35);
+	font-weight: 375;
 	letter-spacing: 0;
 }
 
