@@ -1,287 +1,346 @@
-/* Fonts */
+document.addEventListener("DOMContentLoaded", () => {
 
-.inter-<uniquifier> {
-  font-family: "Inter", sans-serif;
-  font-optical-sizing: auto;
-  font-weight: <weight>;
-  font-style: normal;
+  /* Corpus URLs */
+  
+  const CORPUS_URLS = {
+    masc: [
+      "https://hunilune.github.io/ghostintheloop/AskMen.json",
+      "https://hunilune.github.io/ghostintheloop/AskMenOver30.json",
+      "https://hunilune.github.io/ghostintheloop/MensRights.json",
+      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
+    ],
+    fem: [
+      "https://hunilune.github.io/ghostintheloop/AskWomen.json",
+      "https://hunilune.github.io/ghostintheloop/AskFeminists.json",
+      "https://hunilune.github.io/ghostintheloop/Feminism.json",
+      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json"
+    ]
+  };
+
+  const FALLBACK = {
+    masc: ["fallback male sentence"],
+    fem: ["fallback female sentence"]
+  };
+
+  const firstSentenceSuggestions = ["sad", "lonely", "angry"];
+  const MAX_OUTPUT_WORDS = 22;
+  const PREDICTION_DELAY = 1000;
+
+  const MASC_KEYWORDS = [
+    "he", "him", "man", "male", "boy", "guy", "father", "brother",
+    "strong", "brave", "angry", "confident", "competitive",
+    "ambitious", "independent", "assertive", "bold", "dominant",
+    "tough", "leader", "risk", "courageous", "powerful", "proud",
+    "work", "challenged", "adventure", "adventurous", "victorious", "fearless",
+    "focused", "strategic", "stoic", "protective",
+    "honour", "honor", "strong", "strength", "win", "winner", "boastful", "goal", "responsible", "fighter",
+    "decision", "determined", "bravery", "aggressive", "competitive",
+    "challenge", "action", "drive", "ambition", "dominance", "dominant", "mastery",
+    "endurance", "achievement", "control", "authority", "boldness",
+    "fearless", "risk-taking", "adventurous", "leader", "powerful",
+    "pride", "resolve", "focus", "courageous", "toughness", "handsome",
+    "protector", "defend", "responsibility", "responsible"
+  ];
+  
+  const FEM_KEYWORDS = [
+    "she", "her", "woman", "female", "girl", "mother", "sister",
+    "sad", "lonely", "lost", "fearful", "worried", "soft", "tender",
+    "sensitive", "emotional", "gentle", "nurturing", "caring",
+    "shy", "beautiful", "loving", "compassionate", "intuitive",
+    "delicate", "vulnerable", "romantic", "affection", "dream",
+    "fragile", "sentimental", "cry", "soft-spoken", "fear", "helpless",
+    "graceful", "affectionate", "whisper", "happiness", "nurture",
+    "empathetic", "sensitive", "cooperative", "emotional", "docile"
+  ];
+
+  /* Initiliase */
+  
+  const editor = document.querySelector("#editor");
+  const rotatingEl = document.querySelector("#rotating-suggestion");
+
+  let corpora = { masc: [], fem: [] };
+  let ready = false;
+  let typeCount = 0;
+  let activeVoice = "masc";
+
+  let rotating = false;
+  let rotateIndex = 0;
+  let rotateTimer = null;
+  let predictionTimer = null;
+
+  if (!editor || !rotatingEl) return;
+
+  /* Load corpora */
+  
+  async function loadSide(urls) {
+    const collected = [];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const json = await res.json();
+        const texts = extractText(json);
+        collected.push(...texts);
+      } catch (e) {
+        console.warn("Skipped corpus", url, e);
+      }
+    }
+    return normalize(collected);
+  }
+
+  async function loadCorpora() {
+    corpora.masc = await loadSide(CORPUS_URLS.masc);
+    corpora.fem  = await loadSide(CORPUS_URLS.fem);
+
+    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
+    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
+
+  buildNextWordMap(corpora.masc, "masc");
+  buildNextWordMap(corpora.fem, "fem");
+
+    ready = true;
+    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
+  }
+
+  loadCorpora();
+
+  /* Word map */
+
+  let nextWordMap = { masc: {}, fem: {} };
+
+function buildNextWordMap(texts, voice) {
+  const map = {};
+
+  texts.forEach(sentence => {
+    const words = sentence.split(/\s+/);
+
+    for (let i = 0; i < words.length - 1; i++) {
+      const key = words[i];               // 1-gram
+      const next = words[i + 1];
+
+      if (!map[key]) map[key] = [];
+      map[key].push(next);
+    }
+
+    for (let i = 0; i < words.length - 2; i++) {
+      const key = words[i] + " " + words[i + 1]; // 2-gram
+      const next = words[i + 2];
+
+      if (!map[key]) map[key] = [];
+      map[key].push(next);
+    }
+  });
+
+  nextWordMap[voice] = map;
+}
+
+  /* Extract */
+  
+  function extractText(src) {
+    if (Array.isArray(src)) return src;
+    if (Array.isArray(src?.data?.children)) {
+      return src.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`);
+    }
+    return [];
+  }
+
+  /* Normalise */
+
+  function normalize(arr) {
+    return arr
+      .map(t =>
+        String(t)
+          .toLowerCase()
+          .replace(/[^\w\s]/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter(t => t.length > 20);
+  }
+
+  /* Rotating suggestions */
+  
+  function startRotating() {
+    if (rotating) return;
+    rotating = true;
+    rotateIndex = 0;
+    cycleRotate();
+  }
+
+  function cycleRotate() {
+    if (!rotating) return;
+    rotatingEl.textContent = firstSentenceSuggestions[rotateIndex] + " ";
+    rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
+    rotateTimer = setTimeout(cycleRotate, 900);
+  }
+
+  function stopRotating() {
+    rotating = false;
+    clearTimeout(rotateTimer);
+    rotatingEl.textContent = "";
+  }
+
+  function insertRotatingSuggestion(word) {
+    stopRotating();
+editor.innerText = "I am ";
+editor.append(" ", word);
+    placeCaretAtEnd(editor);
+    typeCount = 1;
+    updatePrediction();
+  }
+
+  /* Prediction */
+  
+  function cleanText(text) {
+    return text
+      .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "")
+      .replace(/&[a-z]+;/gi, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function updateActiveVoice(text) {
+    const words = cleanText(text).split(/\s+/);
+    for (let w of words.slice(-3)) {
+      if (MASC_KEYWORDS.includes(w)) { activeVoice = "masc"; return; }
+      if (FEM_KEYWORDS.includes(w))  { activeVoice = "fem";  return; }
+    }
+  }
+
+  function generatePrediction(input) {
+    if (!ready || !input) return "";
+  
+    updateActiveVoice(input);
+  
+    const voice = activeVoice;
+    const map = nextWordMap[voice];
+    const words = cleanText(input).split(/\s+/);
+  
+    const lastTwo = words.slice(-2).join(" ");
+    const lastOne = words.slice(-1)[0];
+  
+    let candidates =
+      map[lastTwo] ||
+      map[lastOne] ||
+      [];
+  
+    if (!candidates.length) return "";
+  
+    // pick 1–3 words
+    const result = [];
+    let currentKey = lastTwo;
+  
+    for (let i = 0; i < 3; i++) {
+      const options = map[currentKey] || map[lastOne];
+      if (!options || !options.length) break;
+  
+      const next = options[Math.floor(Math.random() * options.length)];
+      result.push(next);
+  
+      currentKey = currentKey.split(" ").slice(-1).concat(next).join(" ");
+    }
+  
+    return result.join(" ");
+  }
+
+  function showPrediction(text) {
+    removeGhost();
+    if (!text) return;
+  
+    const ghost = document.createElement("span");
+    ghost.className = `ghost ${activeVoice}`; // apply masc/fem to the ghost container
+    ghost.contentEditable = "false";
+  
+    text.split(/\s+/).forEach((word, i) => {
+      const w = document.createElement("span");
+      w.className = `ghost-word ${activeVoice}`; // apply masc/fem per word
+      w.textContent = word + " ";
+      w.style.animationDelay = `${i * 40}ms`; // stagger animation like before
+      ghost.appendChild(w);
+    });
+  
+    editor.appendChild(ghost);
+    placeCaretAtEnd(editor);
+  }
+  
+
+  function acceptPrediction() {
+    const ghost = editor.querySelector(".ghost");
+    if (!ghost) return;
+  
+    Array.from(ghost.children).forEach(w => {
+      // Make sure it has the expected classes
+      w.classList.add("committed");
+      w.classList.add("word"); // ← add this!
+      // remove ghost-specific animation styles
+      w.style.animation = "none";
+      w.style.opacity = "";
+      w.style.filter = "";
+      editor.appendChild(w);
+    });
+  
+    ghost.remove();
+    editor.appendChild(document.createTextNode(" "));
+    placeCaretAtEnd(editor);
+  }  
+  
+
+  /* Caret */
+  
+  function placeCaretAtEnd(el) {
+    el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.addRange(range);
+  }
+
+  /* Updating the prediction */
+  
+  function updatePrediction() {
+    if (rotating || !ready) return;
+  
+    const text = editor.innerText.replace(/\s+/g, " ").trim();
+    if (!text) return;
+  
+    clearTimeout(predictionTimer);
+    predictionTimer = setTimeout(() => {
+      const prediction = generatePrediction(text);
+      showPrediction(prediction);
+    }, PREDICTION_DELAY);
+  }
+  
+  /* Input behaviour */
+  
+  editor.addEventListener("input", () => {
+    const text = editor.innerText.replace(/\s+/g, " ").trim();
+  
+    if (text === "I am") {
+      startRotating();
+      return; // ← stop here
+    }
+  
+    stopRotating();
+    removeGhost();
+    updatePrediction();
+  });  
+
+function removeGhost() {
+  const ghost = editor.querySelector(".ghost");
+  if (ghost) ghost.remove();
 }
 
 
-/* Root variables */
+  editor.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      acceptPrediction();
+      updatePrediction();
+    }
+  });
 
-:root {
-	--fatigue: 0;
-}
+  if (editor.innerText.trim() === "I am") startRotating();
 
-/* Body */
-
-body {
-	background: #fff;
-	padding-top: 3rem;
-	padding-bottom: 4rem;
-	font-weight: normal;
-	line-height: 1.2;
-	transition: all 0.6s ease;
-	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
-	font-family: Inter, serif;
-	color: rgba(0, 0, 0, 0.7);
-}
-
- /* unvisited link */
-a:link {
-  color: green;
-	  padding-bottom: var(--s);
-  background: 
-    linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
-    linear-gradient(var(--c) 0 0) 0% 100%/var(--_p,0%) var(--s) no-repeat;
-  -webkit-background-clip: text,padding-box;
-          background-clip: text,padding-box;
-  transition: 0.5s;
-}
-
-/* visited link */
-a:visited {
-  color: green;
-}
-
-/* mouse over link */
-a:hover {
-  color: hotpink;
-}
-
-/* selected link */
-a:active {
-  color: blue;
-} 
-/* Writing */
-
-.writing-surface {
-	display: flex;
-	flex-direction: column;
-	align-items: left;
-}
-
-/* Image */
-
-.inline-image {
-	width: 0px;
-	margin-top: 1rem;
-	margin-bottom: 3rem;
-	transition: margin-bottom 0.6s ease, filter 0.6s ease;
-}
-
-/* Headers */
-
-h1 {
-	font-family: Inter, serif;
-	font-weight: 500;
-	text-align: left;
-	color: black;
-	font-size: 1.6rem;
-	margin: 0;
-	padding-left: 3rem;
-	padding-top: 0;
-}
-
-h6 {
-	font-family: Inter, sans-serif;
-	font-weight: normal;
-	font-size: 1.6rem;
-	opacity: 0.75px;
-	text-align: left;
-	padding-left: 3rem;
-	margin-bottom: 4rem;
-}
-
-/* Editor */
-
-.editor-wrapper {
-	width: min(50vw, 75ch);
-	padding-left: 6rem;
-	/*margin: 0 auto;*/
-	text-align: left;
-}
-
-.editable {
-	display: inline;
-	min-height: 4rem;
-	padding: 1rem;
-	font-size: 1.6rem;
-	outline: none;
-	text-align: left;
-	font-family: Inter, serif;
-	white-space: pre-wrap;
-	cursor: text;
-	text-wrap: pretty;
-}
-
-/* Rotating suggestion */
-
-#rotating-suggestion {
-	font-family: inter, sans-serif;
-	font-size: 1.6rem;
-	color: rgba(0, 0, 0, 0.5);
-	display: inline-block;
-}
-
-/* Prediction container */
-
-#prediction-suggestion {
-	font-family: Inter, sans-serif;
-	font-size: 1.6rem;
-	display: inline;
-}
-
-/* Words aligned with voice */
-
-#prediction-suggestion .word.masc,
-#prediction-suggestion .word.fem {
-	font-weight: 400;
-}
-
-/* Committed words inside editor */
-
-.editable .word.committed {
-	animation: none !important;
-	transform: none !important;
-	opacity: 1 !important;
-	filter: none !important;
-}
-
-.editable .word.committed.masc {
-	color: rgba(0, 0, 0, 0.9);
-	font-weight: 500;
-	letter-spacing: 0.01em;
-}
-
-.editable .word.committed.fem {
-	color: rgba(0, 0, 0, 0.35);
-	font-weight: 250;
-	letter-spacing: 0;
-}
-
-/* Accessibility */
-
-@media (prefers-reduced-motion: reduce) {
-	* {
-		transition: none !important;
-	}
-}
-
-/*/ Animation /*/
-
-.ghost {
-	display: inline;
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: ghostIn 0.45s ease forwards;
-	white-space: pre-wrap;
-	pointer-events: none;
-}
-
-@keyframes ghostIn {
-	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
-	}
-}
-
-.ghost-word {
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: wordIn 0.45s ease forwards;
-}
-
-.ghost-word:nth-child(n) {
-	animation-delay: calc(var(--i, 0) * 40ms);
-}
-
-#prediction-suggestion .ghost {
-	display: inline !important;
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: wordIn 0.45s ease forwards;
-	margin-right: 0.7ch;
-}
-
-@keyframes wordIn {
-	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
-	}
-}
-
-/* Words get larger for masculine corpus */
-
-@keyframes ghostGrow {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(40); } /* noticeable growth */
-}
-
-.ghost-word.masc {
-  display: inline-block;
-  animation: ghostIn 0.8s ease forwards, growWord 1s ease forwards;
-}
-
-/* Staggering for masculine corpus */
-
-.ghost-word.masc:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 60ms);
-}
-
-.ghost.masc .ghost-word.masc,
-.ghost.masc,
-.ghost.masc .ghost-word.masc {
-	font-weight: 600;
-	color: rgba(0, 0, 0, 0.9);
-}
-
-/* Words get smaller for feminine corpus */
-
-@keyframes ghostShrink {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(0.5); } /* shrink to normal size */
-}
-
-.ghost-word.fem {
-  display: inline-block;      
-  animation: ghostShrink 0.8s ease forwards;
-}
-
-/* Stagger for feminine corpus */
-
-.ghost-word.fem:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 60ms);
-}
-
-#prediction-suggestion .ghost.fem .ghost-word.fem,
-#prediction-suggestion .ghost.fem,
-.ghost.fem .ghost-word.fem {
-	font-weight: 350;
-	color: rgba(0, 0, 0, 0.6);
-}
-
-/* Notes */
-
-.note {
-	font-family: Inter, sans-serif;
-	margin-top: 3.8rem;
-	font-size: 1rem;
-	font-weight: 345;
-	opacity: 0.65;
-	padding-left: 6rem;
-	text-align: left;
-}
-
-/* Prevent notes from wrapping oddly */
-
-.no-wrap {
-	float: none !important;
-	shape-outside: none !important;
-}
+});
