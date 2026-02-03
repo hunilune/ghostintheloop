@@ -248,14 +248,14 @@ editor.append(" ", word);
     if (!text) return;
   
     const ghost = document.createElement("span");
-    ghost.className = `ghost ${activeVoice}`; // apply masc/fem to the ghost container
+    ghost.className = `ghost ${activeVoice}`; 
     ghost.contentEditable = "false";
   
     text.split(/\s+/).forEach((word, i) => {
       const w = document.createElement("span");
-      w.className = `ghost-word ${activeVoice}`; // apply masc/fem per word
+      w.className = `ghost-word ${activeVoice}`; 
       w.textContent = word + " ";
-      w.style.animationDelay = `${i * 40}ms`; // stagger animation like before
+      w.style.animationDelay = `${i * 40}ms`; 
       ghost.appendChild(w);
     });
   
@@ -269,12 +269,11 @@ editor.append(" ", word);
     if (!ghost) return;
   
     Array.from(ghost.children).forEach(w => {
-      // Make sure it has the expected classes
       w.classList.add("committed");
-      w.classList.add("word"); // ← add this!
-      // remove ghost-specific animation styles
+      w.classList.add("word"); 
       w.style.animation = "none";
       w.style.opacity = "";
+      w.style.color = "";
       w.style.filter = "";
       editor.appendChild(w);
     });
