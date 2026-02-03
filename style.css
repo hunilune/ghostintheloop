@@ -28,7 +28,7 @@ body {
 	color: rgba(0, 0, 0, 0.7);
 }
 
- /* unvisited link */
+ /* Unvisited link */
 a:link {
   color: #CD03FF;
 	  padding-bottom: var(--s);
@@ -40,20 +40,21 @@ a:link {
   transition: 0.5s;
 }
 
-/* visited link */
+/* Visited link */
 a:visited {
   color: green;
 }
 
-/* mouse over link */
+/* Mouse over link */
 a:hover {
   color: hotpink;
 }
 
-/* selected link */
+/* Selected link */
 a:active {
   color: blue;
 } 
+
 /* Writing */
 
 .writing-surface {
