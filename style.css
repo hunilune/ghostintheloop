@@ -1,5 +1,15 @@
 /* Fonts */
 
+@font-face {
+  font-family: "Camera";
+  src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
+}
+
+@font-face {
+  font-family: "Oracle";
+  src: url("ABCOraclePlusVariableEdu-Regular.woff") format("woff");
+}
+
 .inter-<uniquifier> {
   font-family: "Inter", sans-serif;
   font-optical-sizing: auto;
@@ -24,7 +34,7 @@ body {
 	line-height: 1.2;
 	transition: all 0.6s ease;
 	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
-	font-family: Inter, serif;
+	font-family: Camera, serif;
 	color: rgba(0, 0, 0, 0.7);
 }
 
@@ -72,7 +82,7 @@ a:active {
 /* Headers */
 
 h1 {
-	font-family: Inter, serif;
+	font-family: Camera, serif;
 	font-weight: 500;
 	text-align: left;
 	color: black;
@@ -82,8 +92,8 @@ h1 {
 	padding-top: 0;
 }
 
-h6 {
-	font-family: Inter, sans-serif;
+h2 {
+	font-family: Camera, serif;
 	font-weight: normal;
 	font-size: 1.6rem;
 	opacity: 0.75px;
@@ -126,7 +136,7 @@ h6 {
 /* Prediction container */
 
 #prediction-suggestion {
-	font-family: Inter, sans-serif;
+	font-family: Camera, serif;
 	font-size: 1.6rem;
 	display: inline;
 }
@@ -274,7 +284,7 @@ h6 {
 /* Notes */
 
 .note {
-	font-family: Inter, sans-serif;
+	font-family: Camera, serif;
 	margin-top: 3.8rem;
 	font-size: 1rem;
 	font-weight: 345;
