@@ -182,7 +182,7 @@ function buildNextWordMap(texts, voice) {
 
   function insertRotatingSuggestion(word) {
     stopRotating();
-editor.innerText = "I am ";
+editor.innerText = "I am feeling ";
 editor.append(" ", word);
     placeCaretAtEnd(editor);
     typeCount = 1;
@@ -316,9 +316,9 @@ editor.append(" ", word);
   editor.addEventListener("input", () => {
     const text = editor.innerText.replace(/\s+/g, " ").trim();
   
-    if (text === "I am") {
+    if (text === "I am feeling") {
       startRotating();
-      return; // ← stop here
+      return; 
     }
   
     stopRotating();
@@ -340,6 +340,6 @@ function removeGhost() {
     }
   });
 
-  if (editor.innerText.trim() === "I am") startRotating();
+  if (editor.innerText.trim() === "I am feeling") startRotating();
 
 });
