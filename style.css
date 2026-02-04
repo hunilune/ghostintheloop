@@ -28,9 +28,9 @@
 
 body {
 	background: #FEFEFE;
-	padding-top: 5rem;
+	padding-top: 3rem;
 	padding-bottom: 3rem;
-	font-weight: normal;
+	font-weight: 365;
 	line-height: 1.2;
 	transition: all 0.6s ease;
 	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
@@ -83,7 +83,7 @@ a:active {
 
 h1 {
 	font-family: Camera, serif;
-	font-weight: 500;
+	font-weight: 450;
 	text-align: left;
 	color: black;
 	font-size: 1.6rem;
@@ -94,12 +94,12 @@ h1 {
 
 h2 {
 	font-family: Camera, serif;
-	font-weight: normal;
+	font-weight: 300;
 	font-size: 1.6rem;
-	opacity: 0.75px;
+	opacity: 0.8;
 	text-align: left;
 	padding-left: 3rem;
-	margin-bottom: 7rem;
+	margin-bottom: 8rem;
 }
 
 /* Editor */
