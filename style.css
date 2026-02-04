@@ -20,15 +20,15 @@
 @media only screen and (max-width: 600px) {
 
    h1 { 
-      font-size: 2rem; 
+      font-size: 1.5em; 
    }
 	
 	 h2 { 
-      font-size: 2rem; 
+      font-size: 1.5em; 
    }
 	
 	body {
-		font-size: 2rem;
+		font-size: 1.5em;
 	}
 	
 }
@@ -156,13 +156,6 @@ h2 {
 	display: inline;
 }
 
-/* Words aligned with voice */
-
-#prediction-suggestion .word.masc,
-#prediction-suggestion .word.fem {
-	font-weight: 400;
-}
-
 /* Committed words inside editor */
 
 .editable .word.committed {
@@ -174,13 +167,13 @@ h2 {
 
 .editable .word.committed.masc {
 	color: rgba(0, 0, 255, 0.9);
-	font-weight: 500;
+	font-weight: 490;
 	letter-spacing: 0.01em;
 }
 
 .editable .word.committed.fem {
 	color: rgba(255, 0, 0, 0.35);
-	font-weight: 375;
+	font-weight: 355;
 	letter-spacing: 0;
 }
 
@@ -263,7 +256,7 @@ h2 {
 .ghost.masc .ghost-word.masc,
 .ghost.masc,
 .ghost.masc .ghost-word.masc {
-	font-weight: 600;
+	font-weight: 500;
 	color: rgba(0, 0, 0, 0.9);
   color: #3b6cff;
 }
