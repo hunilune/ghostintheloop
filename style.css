@@ -12,13 +12,15 @@
         padding-left: 2.5em !important;
         padding-right: 0.5em !important;
         margin-left: 0 !important;
-        margin-right: 0 !important;
-        width: 100% !important; /* fill mobile screen */
+        margin-right: 0.5em !important;
+        width: 100% !important; 
     }
     .editable {
-        padding: 0 !important;
-        margin: 0 !important;
-        min-height: auto; /* optional, adjust if you want smaller height */
+        padding-left: 0em !important;
+        padding-right: 0.5em !important;
+        margin-left: 0 !important;
+        margin-right: 0.5em !important;
+        min-height: auto;
     }
     .note {
         padding-left: 2.5em !important;
