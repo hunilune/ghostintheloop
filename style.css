@@ -19,13 +19,13 @@
 
 @media (max-width: 600px) {
 	html { font-size: 14px; } 
-	body { font-size: 1em; padding-left: 2rem !important; }
+	body { font-size: 1em !important; }
   .editor-wrapper,
   .editable,
   .note {
-    padding-left: 2rem !important;
+    padding-left: 1em !important;
     padding-right: 0 !important;
-    margin-left: 2rem !important;
+    margin-left: 1em !important;
     margin-right: 0 !important;
   }
 }
