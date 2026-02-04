@@ -5,11 +5,6 @@
   src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
 }
 
-@font-face {
-  font-family: "Oracle";
-  src: url("ABCOraclePlusVariableEdu-Regular.woff") format("woff");
-}
-
 @media (max-width: 600px) {
 	html { font-size: 14px; } 
 	body { font-size: 1em !important; }
