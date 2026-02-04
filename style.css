@@ -13,7 +13,6 @@
         padding-left: 0; /* same as notes */
         padding-right: 0.5em;
         margin: 0;
-        width: 100% !important; 
     }
     .editable {
         padding: 0 !important;
