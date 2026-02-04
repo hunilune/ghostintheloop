@@ -12,12 +12,12 @@
 
 @media (max-width: 600px) {
 	html { font-size: 14px; } 
-	body { font-size: 1em !important; }
+	body { font-size: 1em !important; padding-left: -1em !important; }
  /* Reset editor wrapper */
     .editor-wrapper {
-        padding-left: 3em !important;
-        padding-right: 0 !important;
-        margin-left: 0em !important;
+        padding-left: 2.5em !important;
+        padding-right: 0.5em !important;
+        margin-left: 0 !important;
         margin-right: 0 !important;
         width: 100% !important; /* fill mobile screen */
     }
@@ -31,7 +31,7 @@
 
     /* Reset notes */
     .note {
-        padding-left: 2em !important;
+        padding-left: 2.5em !important;
         margin-left: 0 !important;
     }
 }
