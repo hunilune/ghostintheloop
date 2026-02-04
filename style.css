@@ -9,7 +9,7 @@
 	html { font-size: 14px; } 
 	body { font-size: 1em !important; }
     .editor-wrapper {
-        width: 100%;        /* fill screen */
+        width: 100% !important;        /* fill screen */
         padding-left: 0; /* same as notes */
         padding-right: 0.5em;
         margin: 0;
