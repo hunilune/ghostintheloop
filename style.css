@@ -10,7 +10,7 @@
 	body { font-size: 1em !important; }
     .editor-wrapper {
         width: 100%;        /* fill screen */
-        padding-left: 2.5em; /* same as notes */
+        padding-left: 0.5em; /* same as notes */
         padding-right: 0.5em;
         margin: 0;
         width: 100% !important; 
