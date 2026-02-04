@@ -18,11 +18,11 @@ document.addEventListener("DOMContentLoaded", () => {
   };
 
   const FALLBACK = {
-    masc: ["fallback male sentence"],
-    fem: ["fallback female sentence"]
+    masc: ["Try again."],
+    fem: ["Are you sure?"]
   };
 
-  const firstSentenceSuggestions = ["sad", "lonely", "angry"];
+  const firstSentenceSuggestions = ["happy", "lonely", "pride", "odd", "angry", "lost", "cold", "delicate"];
   const MAX_OUTPUT_WORDS = 22;
   const PREDICTION_DELAY = 1000;
 
@@ -32,11 +32,11 @@ document.addEventListener("DOMContentLoaded", () => {
     "ambitious", "independent", "assertive", "bold", "dominant",
     "tough", "leader", "risk", "courageous", "powerful", "proud",
     "work", "challenged", "adventure", "adventurous", "victorious", "fearless",
-    "focused", "strategic", "stoic", "protective",
+    "focused", "strategic", "stoic", "protective", "rage", "cold",
     "honour", "honor", "strong", "strength", "win", "winner", "boastful", "goal", "responsible", "fighter",
     "decision", "determined", "bravery", "aggressive", "competitive",
-    "challenge", "action", "drive", "ambition", "dominance", "dominant", "mastery",
-    "endurance", "achievement", "control", "authority", "boldness",
+    "challenge", "action", "drive", "ambition", "dominance", "mastery",
+    "endurance", "achievement", "control", "authority", "boldness", "",
     "fearless", "risk-taking", "adventurous", "leader", "powerful",
     "pride", "resolve", "focus", "courageous", "toughness", "handsome",
     "protector", "defend", "responsibility", "responsible"
@@ -47,7 +47,7 @@ document.addEventListener("DOMContentLoaded", () => {
     "sad", "lonely", "lost", "fearful", "worried", "soft", "tender",
     "sensitive", "emotional", "gentle", "nurturing", "caring",
     "shy", "beautiful", "loving", "compassionate", "intuitive",
-    "delicate", "vulnerable", "romantic", "affection", "dream",
+    "delicate", "vulnerable", "romantic", "affection", "dream", "odd",
     "fragile", "sentimental", "cry", "soft-spoken", "fear", "helpless",
     "graceful", "affectionate", "whisper", "happiness", "nurture",
     "empathetic", "sensitive", "cooperative", "emotional", "docile"
