@@ -16,7 +16,7 @@
         width: 100% !important; 
     }
     .editable {
-        padding: 0em !important;
+        padding: 0 !important;
         margin: 0 !important;
         min-height: auto;
     }
