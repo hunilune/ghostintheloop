@@ -17,21 +17,17 @@
   font-style: normal;
 }
 
-@media only screen and (max-width: 600px) {
-
-   h1 { 
-      font-size: 1.5em; 
-   }
-	
-	 h2 { 
-      font-size: 1.5em; 
-   }
-	
-	body {
-		font-size: 1.5em;
-	}
-	
+@media (max-width: 600px) {
+  html { font-size: 14px; }
+  body { font-size: 1em; }
+	.editor-wrapper,
+  h1,
+  h2,
+  .note {
+    padding-left: 1.2rem;
+  }
 }
+
 
 /* Root variables */
 
