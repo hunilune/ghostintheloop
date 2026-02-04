@@ -9,10 +9,10 @@
 	html { font-size: 14px; } 
 	body { font-size: 1em !important; }
     .editor-wrapper {
-        padding-left: 2.5em !important;
-        padding-right: 0.5em !important;
-        margin-left: 0 !important;
-        margin-right: 0.5em !important;
+        width: 100%;        /* fill screen */
+        padding-left: 2.5em; /* same as notes */
+        padding-right: 0.5em;
+        margin: 0;
         width: 100% !important; 
     }
     .editable {
@@ -125,15 +125,27 @@ h2 {
 
 .editor-wrapper {
 	width: min(50vw, 75ch);
-	padding-left: 6rem;  /* desktop indent */
+	padding-left: 6rem; 
 	margin: 0;
 	text-align: left;
+}
+
+.editor-wrapper, .editable {
+    box-sizing: border-box;
+}
+
+.editor-wrapper {
+    width: 50vw;
+    max-width: 75ch;
+    padding-left: 6rem;
+    padding-right: 0;
+    margin: 0;
 }
 
 .editable {
 	display: inline;
 	min-height: 4rem;
-	padding: 6rem;     /* no internal padding */
+	padding: 6rem;    
 	font-size: 1.6rem;
 	outline: none;
 	text-align: left;
