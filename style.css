@@ -18,19 +18,15 @@
 }
 
 @media (max-width: 600px) {
-  html { font-size: 14px; }
-  body { font-size: 1em; }
-	.editor-wrapper,
-  h1,
-  h2,
+  .editor-wrapper,
+  .editable,
   .note {
-    padding-left: 0.5rem;
+    padding-left: 0; 
+    padding-right: 0;
+    margin-left: 0;
+    margin-right: 0;
   }
-  .writing-surface {
-	padding: 0;
 }
-}
-
 
 /* Root variables */
 
@@ -127,15 +123,15 @@ h2 {
 
 .editor-wrapper {
 	width: min(50vw, 75ch);
-	padding-left: 6rem;
-	/*margin: 0 auto;*/
+	padding-left: 6rem;  /* desktop indent */
+	margin: 0;
 	text-align: left;
 }
 
 .editable {
 	display: inline;
 	min-height: 4rem;
-	padding: 1rem;
+	padding: 6rem;     /* no internal padding */
 	font-size: 1.6rem;
 	outline: none;
 	text-align: left;
@@ -299,11 +295,11 @@ h2 {
 
 .note {
 	font-family: Camera, serif;
-	margin-top: 3.8rem;
+	margin-top: 1rem;
 	font-size: 1rem;
 	font-weight: 345;
-	opacity: 0.65;
-	padding-left: 6rem;
+	opacity: 0.65;.note;
+	padding-left: 6rem; 
 	text-align: left;
 }
 
