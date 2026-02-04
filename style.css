@@ -132,7 +132,7 @@ h2 {
 	font-size: 1.6rem;
 	outline: none;
 	text-align: left;
-	font-family: Inter, serif;
+	font-family: Camera, serif;
 	white-space: pre-wrap;
 	cursor: text;
 	text-wrap: pretty;
@@ -141,7 +141,7 @@ h2 {
 /* Rotating suggestion */
 
 #rotating-suggestion {
-	font-family: Inter, serif;
+	font-family: Camera, serif;
 	font-size: 1.6rem;
 	color: rgba(100, 0, 255, 0.4);
 	display: inline-block;
