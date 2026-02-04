@@ -13,14 +13,27 @@
 @media (max-width: 600px) {
 	html { font-size: 14px; } 
 	body { font-size: 1em !important; }
-  .editor-wrapper,
-  .editable,
-  .note {
-    padding-left: 1.5em !important;
-    padding-right: 0 !important;
-    margin-left: 1.5em !important;
-    margin-right: 0 !important;
-  }
+ /* Reset editor wrapper */
+    .editor-wrapper {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        margin-left: 0 !important;
+        margin-right: 0 !important;
+        width: 100% !important; /* fill mobile screen */
+    }
+
+    /* Reset editable input */
+    .editable {
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto; /* optional, adjust if you want smaller height */
+    }
+
+    /* Reset notes */
+    .note {
+        padding-left: 0 !important;
+        margin-left: 0 !important;
+    }
 }
 
 /* Root variables */
