@@ -53,6 +53,7 @@ body {
 }
 
  /* Unvisited link */
+
 a:link {
   color: #CD03FF;
 	  padding-bottom: var(--s);
@@ -117,6 +118,12 @@ h2 {
 }
 
 /* Editor */
+
+#editor {
+  display: inline-block;
+  margin: 0;
+  padding: 0;
+}
 
 .editor-wrapper {
 	width: min(50vw, 75ch);
