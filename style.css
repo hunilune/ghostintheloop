@@ -57,7 +57,7 @@ body {
   background: #161616;
   overflow-x: hidden;
 padding-top: 3rem;
-	padding-bottom: 3rem;
+	padding-bottom: 0;
 		letter-spacing: 0.006em;
 	font-weight: 400;
 	line-height: 1.35;
