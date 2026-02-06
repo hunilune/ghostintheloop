@@ -102,17 +102,17 @@ a:link {
 
 /* Visited link */
 a:visited {
-  color: green;
+	color: green;
 }
 
 /* Mouse over link */
 a:hover {
-  color: blue;
+	color: blue;
 }
 
 /* Selected link */
 a:active {
-  color: blue;
+	color: blue;
 } 
 
 /* Writing */
@@ -169,18 +169,18 @@ h2 {
 }
 
 .editable {
-  display: block;          
-  font-size: 1.6rem;
-  padding: 0;
-  outline: none;
-  white-space: preserve-spaces;    
-  text-align: left;
-  font-family: Camera, serif;
-  cursor: text;
+	display: block;          
+	font-size: 1.6rem;
+	padding: 0;
+	outline: none;
+	white-space: preserve-spaces;    
+	text-align: left;
+	font-family: Camera, serif;
+	cursor: text;
 }
 
 h1, h2, .editable {
-  line-height: 1.2;
+	line-height: 1.2;
 }
 
 
@@ -228,7 +228,7 @@ h1, h2, .editable {
 
 @media (prefers-reduced-motion: reduce) {
 	* {
-		transition: none !important;
+	transition: none !important;
 	}
 }
 
@@ -246,9 +246,9 @@ h1, h2, .editable {
 
 @keyframes ghostIn {
 	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
+	opacity: 0.7;
+	filter: blur(0);
+	transform: translateY(0);
 	}
 }
 
@@ -274,30 +274,30 @@ h1, h2, .editable {
 
 @keyframes wordIn {
 	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
+	opacity: 0.7;
+	filter: blur(0);
+	transform: translateY(0);
 	}
 }
 
 /* Words get larger for masculine corpus */
 
 @keyframes ghostGrow {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(40); } /* noticeable growth */
+	from { opacity: 0; transform: scale(1); }
+	to { opacity: 1; transform: scale(40); } 
 }
 
 .ghost-word.masc {
-  display: inline-block;
-  animation: ghostIn 0.8s ease forwards, growWord 1s ease forwards;
-  color: #3b6cff;
+	display: inline-block;
+	animation: ghostIn 0.8s ease forwards, growWord 1s ease forwards;
+	color: #3b6cff;
 }
 
 /* Staggering for masculine corpus */
 
 .ghost-word.masc:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 60ms);
-  color: #3b6cff;
+	animation-delay: calc(var(--i, 0) * 60ms);
+	color: #3b6cff;
 }
 
 .ghost.masc .ghost-word.masc,
@@ -305,27 +305,27 @@ h1, h2, .editable {
 .ghost.masc .ghost-word.masc {
 	font-weight: 500;
 	color: rgba(0, 0, 0, 0.9);
-  color: #3b6cff;
+	color: #3b6cff;
 }
 
 /* Words get smaller for feminine corpus */
 
 @keyframes ghostShrink {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(0.5); } /* shrink to normal size */
+	from { opacity: 0; transform: scale(1); }
+	to { opacity: 1; transform: scale(0.5); } /* shrink to normal size */
 }
 
 .ghost-word.fem {
-  display: inline-block;      
-  animation: ghostShrink 0.8s ease forwards;
-  color: #d44b8c;
+	display: inline-block;      
+	animation: ghostShrink 0.8s ease forwards;
+	color: #d44b8c;
 }
 
 /* Stagger for feminine corpus */
 
 .ghost-word.fem:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 60ms);
-  color: #d44b8c;
+	animation-delay: calc(var(--i, 0) * 60ms);
+	color: #d44b8c;
 }
 
 #prediction-suggestion .ghost.fem .ghost-word.fem,
@@ -333,7 +333,7 @@ h1, h2, .editable {
 .ghost.fem .ghost-word.fem {
 	font-weight: 350;
 	color: rgba(0, 0, 0, 0.6);
-  color: #d44b8c;
+	color: #d44b8c;
 }
 
 /* Notes */
