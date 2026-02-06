@@ -58,8 +58,9 @@ body {
   overflow-x: hidden;
 padding-top: 3rem;
 	padding-bottom: 3rem;
+		letter-spacing: 0.006em;
 	font-weight: 400;
-	line-height: 1.2;
+	line-height: 1.35;
 	transition: all 0.6s ease;
 	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 	font-family: Camera, serif;
@@ -70,9 +71,9 @@ padding-top: 3rem;
 
 .page-sheet {
   background: #FEFEFE;
-  border: 15rem solid #161616;
-  border-left-width: 12rem;
-  border-right-width: 18rem;
+  border: 7rem solid #161616;
+  border-left-width: 3rem;
+  border-right-width: 3rem;
   border-bottom-width: 22rem;
   box-sizing: border-box;
 
@@ -120,12 +121,6 @@ a:active {
 	align-items: left;
 }
 
-/* Image */
-
-.inline-image {
-	width: 0px;
-}
-
 /* Headers */
 
 h1 {
@@ -152,21 +147,19 @@ h2 {
 /* Editor */
 
 #editor {
-  display: inline-block;
+  display: inline;
   margin: 0;
   padding: 0;
 }
 
 .editor-wrapper {
-	/* width: min(50vw, 75ch); */
-	padding-left: 6rem; 
+	width: min(30vw, 75ch);
+	padding-left: 4rem; 
 	margin: 0;
 	text-align: left;
   background: transparent;
   border: none;
-  width: 100%;
-}
-
+ /* width: 100%; */
 }
 
 .editor-wrapper, .editable {
@@ -174,7 +167,7 @@ h2 {
 }
 
 .editor-wrapper {
-    width: 50vw;
+    width: 30vw;
     max-width: 75ch;
     padding-left: 6rem;
     padding-right: 0;
@@ -182,7 +175,7 @@ h2 {
 }
 
 .editable {
-	display: inline;
+	display: block;
 	min-height: 4rem;
 	padding: 6rem;    
 	font-size: 1.6rem;
@@ -193,6 +186,12 @@ h2 {
 	cursor: text;
 	text-wrap: pretty;
 }
+
+
+h1, h2, .editable {
+  line-height: 1.4;
+}
+
 
 /* Rotating suggestion */
 
@@ -349,9 +348,10 @@ h2 {
 .note {
 	font-family: Camera, serif;
 	margin-top: 2.3rem;
+	padding-bottom: 6rem;
 	font-size: 1rem;
 	font-weight: 345;
-	opacity: 0.65;.note;
+	opacity: 0.65;
 	padding-left: 6rem; 
 	text-align: left;
 }
