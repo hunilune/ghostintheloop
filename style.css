@@ -7,7 +7,10 @@
 
 @media (max-width: 600px) {
 	html { font-size: 14px; } 
-	body { font-size: 1em !important; }
+	body { 
+		font-size: 1em !important; 
+    	background: #FEFEFE; 
+	}
     .editor-wrapper {
         width: 100% !important;        /* fill screen */
         padding-left: 0; /* same as notes */
@@ -19,6 +22,14 @@
         margin: 0 !important;
         min-height: auto;
     }
+
+  .page-sheet {
+    border: none;
+    width: 100%;
+    margin: 0;
+    padding: 0;
+    background: transparent;
+  }
     .note {
         padding-left: 6em !important;
         margin-left: 0 !important;
@@ -37,9 +48,15 @@
 
 /* Body */
 
+html, body {
+  margin: 0;
+  min-height: 100vh;
+}
+
 body {
-	background: #FEFEFE;
-	padding-top: 3rem;
+  background: #161616;
+  overflow-x: hidden;
+padding-top: 3rem;
 	padding-bottom: 3rem;
 	font-weight: 400;
 	line-height: 1.2;
@@ -47,6 +64,24 @@ body {
 	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 	font-family: Camera, serif;
 	color: rgba(0, 0, 0, 0.7);
+}
+
+/* The “Paper” */
+
+.page-sheet {
+  background: #FEFEFE;
+  border: 15rem solid #161616;
+  border-left-width: 12rem;
+  border-right-width: 18rem;
+  border-bottom-width: 22rem;
+  box-sizing: border-box;
+
+  width: min(50vw, 75ch);
+  margin: 0 auto;
+
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+	
 }
 
  /* Unvisited link */
@@ -123,10 +158,15 @@ h2 {
 }
 
 .editor-wrapper {
-	width: min(50vw, 75ch);
+	/* width: min(50vw, 75ch); */
 	padding-left: 6rem; 
 	margin: 0;
 	text-align: left;
+  background: transparent;
+  border: none;
+  width: 100%;
+}
+
 }
 
 .editor-wrapper, .editable {
