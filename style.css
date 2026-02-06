@@ -8,19 +8,21 @@
 @media (max-width: 600px) {
 	html { font-size: 14px; } 
 	body { 
-		font-size: 1em !important; 
-    	background: #FEFEFE; 
+	font-size: 1em !important; 
+    background: #FEFEFE !important; 
+    padding-top: 0;
+    padding-bottom: 0;
 	}
     .editor-wrapper {
-        width: 100% !important;        /* fill screen */
-        padding-left: 0; /* same as notes */
-        padding-right: 0.5em;
-        margin: 0;
+    width: 100% !important;        /* fill screen */
+    padding-left: 0; /* same as notes */
+    padding-right: 0.5em;
+    margin: 0;
     }
     .editable {
-        padding: 0 !important;
-        margin: 0 !important;
-        min-height: auto;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto;
     }
 
   .page-sheet {
@@ -31,12 +33,12 @@
     background: transparent;
   }
     .note {
-        padding-left: 6em !important;
-        margin-left: 0 !important;
+   	padding-left: 6em !important;
+    margin-left: 0 !important;
     }
 	h1, h2 {
-        padding-left: 1.4em !important;
-        margin-left: 0 !important;
+    padding-left: 1.4em !important;
+    margin-left: 0 !important;
     }
 }
 
