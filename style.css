@@ -25,15 +25,11 @@
         min-height: auto;
     }
  .page-sheet {
-    width: 100%;
-    max-width: none;
-    border: none;
-    margin: 0;
-    padding-left: 1.4rem;
-    padding-right: 1.4rem;
-    padding-top: 3rem;
-    padding-bottom: 3rem;
-    background: #FBFBF9;
+    border: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
   }
     .note {
         padding-left: 6em !important;
@@ -110,7 +106,7 @@ a:visited {
 
 /* Mouse over link */
 a:hover {
-  color: hotpink;
+  color: rainbow;
 }
 
 /* Selected link */
@@ -180,7 +176,7 @@ h2 {
 }
 
 .editable {
-	display: block;
+	display: inline;
 	min-height: 4rem;
 	padding: 6rem;    
 	font-size: 1.6rem;
