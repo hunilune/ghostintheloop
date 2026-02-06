@@ -58,7 +58,7 @@ html, body {
 }
 
 body {
-	background: #161616;
+	background:#E5AA70;
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
@@ -211,9 +211,8 @@ h1, h2, .editable {
 }
 
 .editable .word.committed.masc {
-	color: rgba(0, 0, 255, 0.9);
-	font-weight: 490;
-	letter-spacing: 0.01em;
+	color: rgba(0, 47, 167);
+	font-weight: 460;
 }
 
 .editable .word.committed.fem {
