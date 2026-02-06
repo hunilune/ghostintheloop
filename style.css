@@ -6,23 +6,24 @@
 }
 
 @media (max-width: 600px) {
+	
 	html { font-size: 14px; } 
 	body { 
 		font-size: 1em !important; 
     background: #FBFBF9 !important; 
     padding-top: 0;
     padding-bottom: 0;
-	}
+	  }
     .editor-wrapper {
-        width: 100% !important;        /* fill screen */
-        padding-left: 0; /* same as notes */
-        padding-right: 0.5em;
-        margin: 0;
+    width: 100% !important;     
+		padding-left: 0; 
+    padding-right: 0.5em;
+    margin: 0;
     }
     .editable {
-        padding: 0 !important;
-        margin: 0 !important;
-        min-height: auto;
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto;
     }
  .page-sheet {
     border: 0 !important;
@@ -32,12 +33,12 @@
     box-sizing: border-box;
   }
     .note {
-        padding-left: 6em !important;
-        margin-left: 0 !important;
+    padding-left: 6em !important;
+    margin-left: 0 !important;
     }
 	h1, h2 {
-        padding-left: 1.4em !important;
-        margin-left: 0 !important;
+    padding-left: 1.4em !important;
+    margin-left: 0 !important;
     }
 }
 
@@ -57,11 +58,11 @@ html, body {
 body {
   background: #161616;
   overflow-x: hidden;
-padding-top: 3rem;
+  padding-top: 8rem;
 	padding-bottom: 0;
-		letter-spacing: 0.006em;
+  letter-spacing: 0.006em;
 	font-weight: 400;
-	line-height: 1.35;
+	line-height: 1.2;
 	transition: all 0.6s ease;
 	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 	font-family: Camera, serif;
@@ -72,17 +73,18 @@ padding-top: 3rem;
 
 .page-sheet {
   background: #FBFBF9;
-  border: 7rem solid #161616;
-  border-left-width: 3rem;
-  border-right-width: 3rem;
+  border: 7rem solid transparent;
+	border-top-width: 3rem;
+  border-left-width: 0;
+  border-right-width: 0;
   border-bottom-width: 12rem;
   box-sizing: border-box;
 
-  width: min(50vw, 75ch);
+  width: min(70vw, 75ch);
   margin: 0 auto;
 
-  padding-top: 3rem;
-  padding-bottom: 3rem;
+  padding-top: 0;
+  padding-bottom: 0;
 	
 }
 
@@ -106,7 +108,7 @@ a:visited {
 
 /* Mouse over link */
 a:hover {
-  color: rainbow;
+  color: blue;
 }
 
 /* Selected link */
@@ -148,19 +150,9 @@ h2 {
 /* Editor */
 
 #editor {
-  display: inline;
+  display: block;
   margin: 0;
   padding: 0;
-}
-
-.editor-wrapper {
-	width: min(30vw, 75ch);
-	padding-left: 4rem; 
-	margin: 0;
-	text-align: left;
-  background: transparent;
-  border: none;
- /* width: 100%; */
 }
 
 .editor-wrapper, .editable {
@@ -168,29 +160,28 @@ h2 {
 }
 
 .editor-wrapper {
-    width: 30vw;
+    width: 35vw;
     max-width: 75ch;
     padding-left: 6rem;
     padding-right: 0;
     margin: 0;
+	  text-align: left;
+    background: transparent;
 }
 
 .editable {
-	display: inline;
-	min-height: 4rem;
-	padding: 6rem;    
-	font-size: 1.6rem;
-	outline: none;
-	text-align: left;
-	font-family: Camera, serif;
-	white-space: pre-wrap;
-	cursor: text;
-	text-wrap: pretty;
+  display: block;          
+  font-size: 1.6rem;
+  padding: 0;
+  outline: none;
+  white-space: preserve-spaces;    
+  text-align: left;
+  font-family: Camera, serif;
+  cursor: text;
 }
 
-
 h1, h2, .editable {
-  line-height: 1.4;
+  line-height: 1.2;
 }
 
 
