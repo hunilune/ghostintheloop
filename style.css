@@ -58,7 +58,7 @@ html, body {
 }
 
 body {
-	background:#E5AA70;
+	background:#808000;
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
@@ -79,7 +79,7 @@ body {
 	border-top-width: 3rem;
 	border-left-width: 0;
 	border-right-width: 0;
-	border-bottom-width: 12rem;
+	border-bottom-width: 3.5rem;
 	box-sizing: border-box;
 	width: min(70vw, 75ch);
 	margin: 0 auto;
@@ -336,16 +336,16 @@ h1, h2, .editable {
 
 /* Notes */
 
-.note {
+/*.note {
 	font-family: Camera, serif;
-	margin-top: 1.5rem;
+	margin-top: 1.3rem;
 	padding-bottom: 6rem;
 	padding-left: 6rem; 
 	font-size: 1rem;
 	font-weight: 345;
 	opacity: 0.65;
 	text-align: left;
-}
+} */
 
 /* Prevent notes from wrapping oddly */
 
