@@ -9,7 +9,7 @@
 	html { font-size: 14px; } 
 	body { 
 		font-size: 1em !important; 
-    	background: #FBFBF9; 
+    	background: #FEFEFE; 
 	}
     .editor-wrapper {
         width: 100% !important;        /* fill screen */
@@ -74,7 +74,7 @@ padding-top: 3rem;
   border: 7rem solid #161616;
   border-left-width: 3rem;
   border-right-width: 3rem;
-  border-bottom-width: 22rem;
+  border-bottom-width: 12rem;
   box-sizing: border-box;
 
   width: min(50vw, 75ch);
