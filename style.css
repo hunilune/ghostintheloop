@@ -8,37 +8,40 @@
 @media (max-width: 600px) {
 	html { font-size: 14px; } 
 	body { 
-	font-size: 1em !important; 
-    background: #FEFEFE !important; 
+		font-size: 1em !important; 
+    background: #FBFBF9 !important; 
     padding-top: 0;
     padding-bottom: 0;
 	}
     .editor-wrapper {
-    width: 100% !important;        /* fill screen */
-    padding-left: 0; /* same as notes */
-    padding-right: 0.5em;
-    margin: 0;
+        width: 100% !important;        /* fill screen */
+        padding-left: 0; /* same as notes */
+        padding-right: 0.5em;
+        margin: 0;
     }
     .editable {
-    padding: 0 !important;
-    margin: 0 !important;
-    min-height: auto;
+        padding: 0 !important;
+        margin: 0 !important;
+        min-height: auto;
     }
-
-  .page-sheet {
-    border: none;
+ .page-sheet {
     width: 100%;
+    max-width: none;
+    border: none;
     margin: 0;
-    padding: 0;
-    background: transparent;
+    padding-left: 1.4rem;
+    padding-right: 1.4rem;
+    padding-top: 3rem;
+    padding-bottom: 3rem;
+    background: #FBFBF9;
   }
     .note {
-   	padding-left: 6em !important;
-    margin-left: 0 !important;
+        padding-left: 6em !important;
+        margin-left: 0 !important;
     }
 	h1, h2 {
-    padding-left: 1.4em !important;
-    margin-left: 0 !important;
+        padding-left: 1.4em !important;
+        margin-left: 0 !important;
     }
 }
 
@@ -72,7 +75,7 @@ padding-top: 3rem;
 /* The “Paper” */
 
 .page-sheet {
-  background: #FEFEFE;
+  background: #FBFBF9;
   border: 7rem solid #161616;
   border-left-width: 3rem;
   border-right-width: 3rem;
