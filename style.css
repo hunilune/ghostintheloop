@@ -100,9 +100,16 @@ a:link {
 	transition: 0.5s;
 }
 
+/* Links */
+
+a {
+  text-decoration: none; 
+}
+
+
 /* Visited link */
 a:visited {
-  color: green;
+  color: black;
 }
 
 /* Mouse over link */
@@ -120,7 +127,7 @@ a:active {
 .writing-surface {
 	display: flex;
 	flex-direction: column;
-	align-items: left;
+  align-items: flex-start;
 }
 
 /* Headers */
@@ -297,6 +304,7 @@ h1, h2, .editable {
 .ghost-word.masc:nth-child(n) {
   animation-delay: calc(var(--i, 0) * 60ms);
 	color: rgba(0, 47, 167);
+}
 
 .ghost.masc .ghost-word.masc,
 .ghost.masc,
@@ -336,16 +344,16 @@ h1, h2, .editable {
 
 /* Notes */
 
-/*.note {
+.note {
 	font-family: Camera, serif;
 	margin-top: 1.3rem;
-	padding-bottom: 6rem;
+	padding-bottom: 1rem;
 	padding-left: 6rem; 
 	font-size: 1rem;
 	font-weight: 345;
 	opacity: 0.65;
 	text-align: left;
-} */
+} 
 
 /* Prevent notes from wrapping oddly */
 
