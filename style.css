@@ -74,7 +74,7 @@ body {
 /* The “Paper” */
 
 .page-sheet {
-	background: #FBFBF9;
+	background: #FCFAEF;
 	border: 7rem solid transparent;
 	border-top-width: 3rem;
 	border-left-width: 0;
@@ -128,6 +128,18 @@ a:active {
 	display: flex;
 	flex-direction: column;
   align-items: flex-start;
+}
+
+.overlay-text {
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;   /* IMPORTANT: can't edit or select */
+  z-index: 5;
+  opacity: 0.15;
+  color: black;
+  mix-blend-mode: multiply; /* makes it look scanned */
+  font-size: 1.6rem;
 }
 
 /* Headers */
