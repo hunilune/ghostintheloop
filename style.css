@@ -85,6 +85,19 @@ body {
 	margin: 0 auto;
 	padding-top: 0;
 	padding-bottom: 0;
+  position: relative;
+}
+
+.colophon {
+  position: absolute;
+  bottom: 0;
+  right: 3rem;
+  font-family: Camera, serif;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0.6;
+  text-align: left;
+  color: black;
 }
 
  /* Unvisited link */
@@ -130,18 +143,6 @@ a:active {
   align-items: flex-start;
 }
 
-.overlay-text {
-  position: absolute;
-  top: 0;
-  left: 0;
-  pointer-events: none;   /* IMPORTANT: can't edit or select */
-  z-index: 5;
-  opacity: 0.15;
-  color: black;
-  mix-blend-mode: multiply; /* makes it look scanned */
-  font-size: 1.6rem;
-}
-
 /* Headers */
 
 h1 {
@@ -162,7 +163,7 @@ h2 {
 	opacity: 0.8;
 	text-align: left;
 	padding-left: 3rem;
-	margin-bottom: 8rem;
+	margin-bottom: 4rem;
 }
 
 /* Editor */
@@ -250,7 +251,7 @@ h1, h2, .editable {
 	}
 }
 
-/*/ Animation /*/
+/* Animation */
 
 .ghost {
 	display: inline;
@@ -359,7 +360,7 @@ h1, h2, .editable {
 .note {
 	font-family: Camera, serif;
 	margin-top: 1.3rem;
-	padding-bottom: 1rem;
+	padding-bottom: 11rem;
 	padding-left: 6rem; 
 	font-size: 1rem;
 	font-weight: 345;
