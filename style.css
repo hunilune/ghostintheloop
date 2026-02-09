@@ -229,8 +229,6 @@ h1, h2, .editable {
 	transform: none !important;
 	opacity: 1 !important;
 	filter: none !important;
-	margin-right: 0.4ch;
-
 }
 
 .editable .word.committed.masc {
