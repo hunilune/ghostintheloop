@@ -104,7 +104,7 @@ body {
  /* Unvisited link */
 
 a:link {
-	color: #CD03FF;
+	color: black;
 	padding-bottom: var(--s);
 	background: 
     linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
