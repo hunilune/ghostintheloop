@@ -67,7 +67,6 @@ body {
 	font-weight: 400;
 	line-height: 1.2;
 	transition: all 0.6s ease;
-	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
 	color: rgba(0, 0, 0, 0.7);
 }
 
@@ -85,7 +84,7 @@ body {
 	margin: 0 auto;
 	padding-top: 0;
 	padding-bottom: 0;
-  position: relative;
+  	position: relative;
 }
 
 .colophon {
@@ -242,7 +241,10 @@ h1, h2, .editable {
 	color:#FFA4B3;
 	font-weight: 355;
 	letter-spacing: 0;
-	opacity: calc(1 - (var(--fatigue) * 0.2));
+
+/* Feminine words get fainter over time, making them harder to read */
+	
+	opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;; 
 	transition: opacity 0.8s ease;
 
 }
@@ -317,7 +319,7 @@ h1, h2, .editable {
 	font-weight: 450;
 }
 
-/* Staggering for masculine corpus */
+/* Staggering for masculine words */
 
 .ghost-word.masc:nth-child(n) {
 	animation-delay: calc(var(--i, 0) * 60ms);
@@ -332,7 +334,7 @@ h1, h2, .editable {
 	color: #6885A9;
 }
 
-/* Words get smaller for feminine corpus */
+/* Words get smaller for feminine words */
 
 @keyframes ghostShrink {
   from { opacity: 0; transform: scale(1); }
@@ -345,7 +347,7 @@ h1, h2, .editable {
   color: #d44b8c;
 }
 
-/* Stagger for feminine corpus */
+/* Stagger for feminine words */
 
 .ghost-word.fem:nth-child(n) {
   animation-delay: calc(var(--i, 0) * 60ms);
