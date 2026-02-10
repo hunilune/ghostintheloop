@@ -68,11 +68,15 @@ document.addEventListener("DOMContentLoaded", () => {
   let rotateTimer = null;
   let predictionTimer = null;
   
-let fatigueLevel = 0;
+  let fatigueLevel = 0;
+  let femFatigue = 0; // Feminine words get fainter over time
 
-function increaseFatigue() {
-	fatigueLevel = Math.min(fatigueLevel + 0.15, 5); // Max at 5
+  function increaseFatigue() {
+	fatigueLevel = Math.min(fatigueLevel + 0.4, 5);
+	femFatigue = Math.min(femFatigue + 0.4, 5); 
 	document.documentElement.style.setProperty('--fatigue', fatigueLevel);
+	document.documentElement.style.setProperty('--fem-fatigue', femFatigue);
+    
 }
 
   if (!editor || !rotatingEl) return;
@@ -80,9 +84,9 @@ function increaseFatigue() {
   /* Load corpora */
   
   async function loadSide(urls) {
-    const collected = [];
-    for (const url of urls) {
-      try {
+  const collected = [];
+  for (const url of urls) {
+        try {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
@@ -96,17 +100,17 @@ function increaseFatigue() {
   }
 
   async function loadCorpora() {
-    corpora.masc = await loadSide(CORPUS_URLS.masc);
-    corpora.fem  = await loadSide(CORPUS_URLS.fem);
+  corpora.masc = await loadSide(CORPUS_URLS.masc);
+  corpora.fem  = await loadSide(CORPUS_URLS.fem);
 
-    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
+  if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
+  if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
 
   buildNextWordMap(corpora.masc, "masc");
   buildNextWordMap(corpora.fem, "fem");
 
-    ready = true;
-    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
+  ready = true;
+  console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
 
   loadCorpora();
@@ -115,26 +119,26 @@ function increaseFatigue() {
 
   let nextWordMap = { masc: {}, fem: {} };
 
-function buildNextWordMap(texts, voice) {
+  function buildNextWordMap(texts, voice) {
   const map = {};
 
   texts.forEach(sentence => {
-    const words = sentence.split(/\s+/);
+  const words = sentence.split(/\s+/);
 
-    for (let i = 0; i < words.length - 1; i++) {
-      const key = words[i];               // 1-gram
-      const next = words[i + 1];
+  for (let i = 0; i < words.length - 1; i++) {
+  const key = words[i];               // 1-gram
+  const next = words[i + 1];
 
-      if (!map[key]) map[key] = [];
-      map[key].push(next);
-    }
+  if (!map[key]) map[key] = [];
+  map[key].push(next);
+  }
 
-    for (let i = 0; i < words.length - 2; i++) {
-      const key = words[i] + " " + words[i + 1]; // 2-gram
-      const next = words[i + 2];
+  for (let i = 0; i < words.length - 2; i++) {
+  const key = words[i] + " " + words[i + 1]; // 2-gram
+  const next = words[i + 2];
 
-      if (!map[key]) map[key] = [];
-      map[key].push(next);
+  if (!map[key]) map[key] = [];
+  map[key].push(next);
     }
   });
 
@@ -262,35 +266,38 @@ editor.append(" ", word);
     const w = document.createElement("span");
     w.className = `ghost-word ${activeVoice}`; 
     w.textContent = word + " ";
-    w.style.setProperty('--i', i); // ← Use CSS variable
+    w.style.setProperty('--i', i); 
     ghost.appendChild(w);
   });
 
   editor.appendChild(ghost);
   placeCaretAtEnd(editor);
 }
-  
-function acceptPrediction() {
-	const ghost = editor.querySelector(".ghost");
+
+  function acceptPrediction() {
+  const ghost = editor.querySelector(".ghost");
 	if (!ghost) return;
 
 	increaseFatigue(); 
+	console.log("Fatigue:", fatigueLevel);
 
 	Array.from(ghost.children).forEach(w => {
+    const isFem = w.classList.contains('fem');
+		const isMasc = w.classList.contains('masc');
+		
 		w.classList.add("committed");
 		w.classList.add("word");
+		if (isFem) w.classList.add('fem');
+		if (isMasc) w.classList.add('masc');
+		
 		w.style.animation = "none";
-		w.style.opacity = "";
-		w.style.color = "";
-		w.style.filter = "";
-		editor.appendChild(w);
+				editor.appendChild(w);
 	});
 
 	ghost.remove();
 	editor.appendChild(document.createTextNode(" "));
 	placeCaretAtEnd(editor);
 }
-
 
   /* Caret */
   
