@@ -234,12 +234,12 @@ h1, h2, .editable {
 }
 
 .editable .word.committed.masc {
-	color: rgba(0, 47, 167);
-	font-weight: 460;
+	color: #29538B;
+	font-weight: 450;
 }
 
 .editable .word.committed.fem {
-	color: rgba(255, 0, 0, 0.35);
+	color:#FFA4B3;
 	font-weight: 355;
 	letter-spacing: 0;
 }
