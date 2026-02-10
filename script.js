@@ -67,6 +67,13 @@ document.addEventListener("DOMContentLoaded", () => {
   let rotateIndex = 0;
   let rotateTimer = null;
   let predictionTimer = null;
+  
+let fatigueLevel = 0;
+
+function increaseFatigue() {
+	fatigueLevel = Math.min(fatigueLevel + 0.15, 5); // Max at 5
+	document.documentElement.style.setProperty('--fatigue', fatigueLevel);
+}
 
   if (!editor || !rotatingEl) return;
 
@@ -244,45 +251,46 @@ editor.append(" ", word);
   }
 
   function showPrediction(text) {
-    removeGhost();
-    if (!text) return;
-  
-    const ghost = document.createElement("span");
-    ghost.className = `ghost ${activeVoice}`; 
-    ghost.contentEditable = "false";
-  
-    text.split(/\s+/).forEach((word, i) => {
-      const w = document.createElement("span");
-      w.className = `ghost-word ${activeVoice}`; 
-      w.textContent = word + " ";
-      w.style.animationDelay = `${i * 40}ms`; 
-      ghost.appendChild(w);
-    });
-  
-    editor.appendChild(ghost);
-    placeCaretAtEnd(editor);
-  }
-  
+  removeGhost();
+  if (!text) return;
 
-  function acceptPrediction() {
-    const ghost = editor.querySelector(".ghost");
-    if (!ghost) return;
+  const ghost = document.createElement("span");
+  ghost.className = `ghost ${activeVoice}`; 
+  ghost.contentEditable = "false";
+
+  text.split(/\s+/).forEach((word, i) => {
+    const w = document.createElement("span");
+    w.className = `ghost-word ${activeVoice}`; 
+    w.textContent = word + " ";
+    w.style.setProperty('--i', i); // ← Use CSS variable
+    ghost.appendChild(w);
+  });
+
+  editor.appendChild(ghost);
+  placeCaretAtEnd(editor);
+}
   
-    Array.from(ghost.children).forEach(w => {
-      w.classList.add("committed");
-      w.classList.add("word"); 
-      w.style.animation = "none";
-      w.style.opacity = "";
-      w.style.color = "";
-      w.style.filter = "";
-      editor.appendChild(w);
-    });
-  
-    ghost.remove();
-    editor.appendChild(document.createTextNode(" "));
-    placeCaretAtEnd(editor);
-  }  
-  
+function acceptPrediction() {
+	const ghost = editor.querySelector(".ghost");
+	if (!ghost) return;
+
+	increaseFatigue(); 
+
+	Array.from(ghost.children).forEach(w => {
+		w.classList.add("committed");
+		w.classList.add("word");
+		w.style.animation = "none";
+		w.style.opacity = "";
+		w.style.color = "";
+		w.style.filter = "";
+		editor.appendChild(w);
+	});
+
+	ghost.remove();
+	editor.appendChild(document.createTextNode(" "));
+	placeCaretAtEnd(editor);
+}
+
 
   /* Caret */
   
