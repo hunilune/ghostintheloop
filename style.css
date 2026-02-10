@@ -1,378 +1,353 @@
-/* Fonts */
+document.addEventListener("DOMContentLoaded", () => {
 
-@font-face {
-	font-family: "Camera";
-	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
+  /* Corpus URLs */
+  
+  const CORPUS_URLS = {
+    masc: [
+      "https://hunilune.github.io/ghostintheloop/AskMen.json",
+      "https://hunilune.github.io/ghostintheloop/AskMenOver30.json",
+      "https://hunilune.github.io/ghostintheloop/MensRights.json",
+      "https://hunilune.github.io/ghostintheloop/PurplePillDebate.json"
+    ],
+    fem: [
+      "https://hunilune.github.io/ghostintheloop/AskWomen.json",
+      "https://hunilune.github.io/ghostintheloop/AskFeminists.json",
+      "https://hunilune.github.io/ghostintheloop/Feminism.json",
+      "https://hunilune.github.io/ghostintheloop/TwoXChromosomes.json"
+    ]
+  };
+
+  const FALLBACK = {
+    masc: ["Try again."],
+    fem: ["Are you sure?"]
+  };
+
+  const firstSentenceSuggestions = ["happy", "lonely", "pride", "odd", "angry", "lost", "cold", "delicate"];
+  const MAX_OUTPUT_WORDS = 22;
+  const PREDICTION_DELAY = 1000;
+
+  const MASC_KEYWORDS = [
+    "he", "him", "man", "male", "boy", "guy", "father", "brother",
+    "strong", "brave", "angry", "confident", "competitive",
+    "ambitious", "independent", "assertive", "bold", "dominant",
+    "tough", "leader", "risk", "courageous", "powerful", "proud",
+    "work", "challenged", "adventure", "adventurous", "victorious", "fearless",
+    "focused", "strategic", "stoic", "protective", "rage", "cold",
+    "honour", "honor", "strong", "strength", "win", "winner", "boastful", "goal", "responsible", "fighter",
+    "decision", "determined", "bravery", "aggressive", "competitive",
+    "challenge", "action", "drive", "ambition", "dominance", "mastery",
+    "endurance", "achievement", "control", "authority", "boldness", "",
+    "fearless", "risk-taking", "adventurous", "leader", "powerful",
+    "pride", "resolve", "focus", "courageous", "toughness", "handsome",
+    "protector", "defend", "responsibility", "responsible"
+  ];
+  
+  const FEM_KEYWORDS = [
+    "she", "her", "woman", "female", "girl", "mother", "sister",
+    "sad", "lonely", "lost", "fearful", "worried", "soft", "tender",
+    "sensitive", "emotional", "gentle", "nurturing", "caring",
+    "shy", "beautiful", "loving", "compassionate", "intuitive",
+    "delicate", "vulnerable", "romantic", "affection", "dream", "odd",
+    "fragile", "sentimental", "cry", "soft-spoken", "fear", "helpless",
+    "graceful", "affectionate", "whisper", "happiness", "nurture",
+    "empathetic", "sensitive", "cooperative", "emotional", "docile"
+  ];
+
+  /* Initiliase */
+  
+  const editor = document.querySelector("#editor");
+  const rotatingEl = document.querySelector("#rotating-suggestion");
+
+  let corpora = { masc: [], fem: [] };
+  let ready = false;
+  let typeCount = 0;
+  let activeVoice = "masc";
+
+  let rotating = false;
+  let rotateIndex = 0;
+  let rotateTimer = null;
+  let predictionTimer = null;
+  
+let fatigueLevel = 0;
+
+function increaseFatigue() {
+	fatigueLevel = Math.min(fatigueLevel + 0.15, 5); // Max at 5
+	document.documentElement.style.setProperty('--fatigue', fatigueLevel);
 }
 
-/* Mobile */
+  if (!editor || !rotatingEl) return;
 
-@media (max-width: 600px) {
-	
-	html { font-size: 14px; } 
-	body { 
-	font-size: 1em !important; 
-    background: #FCFAEF !important; 
-    padding-top: 0;
-    padding-bottom: 0;
-	  }
-    .editor-wrapper {
-    width: 100% !important;     
-		padding-left: 0; 
-    padding-right: 0.5em;
-    margin: 0;
+  /* Load corpora */
+  
+  async function loadSide(urls) {
+    const collected = [];
+    for (const url of urls) {
+      try {
+        const res = await fetch(url);
+        if (!res.ok) continue;
+        const json = await res.json();
+        const texts = extractText(json);
+        collected.push(...texts);
+      } catch (e) {
+        console.warn("Skipped corpus", url, e);
+      }
     }
-    .editable {
-    padding: 0 !important;
-    margin: 0 !important;
-    min-height: auto;
+    return normalize(collected);
+  }
+
+  async function loadCorpora() {
+    corpora.masc = await loadSide(CORPUS_URLS.masc);
+    corpora.fem  = await loadSide(CORPUS_URLS.fem);
+
+    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
+    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
+
+  buildNextWordMap(corpora.masc, "masc");
+  buildNextWordMap(corpora.fem, "fem");
+
+    ready = true;
+    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
+  }
+
+  loadCorpora();
+
+  /* Word map */
+
+  let nextWordMap = { masc: {}, fem: {} };
+
+function buildNextWordMap(texts, voice) {
+  const map = {};
+
+  texts.forEach(sentence => {
+    const words = sentence.split(/\s+/);
+
+    for (let i = 0; i < words.length - 1; i++) {
+      const key = words[i];               // 1-gram
+      const next = words[i + 1];
+
+      if (!map[key]) map[key] = [];
+      map[key].push(next);
     }
- 	.page-sheet {
-    border: 0 !important;
-    width: 100% !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-  	}
-    .note {
-    padding-left: 6em !important;
-    margin-left: 0 !important;
+
+    for (let i = 0; i < words.length - 2; i++) {
+      const key = words[i] + " " + words[i + 1]; // 2-gram
+      const next = words[i + 2];
+
+      if (!map[key]) map[key] = [];
+      map[key].push(next);
     }
-	h1, h2 {
-    padding-left: 1.4em !important;
-    margin-left: 0 !important;
+  });
+
+  nextWordMap[voice] = map;
+}
+
+  /* Extract */
+  
+  function extractText(src) {
+    if (Array.isArray(src)) return src;
+    if (Array.isArray(src?.data?.children)) {
+      return src.data.children.map(c => `${c.data.title || ""} ${c.data.selftext || ""}`);
     }
+    return [];
+  }
+
+  /* Normalise */
+
+  function normalize(arr) {
+    return arr
+      .map(t =>
+        String(t)
+          .toLowerCase()
+          .replace(/[^\w\s]/g, "")
+          .replace(/\s+/g, " ")
+          .trim()
+      )
+      .filter(t => t.length > 20);
+  }
+
+  /* Rotating suggestions */
+  
+  function startRotating() {
+    if (rotating) return;
+    rotating = true;
+    rotateIndex = 0;
+    cycleRotate();
+  }
+
+  function cycleRotate() {
+    if (!rotating) return;
+    rotatingEl.textContent = firstSentenceSuggestions[rotateIndex] + " ";
+    rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
+    rotateTimer = setTimeout(cycleRotate, 900);
+  }
+
+  function stopRotating() {
+    rotating = false;
+    clearTimeout(rotateTimer);
+    rotatingEl.textContent = "";
+  }
+
+  function insertRotatingSuggestion(word) {
+    stopRotating();
+editor.innerText = "I am feeling ";
+editor.append(" ", word);
+    placeCaretAtEnd(editor);
+    typeCount = 1;
+    updatePrediction();
+  }
+
+  /* Prediction */
+  
+  function cleanText(text) {
+    return text
+      .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "")
+      .replace(/&[a-z]+;/gi, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function updateActiveVoice(text) {
+    const words = cleanText(text).split(/\s+/);
+    for (let w of words.slice(-3)) {
+      if (MASC_KEYWORDS.includes(w)) { activeVoice = "masc"; return; }
+      if (FEM_KEYWORDS.includes(w))  { activeVoice = "fem";  return; }
+    }
+  }
+
+  function generatePrediction(input) {
+    if (!ready || !input) return "";
+  
+    updateActiveVoice(input);
+  
+    const voice = activeVoice;
+    const map = nextWordMap[voice];
+    const words = cleanText(input).split(/\s+/);
+  
+    const lastTwo = words.slice(-2).join(" ");
+    const lastOne = words.slice(-1)[0];
+  
+    let candidates =
+      map[lastTwo] ||
+      map[lastOne] ||
+      [];
+  
+    if (!candidates.length) return "";
+  
+    // pick 1–3 words
+    const result = [];
+    let currentKey = lastTwo;
+  
+    for (let i = 0; i < 3; i++) {
+      const options = map[currentKey] || map[lastOne];
+      if (!options || !options.length) break;
+  
+      const next = options[Math.floor(Math.random() * options.length)];
+      result.push(next);
+  
+      currentKey = currentKey.split(" ").slice(-1).concat(next).join(" ");
+    }
+  
+    return result.join(" ");
+  }
+
+  function showPrediction(text) {
+  removeGhost();
+  if (!text) return;
+
+  const ghost = document.createElement("span");
+  ghost.className = `ghost ${activeVoice}`; 
+  ghost.contentEditable = "false";
+
+  text.split(/\s+/).forEach((word, i) => {
+    const w = document.createElement("span");
+    w.className = `ghost-word ${activeVoice}`; 
+    w.textContent = word + " ";
+    w.style.setProperty('--i', i); // ← Use CSS variable
+    ghost.appendChild(w);
+  });
+
+  editor.appendChild(ghost);
+  placeCaretAtEnd(editor);
 }
+  
+function acceptPrediction() {
+	const ghost = editor.querySelector(".ghost");
+	if (!ghost) return;
 
-/* Root variables */
+	increaseFatigue(); 
 
-:root {
-	--fatigue: 0;
-}
+	Array.from(ghost.children).forEach(w => {
+		w.classList.add("committed");
+		w.classList.add("word");
+		w.style.animation = "none";
+		w.style.opacity = "";
+		w.style.color = "";
+		w.style.filter = "";
+		editor.appendChild(w);
+	});
 
-/* Body */
-
-html, body {
-	margin: 0;
-	min-height: 100vh;
-}
-
-body {
-	background:#000;
-	overflow-x: hidden;
-	padding-top: 8rem;
-	padding-bottom: 0;
-	letter-spacing: 0.006em;
-	font-family: Camera, serif;
-	font-weight: 400;
-	line-height: 1.2;
-	transition: all 0.6s ease;
-	filter: brightness(calc(1 - (var(--fatigue) * 0.04)));
-	color: rgba(0, 0, 0, 0.7);
-}
-
-/* The “Paper” */
-
-.page-sheet {
-	background: #FCFAEF;
-	border: 7rem solid transparent;
-	border-top-width: 3rem;
-	border-left-width: 0;
-	border-right-width: 0;
-	border-bottom-width: 3.4rem;
-	box-sizing: border-box;
-	width: min(70vw, 75ch);
-	margin: 0 auto;
-	padding-top: 0;
-	padding-bottom: 0;
-  position: relative;
-}
-
-.colophon {
-  position: absolute;
-  bottom: 0;
-  right: 4rem;
-  font-family: Camera, serif;
-  font-size: 0.85rem;
-  line-height: 1.4;
-  opacity: 0.6;
-  text-align: left;
-  opacity: 0.5;
-  color: black;
-}
-
- /* Unvisited link */
-
-a:link {
-	color: black;
-	padding-bottom: var(--s);
-	background: 
-    linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
-    linear-gradient(var(--c) 0 0) 0% 100%/var(--_p,0%) var(--s) no-repeat;
-	-webkit-background-clip: text,padding-box;
-	background-clip: text,padding-box;
-	transition: 0.5s;
-}
-
-/* Links */
-
-a {
-  text-decoration: none; 
-}
-
-
-/* Visited link */
-a:visited {
-  color: black;
-}
-
-/* Mouse over link */
-a:hover {
-  color: black;
- opacity: 0.25;
-}
-
-/* Selected link */
-a:active {
-  color: black;
-opacity: 0.6;
-} 
-
-/* Writing */
-
-.writing-surface {
-	display: flex;
-	flex-direction: column;
-  align-items: flex-start;
-}
-
-/* Headers */
-
-h1 {
-	font-family: Camera, serif;
-	font-weight: 450;
-	text-align: left;
-	color: black;
-	font-size: 1.6rem;
-	margin: 0;
-	padding-left: 3.5rem;
-	padding-top: 0;
-}
-
-h2 {
-	font-family: Camera, serif;
-	font-weight: 300;
-	font-size: 1.6rem;
-	opacity: 0.8;
-	text-align: left;
-	padding-left: 3.4rem;
-	margin-bottom: 4rem;
-}
-
-/* Editor */
-
-#editor {
-	display: block;
-	margin: 0;
-	padding: 0;
-}
-
-.editor-wrapper, .editable {
-    box-sizing: border-box;
-}
-
-.editor-wrapper {
-    width: 90%;
-    max-width: 75ch;
-    padding-left: 6rem;
-    padding-right: 0;
-    margin: 0;
-	text-align: left;
-    background: transparent;
-}
-
-.editable {
-	display: block;          
-	font-size: 1.6rem;
-	padding: 0;
-	outline: none;
-	white-space: preserve-spaces;    
-	text-align: left;
-	font-family: Camera, serif;
-	cursor: text;
-}
-
-h1, h2, .editable {
-	line-height: 1.2;
+	ghost.remove();
+	editor.appendChild(document.createTextNode(" "));
+	placeCaretAtEnd(editor);
 }
 
 
-/* Rotating suggestion */
+  /* Caret */
+  
+  function placeCaretAtEnd(el) {
+    el.focus();
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    range.collapse(false);
+    sel.addRange(range);
+  }
 
-#rotating-suggestion {
-	font-family: Camera, serif;
-	font-size: 1.6rem;
-	color: rgba(100, 0, 255, 0.4);
-	display: inline-block;
+  /* Updating the prediction */
+  
+  function updatePrediction() {
+    if (rotating || !ready) return;
+  
+    const text = editor.innerText.replace(/\s+/g, " ").trim();
+    if (!text) return;
+  
+    clearTimeout(predictionTimer);
+    predictionTimer = setTimeout(() => {
+      const prediction = generatePrediction(text);
+      showPrediction(prediction);
+    }, PREDICTION_DELAY);
+  }
+  
+  /* Input behaviour */
+  
+  editor.addEventListener("input", () => {
+    const text = editor.innerText.replace(/\s+/g, " ").trim();
+  
+    if (text === "I am feeling") {
+      startRotating();
+      return; 
+    }
+  
+    stopRotating();
+    removeGhost();
+    updatePrediction();
+  });  
+
+function removeGhost() {
+  const ghost = editor.querySelector(".ghost");
+  if (ghost) ghost.remove();
 }
 
-/* Prediction container */
 
-#prediction-suggestion {
-	font-family: Camera, serif;
-	font-size: 1.6rem;
-	display: inline;
-}
+  editor.addEventListener("keydown", e => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      acceptPrediction();
+      updatePrediction();
+    }
+  });
 
-/* Committed words inside editor */
+  if (editor.innerText.trim() === "I am feeling") startRotating();
 
-.editable .word.committed {
-	animation: none !important;
-	transform: none !important;
-	opacity: 1 !important;
-	filter: none !important;
-}
-
-.editable .word.committed.masc {
-	color: #29538B;
-	font-weight: 450;
-}
-
-.editable .word.committed.fem {
-	color:#FFA4B3;
-	font-weight: 355;
-	letter-spacing: 0;
-}
-
-/* Accessibility */
-
-@media (prefers-reduced-motion: reduce) {
-	* {
-		transition: none !important;
-	}
-}
-
-/* Animation */
-
-.ghost {
-	display: inline;
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: ghostIn 0.5s ease forwards;
-	white-space: pre-wrap;
-	pointer-events: none;
-}
-
-@keyframes ghostIn {
-	to {
-	opacity: 0.7;
-	filter: blur(0);
-	transform: translateY(0);
-	}
-}
-
-.ghost-word {
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: wordIn 0.45s ease forwards;
-}
-
-.ghost-word:nth-child(n) {
-	animation-delay: calc(var(--i, 0) * 40ms);
-}
-
-#prediction-suggestion .ghost {
-	display: inline !important;
-	opacity: 0;
-	filter: blur(6px);
-	transform: translateY(0.1em);
-	animation: wordIn 0.45s ease forwards;
-	margin-right: 0.7ch;
-}
-
-@keyframes wordIn {
-	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
-	}
-}
-
-/* Words get larger for masculine corpus */
-
-@keyframes ghostGrow {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(70); } /* noticeable growth */
-}
-
-.ghost-word.masc {
-	display: inline-block;
-	animation: ghostIn 0.8s ease forwards, growWord 1s ease forwards;
-	color: #29538B;
-	font-weight: 450;
-}
-
-/* Staggering for masculine corpus */
-
-.ghost-word.masc:nth-child(n) {
-	animation-delay: calc(var(--i, 0) * 60ms);
-	color: rgba(0, 47, 167);
-}
-
-.ghost.masc .ghost-word.masc,
-.ghost.masc,
-.ghost.masc .ghost-word.masc {
-	font-weight: 465;
-	color: rgba(0, 0, 0, 0.9);
-	color: #6885A9;
-}
-
-/* Words get smaller for feminine corpus */
-
-@keyframes ghostShrink {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(0.5); } /* shrink to normal size */
-}
-
-.ghost-word.fem {
-  display: inline-block;      
-  animation: ghostShrink 0.8s ease forwards;
-  color: #d44b8c;
-}
-
-/* Stagger for feminine corpus */
-
-.ghost-word.fem:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 60ms);
-  color: #d44b8c;
-}
-
-#prediction-suggestion .ghost.fem .ghost-word.fem,
-#prediction-suggestion .ghost.fem,
-.ghost.fem .ghost-word.fem {
-	font-weight: 350;
-	color: rgba(0, 0, 0, 0.6);
-	color: #d44b8c;
-}
-
-/* Notes */
-
-.note {
-	font-family: Camera, serif;
-	margin-top: 1.3rem;
-	padding-bottom: 11rem;
-	padding-left: 6rem; 
-	font-size: 1rem;
-	font-weight: 345;
-	opacity: 0.65;
-	text-align: left;
-} 
-
-/* Prevent notes from wrapping oddly */
-
-.no-wrap {
-	float: none !important;
-	shape-outside: none !important;
-}
+});
