@@ -310,7 +310,8 @@ h1, h2, .editable {
 .ghost-word.masc {
 	display: inline-block;
 	animation: ghostIn 0.8s ease forwards, growWord 1s ease forwards;
-	color: rgba(0, 47, 167, 0.9);
+	color: #29538B;
+	font-weight: 450;
 }
 
 /* Staggering for masculine corpus */
@@ -325,7 +326,7 @@ h1, h2, .editable {
 .ghost.masc .ghost-word.masc {
 	font-weight: 465;
 	color: rgba(0, 0, 0, 0.9);
-	color: #3b6cff;
+	color: #6885A9;
 }
 
 /* Words get smaller for feminine corpus */
