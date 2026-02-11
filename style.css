@@ -70,6 +70,26 @@ body {
 	color: rgba(0, 0, 0, 0.7);
 }
 
+/* Corner image */
+.corner-image {
+  position: absolute;
+  top: 3rem;
+  right: 4rem;
+  width: 200px;
+  height: auto;
+  opacity: 0.9;
+  z-index: 10;
+}
+
+/* Adjust for mobile */
+@media (max-width: 600px) {
+  .corner-image {
+    width: 120px;
+    right: 1rem;
+    top: 2rem;
+  }
+}
+
 /* The “Paper” */
 
 .page-sheet {
