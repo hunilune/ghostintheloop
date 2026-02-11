@@ -71,6 +71,7 @@ body {
 }
 
 /* Corner image */
+
 .corner-image {
   position: absolute;
   top: 3rem;
@@ -81,7 +82,8 @@ body {
   z-index: 10;
 }
 
-/* Adjust for mobile */
+/* Adjust Corner image for mobile */
+
 @media (max-width: 600px) {
   .corner-image {
     width: 120px;
