@@ -74,11 +74,11 @@ body {
 
 .corner-image {
   position: absolute;
-  top: 3rem;
-  right: 4rem;
+  top: 4.5rem;
+  right: 2rem;
   width: 200px;
   height: auto;
-  opacity: 0.9;
+  opacity: 1;
   z-index: 10;
 }
 
@@ -177,7 +177,7 @@ h1 {
 	font-size: 1.6rem;
 	margin: 0;
 	padding-left: 3.5rem;
-	padding-top: 0;
+	padding-top: 9rem;
 }
 
 h2 {
@@ -187,7 +187,7 @@ h2 {
 	opacity: 0.8;
 	text-align: left;
 	padding-left: 3.4rem;
-	margin-bottom: 4rem;
+	margin-bottom: 4.5rem;
 }
 
 /* Editor */
@@ -208,7 +208,7 @@ h2 {
     padding-left: 6rem;
     padding-right: 0;
     margin: 0;
-	text-align: left;
+	  text-align: left;
     background: transparent;
 }
 
@@ -389,7 +389,7 @@ h1, h2, .editable {
 .note {
 	font-family: Camera, serif;
 	margin-top: 1.3rem;
-	padding-bottom: 11rem;
+	padding-bottom: 10rem;
 	padding-left: 6rem; 
 	font-size: 1rem;
 	font-weight: 345;
