@@ -1,8 +1,12 @@
-/* Fonts */
+/* Fonts by Dinamo Typefaces */
 
 @font-face {
 	font-family: "Camera";
 	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
+}
+
+font-family: "Gaisyr";
+	src: url("ABCGaisyrEdu-Book.woff") format("woff");
 }
 
 /* Mobile */
@@ -58,7 +62,7 @@ html, body {
 }
 
 body {
-	background:#FFDD00;
+	background: #D0C337; // olive, chartereuse
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
@@ -219,8 +223,9 @@ h2 {
 	outline: none;
 	white-space: preserve-spaces;    
 	text-align: left;
-	font-family: Camera, serif;
+	font-family: Gaisyr, serif;
 	cursor: text;
+	opacity: 0.64;
 }
 
 h1, h2, .editable {
@@ -231,7 +236,7 @@ h1, h2, .editable {
 /* Rotating suggestion */
 
 #rotating-suggestion {
-	font-family: Camera, serif;
+	font-family: Gaisyr, serif;
 	font-size: 1.6rem;
 	color: rgba(100, 0, 255, 0.4);
 	display: inline-block;
@@ -331,7 +336,7 @@ h1, h2, .editable {
 
 @keyframes ghostGrow {
   from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(70); } /* noticeable growth */
+  to   { opacity: 1; transform: scale(70); } 
 }
 
 .ghost-word.masc {
@@ -381,7 +386,7 @@ h1, h2, .editable {
 .ghost.fem .ghost-word.fem {
 	font-weight: 350;
 	color: rgba(0, 0, 0, 0.6);
-	color: #d44b8c;
+	color: #D44B8C;
 }
 
 /* Notes */
