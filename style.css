@@ -5,8 +5,12 @@
 	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
 }
 
-font-family: "Gaisyr";
+@font-family: "Gaisyr";
 	src: url("ABCGaisyrEdu-Book.woff") format("woff");
+}
+
+@font-family: "Gaisyr Italic";
+	src: url("ABCGaisyrEdu-BookItalic.woff") format("woff");
 }
 
 /* Mobile */
@@ -240,14 +244,13 @@ h1, h2, .editable {
 #rotating-suggestion {
 	font-family: Gaisyr, serif;
 	font-size: 1.6rem;
-	color: rgba(100, 0, 255, 0.4);
 	display: inline-block;
 }
 
 /* Prediction container */
 
 #prediction-suggestion {
-	font-family: Camera, serif;
+	font-family: Gaisyr, serif;
 	font-size: 1.6rem;
 	display: inline;
 }
@@ -262,13 +265,12 @@ h1, h2, .editable {
 }
 
 .editable .word.committed.masc {
-	color: #29538B;
-	font-weight: 450;
+	color: black !important;
 }
 
 .editable .word.committed.fem {
-	color:#FFA4B3;
-	font-weight: 355;
+	color: #95948E;
+	font-family: Gaisyr Italic, serif;
 	letter-spacing: 0;
 
 /* Feminine words get fainter over time, making them harder to read */
@@ -344,7 +346,7 @@ h1, h2, .editable {
 .ghost-word.masc {
 	display: inline-block;
 	animation: ghostIn 0.8s ease forwards, growWord 1s ease forwards;
-	color: #29538B;
+	color: black;
 	font-weight: 450;
 }
 
@@ -360,7 +362,7 @@ h1, h2, .editable {
 .ghost.masc .ghost-word.masc {
 	font-weight: 465;
 	color: rgba(0, 0, 0, 0.9);
-	color: #6885A9;
+	color: black !important;
 }
 
 /* Words get smaller for feminine words */
@@ -373,14 +375,15 @@ h1, h2, .editable {
 .ghost-word.fem {
   display: inline-block;      
   animation: ghostShrink 0.8s ease forwards;
-  color: #d44b8c;
+  font-family: Gaisyr Italic, serif;
+  color: #95948E;
 }
 
 /* Stagger for feminine words */
 
 .ghost-word.fem:nth-child(n) {
   animation-delay: calc(var(--i, 0) * 60ms);
-  color: #d44b8c;
+  color: #95948E;
 }
 
 #prediction-suggestion .ghost.fem .ghost-word.fem,
@@ -388,7 +391,7 @@ h1, h2, .editable {
 .ghost.fem .ghost-word.fem {
 	font-weight: 350;
 	color: rgba(0, 0, 0, 0.6);
-	color: #D44B8C;
+	color: #95948E;
 }
 
 /* Notes */
