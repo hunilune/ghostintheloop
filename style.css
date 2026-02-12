@@ -270,7 +270,7 @@ h1, h2, .editable {
 
 .editable .word.committed.fem {
 	color: #95948E;
-	font-family: Gaisyr Italic, serif;
+	font-family: Gaisyr Italic, serif !important;
 	letter-spacing: 0;
 
 /* Feminine words get fainter over time, making them harder to read */
@@ -383,6 +383,7 @@ h1, h2, .editable {
 
 .ghost-word.fem:nth-child(n) {
   animation-delay: calc(var(--i, 0) * 60ms);
+  font-family: Gaisyr Italic, serif;
   color: #95948E;
 }
 
@@ -390,6 +391,7 @@ h1, h2, .editable {
 #prediction-suggestion .ghost.fem,
 .ghost.fem .ghost-word.fem {
 	font-weight: 350;
+	  font-family: Gaisyr Italic, serif;
 	color: rgba(0, 0, 0, 0.6);
 	color: #95948E;
 }
