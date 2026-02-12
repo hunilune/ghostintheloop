@@ -106,7 +106,7 @@ body {
 
 .page-sheet {
 	background: #FCFAEF;
-	background-image: url('Scan.png');
+	background-image: url('Overlay.png'), url('Scan.png');
 	background-size: cover;
 	border: 7rem solid transparent;
 	border-top-width: 3rem;
