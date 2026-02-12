@@ -5,11 +5,13 @@
 	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
 }
 
-@font-family { "Gaisyr";
+@font-face { 
+	font-family: "Gaisyr";
 	src: url("ABCGaisyrEdu-Book.woff") format("woff");
 }
 
-@font-family { "Gaisyr Italic";
+@font-face {
+	font-family: "Gaisyr Italic";
 	src: url("ABCGaisyrEdu-BookItalic.woff") format("woff");
 }
 
