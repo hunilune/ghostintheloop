@@ -206,9 +206,11 @@ h2 {
 
 /* Editor */
 
+
 #editor {
 	display: block;
 	margin: 0;
+	 word-spacing: 0.1em;
 	padding: 0;
 }
 
@@ -218,7 +220,7 @@ h2 {
 
 .editor-wrapper {
     width: 90%;
-    max-width: 75ch;
+    max-width: 45ch;
 	padding-top: 7rem;
     padding-left: 6rem;
     padding-right: 0;
