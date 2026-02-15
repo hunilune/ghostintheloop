@@ -69,7 +69,7 @@ html, body {
 }
 
 body {
-	background: #D0C337; // olive, chartereuse
+	background: #99936a; // olive
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
@@ -89,7 +89,7 @@ body {
   right: 2rem;
   width: 200px;
   height: auto;
-  opacity: 1;
+  opacity: 0.6;
   z-index: 10;
 }
 
@@ -195,7 +195,7 @@ h1 {
 
 h2 {
 	font-family: Camera, serif;
-	font-weight: 300;
+	font-weight: 270;
 	font-size: 1.6rem;
 	opacity: 0.8;
 	text-align: left;
@@ -218,6 +218,7 @@ h2 {
 .editor-wrapper {
     width: 90%;
     max-width: 75ch;
+	padding-top: 7rem;
     padding-left: 6rem;
     padding-right: 0;
     margin: 0;
