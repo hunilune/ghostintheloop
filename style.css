@@ -81,6 +81,28 @@ body {
 	color: rgba(0, 0, 0, 0.7);
 }
 
+/* Start of poem */
+
+.poem-start {
+  opacity: 0.7;
+  margin-bottom: 2em;
+  line-height: 2.2;
+  font-size: 1.6rem;
+  font-family: Gaisyr, serif;
+  pointer-events: none; 
+}
+
+/* Ending of poem */
+
+.poem-end {
+  opacity: 0.7;
+  margin-top: 2em;
+  line-height: 2.2;
+  font-size: 1.6rem;
+  font-family: Gaisyr, serif;
+  pointer-events: none; 
+}
+
 /* Corner image */
 
 .corner-image {
