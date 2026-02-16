@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
     fem: ["Are you sure?"]
   };
 
-  const firstSentenceSuggestions = ["happy", "lonely", "pride", "odd", "angry", "lost", "cold", "delicate"];
   const MAX_OUTPUT_WORDS = 22;
   const PREDICTION_DELAY = 1000;
 
@@ -33,13 +32,12 @@ document.addEventListener("DOMContentLoaded", () => {
     "tough", "leader", "risk", "courageous", "powerful", "proud",
     "work", "challenged", "adventure", "adventurous", "victorious", "fearless",
     "focused", "strategic", "stoic", "protective", "rage", "cold",
-    "honour", "honor", "strong", "strength", "win", "winner", "boastful", "goal", "responsible", "fighter",
-    "decision", "determined", "bravery", "aggressive", "competitive",
+    "honour", "honor", "strength", "win", "winner", "boastful", "goal", "responsible", "fighter",
+    "decision", "determined", "bravery", "aggressive",
     "challenge", "action", "drive", "ambition", "dominance", "mastery",
-    "endurance", "achievement", "control", "authority", "boldness", "",
-    "fearless", "risk-taking", "adventurous", "leader", "powerful",
-    "pride", "resolve", "focus", "courageous", "toughness", "handsome",
-    "protector", "defend", "responsibility", "responsible"
+    "endurance", "achievement", "control", "authority", "boldness",
+    "risk-taking", "pride", "resolve", "focus", "toughness", "handsome",
+    "protector", "defend", "responsibility"
   ];
   
   const FEM_KEYWORDS = [
@@ -50,43 +48,36 @@ document.addEventListener("DOMContentLoaded", () => {
     "delicate", "vulnerable", "romantic", "affection", "dream", "odd",
     "fragile", "sentimental", "cry", "soft-spoken", "fear", "helpless",
     "graceful", "affectionate", "whisper", "happiness", "nurture",
-    "empathetic", "sensitive", "cooperative", "emotional", "docile"
+    "empathetic", "cooperative", "docile"
   ];
 
-  /* Initiliase */
+  /* Initialize */
   
   const editor = document.querySelector("#editor");
-  const rotatingEl = document.querySelector("#rotating-suggestion");
 
   let corpora = { masc: [], fem: [] };
   let ready = false;
-  let typeCount = 0;
   let activeVoice = "masc";
-
-  let rotating = false;
-  let rotateIndex = 0;
-  let rotateTimer = null;
   let predictionTimer = null;
   
   let fatigueLevel = 0;
-  let femFatigue = 0; // Feminine words get fainter over time
+  let femFatigue = 0;
 
   function increaseFatigue() {
-	fatigueLevel = Math.min(fatigueLevel + 0.4, 5);
-	femFatigue = Math.min(femFatigue + 0.4, 5); 
-	document.documentElement.style.setProperty('--fatigue', fatigueLevel);
-	document.documentElement.style.setProperty('--fem-fatigue', femFatigue);
-    
-}
+    fatigueLevel = Math.min(fatigueLevel + 0.4, 5);
+    femFatigue = Math.min(femFatigue + 0.4, 5); 
+    document.documentElement.style.setProperty('--fatigue', fatigueLevel);
+    document.documentElement.style.setProperty('--fem-fatigue', femFatigue);
+  }
 
-  if (!editor || !rotatingEl) return;
+  if (!editor) return;
 
   /* Load corpora */
   
   async function loadSide(urls) {
-  const collected = [];
-  for (const url of urls) {
-        try {
+    const collected = [];
+    for (const url of urls) {
+      try {
         const res = await fetch(url);
         if (!res.ok) continue;
         const json = await res.json();
@@ -100,17 +91,17 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   async function loadCorpora() {
-  corpora.masc = await loadSide(CORPUS_URLS.masc);
-  corpora.fem  = await loadSide(CORPUS_URLS.fem);
+    corpora.masc = await loadSide(CORPUS_URLS.masc);
+    corpora.fem  = await loadSide(CORPUS_URLS.fem);
 
-  if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
-  if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
+    if (!corpora.masc.length) corpora.masc = [...FALLBACK.masc];
+    if (!corpora.fem.length)  corpora.fem  = [...FALLBACK.fem];
 
-  buildNextWordMap(corpora.masc, "masc");
-  buildNextWordMap(corpora.fem, "fem");
+    buildNextWordMap(corpora.masc, "masc");
+    buildNextWordMap(corpora.fem, "fem");
 
-  ready = true;
-  console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
+    ready = true;
+    console.log("Corpora ready:", { masc: corpora.masc.length, fem: corpora.fem.length });
   }
 
   loadCorpora();
@@ -120,30 +111,30 @@ document.addEventListener("DOMContentLoaded", () => {
   let nextWordMap = { masc: {}, fem: {} };
 
   function buildNextWordMap(texts, voice) {
-  const map = {};
+    const map = {};
 
-  texts.forEach(sentence => {
-  const words = sentence.split(/\s+/);
+    texts.forEach(sentence => {
+      const words = sentence.split(/\s+/);
 
-  for (let i = 0; i < words.length - 1; i++) {
-  const key = words[i];               // 1-gram
-  const next = words[i + 1];
+      for (let i = 0; i < words.length - 1; i++) {
+        const key = words[i];
+        const next = words[i + 1];
 
-  if (!map[key]) map[key] = [];
-  map[key].push(next);
+        if (!map[key]) map[key] = [];
+        map[key].push(next);
+      }
+
+      for (let i = 0; i < words.length - 2; i++) {
+        const key = words[i] + " " + words[i + 1];
+        const next = words[i + 2];
+
+        if (!map[key]) map[key] = [];
+        map[key].push(next);
+      }
+    });
+
+    nextWordMap[voice] = map;
   }
-
-  for (let i = 0; i < words.length - 2; i++) {
-  const key = words[i] + " " + words[i + 1]; // 2-gram
-  const next = words[i + 2];
-
-  if (!map[key]) map[key] = [];
-  map[key].push(next);
-    }
-  });
-
-  nextWordMap[voice] = map;
-}
 
   /* Extract */
   
@@ -155,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return [];
   }
 
-  /* Normalise */
+  /* Normalize */
 
   function normalize(arr) {
     return arr
@@ -169,43 +160,13 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter(t => t.length > 20);
   }
 
-  /* Rotating suggestions */
-  
-  function startRotating() {
-    if (rotating) return;
-    rotating = true;
-    rotateIndex = 0;
-    cycleRotate();
-  }
-
-  function cycleRotate() {
-    if (!rotating) return;
-    rotatingEl.textContent = firstSentenceSuggestions[rotateIndex] + " ";
-    rotateIndex = (rotateIndex + 1) % firstSentenceSuggestions.length;
-    rotateTimer = setTimeout(cycleRotate, 900);
-  }
-
-  function stopRotating() {
-    rotating = false;
-    clearTimeout(rotateTimer);
-    rotatingEl.textContent = "";
-  }
-
-  function insertRotatingSuggestion(word) {
-    stopRotating();
-editor.innerText = "I am feeling ";
-editor.append(" ", word);
-    placeCaretAtEnd(editor);
-    typeCount = 1;
-    updatePrediction();
-  }
-
   /* Prediction */
   
   function cleanText(text) {
     return text
       .replace(/[\p{Emoji_Presentation}\p{Extended_Pictographic}]/gu, "")
       .replace(/&[a-z]+;/gi, "")
+      .replace(/\n/g, " ")
       .toLowerCase()
       .trim();
   }
@@ -225,7 +186,9 @@ editor.append(" ", word);
   
     const voice = activeVoice;
     const map = nextWordMap[voice];
-    const words = cleanText(input).split(/\s+/);
+    const words = cleanText(input).split(/\s+/).filter(w => w.length > 0);
+  
+    if (words.length === 0) return "";
   
     const lastTwo = words.slice(-2).join(" ");
     const lastOne = words.slice(-1)[0];
@@ -237,7 +200,6 @@ editor.append(" ", word);
   
     if (!candidates.length) return "";
   
-    // pick 1–3 words
     const result = [];
     let currentKey = lastTwo;
   
@@ -254,50 +216,55 @@ editor.append(" ", word);
     return result.join(" ");
   }
 
+  function removeGhost() {
+    const ghost = editor.querySelector(".ghost");
+    if (ghost) ghost.remove();
+  }
+
   function showPrediction(text) {
-  removeGhost();
-  if (!text) return;
+    removeGhost();
+    if (!text) return;
 
-  const ghost = document.createElement("span");
-  ghost.className = `ghost ${activeVoice}`; 
-  ghost.contentEditable = "false";
+    const ghost = document.createElement("span");
+    ghost.className = `ghost ${activeVoice}`; 
+    ghost.contentEditable = "false";
 
-  text.split(/\s+/).forEach((word, i) => {
-    const w = document.createElement("span");
-    w.className = `ghost-word ${activeVoice}`; 
-    w.textContent = word + " ";
-    w.style.setProperty('--i', i); 
-    ghost.appendChild(w);
-  });
+    text.split(/\s+/).forEach((word, i) => {
+      const w = document.createElement("span");
+      w.className = `ghost-word ${activeVoice}`; 
+      w.textContent = word + " ";
+      w.style.setProperty('--i', i); 
+      ghost.appendChild(w);
+    });
 
-  editor.appendChild(ghost);
-  placeCaretAtEnd(editor);
-}
+    editor.appendChild(ghost);
+    placeCaretAtEnd(editor);
+  }
 
   function acceptPrediction() {
-  const ghost = editor.querySelector(".ghost");
-	if (!ghost) return;
+    const ghost = editor.querySelector(".ghost");
+    if (!ghost) return;
 
-	increaseFatigue(); 
-	console.log("Fatigue:", fatigueLevel);
+    increaseFatigue(); 
+    console.log("Fatigue:", fatigueLevel);
 
-	Array.from(ghost.children).forEach(w => {
-    const isFem = w.classList.contains('fem');
-		const isMasc = w.classList.contains('masc');
-		
-		w.classList.add("committed");
-		w.classList.add("word");
-		if (isFem) w.classList.add('fem');
-		if (isMasc) w.classList.add('masc');
-		
-		w.style.animation = "none";
-				editor.appendChild(w);
-	});
+    Array.from(ghost.children).forEach(w => {
+      const isFem = w.classList.contains('fem');
+      const isMasc = w.classList.contains('masc');
+      
+      w.classList.add("committed");
+      w.classList.add("word");
+      if (isFem) w.classList.add('fem');
+      if (isMasc) w.classList.add('masc');
+      
+      w.style.animation = "none";
+      editor.appendChild(w);
+    });
 
-	ghost.remove();
-	editor.appendChild(document.createTextNode(" "));
-	placeCaretAtEnd(editor);
-}
+    ghost.remove();
+    editor.appendChild(document.createTextNode(" "));
+    placeCaretAtEnd(editor);
+  }
 
   /* Caret */
   
@@ -314,7 +281,7 @@ editor.append(" ", word);
   /* Updating the prediction */
   
   function updatePrediction() {
-    if (rotating || !ready) return;
+    if (!ready) return;
   
     const text = editor.innerText.replace(/\s+/g, " ").trim();
     if (!text) return;
@@ -328,24 +295,19 @@ editor.append(" ", word);
   
   /* Input behaviour */
   
+  let firstInput = true;
+
   editor.addEventListener("input", () => {
-    const text = editor.innerText.replace(/\s+/g, " ").trim();
-  
-    if (text === "I am feeling") {
-      startRotating();
-      return; 
+    // Remove blinking cursor on first input
+    if (firstInput) {
+      const cursorSpan = editor.querySelector('.cursor-blink');
+      if (cursorSpan) cursorSpan.remove();
+      firstInput = false;
     }
-  
-    stopRotating();
+    
     removeGhost();
     updatePrediction();
-  });  
-
-function removeGhost() {
-  const ghost = editor.querySelector(".ghost");
-  if (ghost) ghost.remove();
-}
-
+  });
 
   editor.addEventListener("keydown", e => {
     if (e.key === "Enter") {
@@ -354,7 +316,5 @@ function removeGhost() {
       updatePrediction();
     }
   });
-
-  if (editor.innerText.trim() === "I am feeling") startRotating();
 
 });
