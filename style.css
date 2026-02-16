@@ -15,6 +15,7 @@
 	src: url("ABCGaisyrEdu-BookItalic.woff") format("woff");
 }
 
+
 /* Mobile */
 
 @media (max-width: 600px) {
@@ -28,7 +29,7 @@
 	  }
     .editor-wrapper {
     width: 100% !important;     
-	padding-left: 2em !important; 
+	  padding-left: 2em !important; 
     padding-right: 0.5em;
     margin: 0;
     }
@@ -46,12 +47,13 @@
     box-sizing: border-box;
   	}
     .note {
-    padding-left: 6em !important;
+    padding-left: 2em !important;
     margin-left: 0 !important;
     }
 	h1, h2 {
     padding-left: 1.4em !important;
     margin-left: 0 !important;
+		width: 33%;
     }
 }
 
@@ -107,12 +109,11 @@ body {
 
 .corner-image {
   position: absolute;
-	mix-blend-mode: multiply;
+  mix-blend-mode: multiply;
   top: 0rem;
   right: 2rem;
   width: 197px;
   height: auto;
-  opacity: 0.6;
   z-index: 10;
 }
 
@@ -263,7 +264,7 @@ h2 {
     padding-left: 6rem;
     padding-right: 0;
     margin: 0;
-	  text-align: left;
+	text-align: left;
     background: transparent;
 }
 
@@ -301,10 +302,9 @@ h1, h2, .editable {
 }
 
 .editable .word.committed.masc {
-	color: black !important;
+  color: black !important;
   transition: all 0.3s ease;
   font-size: 1.1em;
-  word-spacing: 0.3em;
   font-weight: 465;
 }
 
@@ -348,7 +348,7 @@ h1, h2, .editable {
     transform: translateY(0.1em) scale(0.95);
   }
   to {
-    opacity: 0.9;
+    opacity: 1;
     filter: blur(0);
     transform: translateY(0) scale(1);
   }
@@ -404,7 +404,6 @@ h1, h2, .editable {
 	animation: ghostIn 0.3s ease forwards;
 	color: black;
 	font-weight: 450;
-  word-spacing: 0.3em;
   font-size: 1.1em;
 }
 
@@ -459,7 +458,7 @@ h1, h2, .editable {
 .note {
 	font-family: Camera, serif;
 	margin-top: 1.3rem;
-  padding-top: 5rem;
+  	padding-top: 5rem;
 	padding-bottom: 8rem;
 	padding-left: 6rem; 
 	font-size: 1rem;
