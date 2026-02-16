@@ -160,6 +160,31 @@ document.addEventListener("DOMContentLoaded", () => {
       .filter(t => t.length > 20);
   }
 
+  function showPrediction(text) {
+  removeGhost();
+  if (!text) return;
+
+  const ghost = document.createElement("span");
+  ghost.className = `ghost ${activeVoice}`; 
+  ghost.contentEditable = "false";
+
+  // Add intensity class for masculine
+  if (activeVoice === 'masc') {
+    ghost.classList.add('intense');
+  }
+
+  text.split(/\s+/).forEach((word, i) => {
+    const w = document.createElement("span");
+    w.className = `ghost-word ${activeVoice}`; 
+    w.textContent = word + " ";
+    w.style.setProperty('--i', i); 
+    ghost.appendChild(w);
+  });
+
+  editor.appendChild(ghost);
+  placeCaretAtEnd(editor);
+}
+  
   /* Prediction */
   
   function cleanText(text) {
