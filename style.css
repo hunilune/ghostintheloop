@@ -146,9 +146,11 @@ body {
   	position: relative;
 }
 
+/* Source of Artwork */ 
+
 .colophon {
   position: absolute;
-  bottom: 0;
+  bottom: 4em;
   right: 4rem;
   font-family: Camera, serif;
   font-size: 0.85rem;
@@ -305,6 +307,7 @@ h1, h2, .editable {
   color: black !important;
   transition: all 0.3s ease;
   font-size: 1.1em;
+  line-height: 1.4;
   font-weight: 465;
 }
 
@@ -459,7 +462,7 @@ h1, h2, .editable {
 	font-family: Camera, serif;
 	margin-top: 1.3rem;
   	padding-top: 5rem;
-	padding-bottom: 8rem;
+	padding-bottom: 18rem;
 	padding-left: 6rem; 
 	font-size: 1rem;
 	font-weight: 345;
