@@ -40,7 +40,7 @@
  	.page-sheet {
     border: 0 !important;
     width: 100% !important;
-	background-image: none !important;
+	  background-image: none !important;
     max-width: 100% !important;
     margin: 0 !important;
     box-sizing: border-box;
@@ -104,7 +104,7 @@ body {
   }
 }
 
-/* The “Paper” */
+/* The "Paper" */
 
 .page-sheet {
 	background: #FCFAEF;
@@ -155,19 +155,21 @@ a {
   text-decoration: none; 
 }
 
-
 /* Visited link */
+
 a:visited {
   color: black;
 }
 
 /* Mouse over link */
+
 a:hover {
   color: black;
  opacity: 0.25;
 }
 
 /* Selected link */
+
 a:active {
   color: black;
 opacity: 0.6;
@@ -208,10 +210,10 @@ h2 {
 
 .cursor-blink {
   display: inline-block;
-  margin-left: 0.2em;
+  margin-left: 0em;
   animation: blink 1s step-end infinite;
   font-weight: 300;
-  opacity: 0.5;
+  opacity: 1;
 }
 
 @keyframes blink {
@@ -220,7 +222,6 @@ h2 {
 }
 
 /* Editor */
-
 
 #editor {
 	display: block;
@@ -260,15 +261,6 @@ h1, h2, .editable {
 	line-height: 1.2;
 }
 
-
-/* Rotating suggestion */
-
-#rotating-suggestion {
-	font-family: Gaisyr, serif;
-	font-size: 1.6rem;
-	display: inline-block;
-}
-
 /* Prediction container */
 
 #prediction-suggestion {
@@ -288,18 +280,21 @@ h1, h2, .editable {
 
 .editable .word.committed.masc {
 	color: black !important;
+  transition: all 0.3s ease;
+  font-size: 1.1em;
+  word-spacing: 0.3em;
+  font-weight: 465;
 }
 
 .editable .word.committed.fem {
-	color: #95948E;
-	font-family: Gaisyr Italic, serif !important;
-	letter-spacing: 0;
-
+  color: #95948E;
+  font-family: Gaisyr Italic, serif !important;
+  font-size: 0.9em;
+  
 /* Feminine words get fainter over time, making them harder to read */
-	
-	opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;; 
-	transition: opacity 0.8s ease;
-
+  
+  opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
+  transition: opacity 1.5s ease;
 }
 
 /* Accessibility */
@@ -322,12 +317,34 @@ h1, h2, .editable {
 	pointer-events: none;
 }
 
+/* Fast, intense animation for masculine */
+
 @keyframes ghostIn {
-	to {
-	opacity: 0.7;
-	filter: blur(0);
-	transform: translateY(0);
-	}
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(0.1em) scale(0.95);
+  }
+  to {
+    opacity: 0.9;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Slow, gentle animation for feminine */
+
+@keyframes ghostInGentle {
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(0.3em);
+  }
+  to {
+    opacity: 0.7;
+    filter: blur(0);
+    transform: translateY(0);
+  }
 }
 
 .ghost-word {
@@ -358,53 +375,50 @@ h1, h2, .editable {
 	}
 }
 
-/* Words get larger for masculine corpus */
-
-@keyframes ghostGrow {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(70); } 
-}
+/* Masculine - Fast and intense */
 
 .ghost-word.masc {
 	display: inline-block;
-	animation: ghostIn 0.8s ease forwards, growWord 1s ease forwards;
+	animation: ghostIn 0.3s ease forwards;
 	color: black;
 	font-weight: 450;
+  word-spacing: 0.3em;
+  font-size: 1.1em;
 }
 
 /* Staggering for masculine words */
 
 .ghost-word.masc:nth-child(n) {
-	animation-delay: calc(var(--i, 0) * 60ms);
-	color: rgba(0, 47, 167);
+	animation-delay: calc(var(--i, 0) * 30ms);
 }
 
 .ghost.masc .ghost-word.masc,
 .ghost.masc,
 .ghost.masc .ghost-word.masc {
 	font-weight: 465;
-	color: rgba(0, 0, 0, 0.9);
 	color: black !important;
 }
 
-/* Words get smaller for feminine words */
+/* Extra intensity for masculine */
 
-@keyframes ghostShrink {
-  from { opacity: 0; transform: scale(1); }
-  to   { opacity: 1; transform: scale(0.5); } /* shrink to normal size */
+.ghost.intense.masc {
+  filter: contrast(1.1) brightness(1.05);
 }
+
+/* Feminine - Slow and gentle */
 
 .ghost-word.fem {
   display: inline-block;      
-  animation: ghostShrink 0.8s ease forwards;
+  animation: ghostInGentle 1.2s ease-out forwards;
   font-family: Gaisyr Italic, serif;
   color: #95948E;
+  font-size: 0.9em;
 }
 
-/* Stagger for feminine words */
+/* Stagger for feminine words - slower */
 
 .ghost-word.fem:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 60ms);
+  animation-delay: calc(var(--i, 0) * 120ms);
   font-family: Gaisyr Italic, serif;
   color: #95948E;
 }
@@ -413,7 +427,7 @@ h1, h2, .editable {
 #prediction-suggestion .ghost.fem,
 .ghost.fem .ghost-word.fem {
 	font-weight: 350;
-	  font-family: Gaisyr Italic, serif;
+	font-family: Gaisyr Italic, serif;
 	color: rgba(0, 0, 0, 0.6);
 	color: #95948E;
 }
@@ -423,6 +437,7 @@ h1, h2, .editable {
 .note {
 	font-family: Camera, serif;
 	margin-top: 1.3rem;
+  padding-top: 5rem;
 	padding-bottom: 8rem;
 	padding-left: 6rem; 
 	font-size: 1rem;
