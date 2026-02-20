@@ -109,7 +109,7 @@ body {
 
 .corner-image {
   position: absolute;
-  mix-blend-mode: multiply;
+  mix-blend-mode: plus-darker;
   top: 0rem;
   right: 2rem;
   width: 197px;
@@ -146,7 +146,7 @@ body {
   	position: relative;
 }
 
-/* Source of Artwork */ 
+/* Artwork description */ 
 
 .colophon {
   position: absolute;
