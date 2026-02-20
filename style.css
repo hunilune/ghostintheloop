@@ -109,9 +109,9 @@ body {
 
 .corner-image {
   position: absolute;
-  mix-blend-mode: plus-darker;
-  top: 0rem;
-  right: 2rem;
+  mix-blend-mode: multiply;
+  top: 6.4rem;
+  right: 1.5rem;
   width: 197px;
   height: auto;
   z-index: 10;
