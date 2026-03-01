@@ -15,6 +15,20 @@
 	src: url("ABCGaisyrEdu-BookItalic.woff") format("woff");
 }
 
+@font-face {
+	font-family: "Gaisyr Mono Light";
+	src: url("ABCGaisyrMonoEdu-Light.woff") format("woff");
+}
+
+@font-face {
+	font-family: "Gaisyr Mono";
+	src: url("ABCGaisyrMonoEdu-Regular.woff") format("woff");
+}
+
+@font-face {
+	font-family: "Scotch Mono";
+	src: url("ABCDailyScotchMonoVariableEdu-Light.woff") format("woff");
+}
 
 /* Mobile */
 
@@ -78,7 +92,7 @@ html, body {
 }
 
 body {
-	background: #D0C337; // olive
+	background: black; // olive
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
@@ -159,7 +173,8 @@ body {
   position: absolute;
   bottom: 4em;
   right: 4rem;
-  font-family: Camera, serif;
+	width: 300px;
+  font-family: Gaisyr, serif;
   font-size: 0.85rem;
   line-height: 1.4;
   opacity: 0.6;
@@ -224,17 +239,17 @@ h1 {
 	color: black;
 	font-size: 1.6rem;
 	margin: 0;
-	padding-left: 3.5rem;
+	padding-left: 2.3rem;
 	padding-top: 9rem;
 }
 
 h2 {
-	font-family: Camera, serif;
-	font-weight: 270;
-	font-size: 1.6rem;
+	font-family: Gaisyr;
+	font-weight: 300;
+	font-size: 1.2rem;
 	opacity: 0.8;
 	text-align: left;
-	padding-left: 3.4rem;
+	padding-left: 2.3rem;
 	margin-bottom: 7rem;
 }
 
