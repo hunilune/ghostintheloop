@@ -104,6 +104,29 @@ body {
 	color: rgba(0, 0, 0, 0.7);
 }
 
+/* Headers */
+
+h1 {
+	font-family: Camera, serif;
+	font-weight: 450;
+	text-align: left;
+	color: black;
+	font-size: 1.6rem;
+	margin: 0;
+	padding-left: 2.3rem;
+	padding-top: 9rem;
+}
+
+h2 {
+	font-family: Camera, serif;
+	font-weight: 300;
+	font-size: 1.2rem;
+	opacity: 0.8;
+	text-align: left;
+	padding-left: 2.3rem;
+	margin-bottom: 7rem;
+}
+
 /* Start of poem */
 
 .poem-start {
@@ -174,7 +197,7 @@ body {
   bottom: 4em;
   right: 4rem;
 	width: 300px;
-  font-family: Gaisyr, serif;
+  font-family: Camera, serif;
   font-size: 0.85rem;
   line-height: 1.4;
   opacity: 0.6;
@@ -228,29 +251,6 @@ opacity: 0.6;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
-}
-
-/* Headers */
-
-h1 {
-	font-family: Camera, serif;
-	font-weight: 450;
-	text-align: left;
-	color: black;
-	font-size: 1.6rem;
-	margin: 0;
-	padding-left: 2.3rem;
-	padding-top: 9rem;
-}
-
-h2 {
-	font-family: Gaisyr;
-	font-weight: 300;
-	font-size: 1.2rem;
-	opacity: 0.8;
-	text-align: left;
-	padding-left: 2.3rem;
-	margin-bottom: 7rem;
 }
 
 /* Blinking cursor */
