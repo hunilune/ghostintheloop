@@ -215,8 +215,8 @@ h2 {
 .colophon {
   position: absolute;
   bottom: 4em;
-  right: 1.5em;
-	width: 250px;
+  right: 2em;
+  width: 250px;
   font-family: Camera, serif;
   font-size: 0.75rem;
   line-height: 1.4;
@@ -512,7 +512,7 @@ h1, h2 {
 	margin-top: 1.8rem;
   	padding-top: 5rem;
 	padding-bottom: 1.7rem;
-	padding-left: 5rem; 
+	padding-left: 3.5rem; 
 	font-size: 1rem;
 	font-weight: 345;
 	text-align: left;
@@ -521,7 +521,7 @@ h1, h2 {
 .note {
 	font-family: Camera, serif;
 	padding-bottom: 18rem;
-	padding-left: 5rem; 
+	padding-left: 3.5rem; 
 	font-size: 0.95rem;
 	font-weight: 345;
 	opacity: 0.65;
