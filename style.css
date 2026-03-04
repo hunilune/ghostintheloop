@@ -321,7 +321,7 @@ a:active {
 	white-space: preserve-spaces;    
 	text-align: left;
 	font-family: Times New Roman, serif;
-  caret-color: transparent;
+ /* caret-color: transparent; */
 	cursor: text;
 	opacity: 0.64;
 }
@@ -357,7 +357,7 @@ h1, h2 {
 .editable .word.committed.fem {
     color: #95948E;
     font-family: Times New Roman, serif !important;
-    font-style: italic;
+  /* font-style: italic; */
     font-size: 0.85em;
     display: inline-block;
     opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
