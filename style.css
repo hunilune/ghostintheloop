@@ -30,6 +30,20 @@
 	src: url("ABCDailyScotchMonoVariableEdu-Light.woff") format("woff");
 }
 
+/* ─── SVG scan/ink filter definition ────────────── */
+/*
+  Applied to poem text and headings only.
+  feTurbulence roughens the letterforms slightly,
+  feDisplacementMap warps them as if printed on textured paper.
+  Very low scale values keep it legible.
+*/
+
+@property --scan-seed {
+  syntax: "<integer>";
+  inherits: false;
+  initial-value: 2;
+}
+
 /* ─── Root variables ─────────────────────────────── */
 
 :root {
@@ -110,11 +124,12 @@ h1 {
 	font-family: Camera, serif;
 	font-weight: 400;
 	text-align: left;
-	color: var(--ink);
+	color: #1c1a16;
 	font-size: 1.3rem;
 	margin: 0 0 0.35rem 0;
 	padding: 0;
 	letter-spacing: 0.04em;
+	filter: url(#scan-ink) blur(0.2px);
 }
 
 h2 {
@@ -126,6 +141,8 @@ h2 {
 	margin: 0 0 6rem 0;
 	padding: 0;
 	letter-spacing: 0.01em;
+	color: #1c1a16;
+	filter: url(#scan-ink) blur(0.2px);
 }
 
 /* ─── Writing surface ────────────────────────────── */
@@ -154,6 +171,8 @@ h2 {
 	font-size: 1.55rem;
 	font-family: Gaisyr, serif;
 	pointer-events: none;
+	filter: url(#scan-ink) blur(0.25px);
+	color: #1c1a16;
 }
 
 .poem-end {
@@ -163,6 +182,8 @@ h2 {
 	font-size: 1.55rem;
 	font-family: Gaisyr, serif;
 	pointer-events: none;
+	filter: url(#scan-ink) blur(0.25px);
+	color: #1c1a16;
 }
 
 /* ─── Blinking cursor ────────────────────────────── */
