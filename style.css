@@ -412,6 +412,12 @@ h1, h2, .editable {
   }
 }
 
+.uncertainty {
+    opacity: 0.4;
+    font-style: italic;
+    font-size: 0.85em;
+}
+
 .ghost-word {
 	opacity: 0;
 	filter: blur(6px);
