@@ -352,9 +352,14 @@ h1, h2, .editable {
 }
 
 .editable .word.committed.fem {
-  color: #95948E;
-  font-family: Times New Roman, serif !important;
-  font-size: 0.9em;
+    color: #95948E;
+    font-family: Times New Roman, serif !important;
+    font-style: italic;
+    font-size: 0.9em;
+    opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
+    transition: opacity 1.4s ease, transform 1.4s ease;
+    display: inline-block;
+    transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
 }
   
 /* Feminine words get fainter over time, making them harder to read */
