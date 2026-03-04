@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
     return [];
   }
 
-  /* Normalise */
+  /* Normalize */
 
   function normalize(arr) {
     return arr
@@ -265,39 +265,31 @@ document.addEventListener("DOMContentLoaded", () => {
     editor.appendChild(ghost);
     placeCaretAtEnd(editor);
   }
-function acceptPrediction() {
+
+  function acceptPrediction() {
     const ghost = editor.querySelector(".ghost");
     if (!ghost) return;
 
-    increaseFatigue();
+    increaseFatigue(); 
+    console.log("Fatigue:", fatigueLevel);
 
-    const isFemPrediction = ghost.classList.contains('fem');
-
-    Array.from(ghost.children).forEach((w, i, arr) => {
-        const isFem = w.classList.contains('fem');
-        const isMasc = w.classList.contains('masc');
-
-        w.classList.add("committed", "word");
-        if (isFem) w.classList.add('fem');
-        if (isMasc) w.classList.add('masc');
-
-        w.style.animation = "none";
-        editor.appendChild(w);
+    Array.from(ghost.children).forEach(w => {
+      const isFem = w.classList.contains('fem');
+      const isMasc = w.classList.contains('masc');
+      
+      w.classList.add("committed");
+      w.classList.add("word");
+      if (isFem) w.classList.add('fem');
+      if (isMasc) w.classList.add('masc');
+      
+      w.style.animation = "none";
+      editor.appendChild(w);
     });
 
     ghost.remove();
-
-    // Add uncertainty punctuation after feminine predictions
-    if (isFemPrediction) {
-        const punct = document.createElement("span");
-        punct.className = "word committed fem uncertainty";
-        punct.textContent = Math.random() > 0.5 ? "?" : ",";
-        editor.appendChild(punct);
-    }
-
     editor.appendChild(document.createTextNode(" "));
     placeCaretAtEnd(editor);
-}
+  }
 
   /* Caret */
   
