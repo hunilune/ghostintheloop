@@ -316,7 +316,9 @@ a:active {
 	outline: none;
 	white-space: preserve-spaces;    
 	text-align: left;
-	font-family: Times New Roman, serif;
+	font-family: Times New Roman, serif; 
+	/* Hides cursor */
+	caret-color: transparent;
 	cursor: text;
 	opacity: 0.64;
 }
