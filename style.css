@@ -322,7 +322,7 @@ a:active {
 	opacity: 0.64;
 }
 
-h1, h2, .editable {
+h1, h2 {
 	line-height: 1.2;
 }
 
@@ -346,14 +346,19 @@ h1, h2, .editable {
 .editable .word.committed.masc {
   color: black !important;
   transition: all 0.3s ease;
-  font-size: 1.3em;
-  line-height: 1.2;
+  font-size: 1em;
+  opacity 1 !important;
 }
 
 .editable .word.committed.fem {
-  color: #95948E;
-  font-family: Times New Roman, serif !important;
-  font-size: 0.85em;
+    color: #95948E;
+    font-family: Times New Roman, serif !important;
+    font-style: italic;
+    font-size: 0.85em;
+    display: inline-block;
+    opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
+    transition: opacity 1.4s ease, transform 1.4s ease;
+    transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
 }
   
 /* Feminine words get fainter over time, making them harder to read */
@@ -412,12 +417,6 @@ h1, h2, .editable {
   }
 }
 
-.uncertainty {
-    opacity: 0.4;
-    font-style: italic;
-    font-size: 0.85em;
-}
-
 .ghost-word {
 	opacity: 0;
 	filter: blur(6px);
@@ -452,8 +451,7 @@ h1, h2, .editable {
 	display: inline-block;
 	animation: ghostIn 0.3s ease forwards;
 	color: black;
-  font-style: bold;
-	font-size: 1.22em;
+	font-size: 1.05em;
 }
 
 /* Staggering for masculine words */
@@ -465,7 +463,6 @@ h1, h2, .editable {
 .ghost.masc .ghost-word.masc,
 .ghost.masc,
 .ghost.masc .ghost-word.masc {
-  font-style: bold;
 	color: black !important;
 }
 
