@@ -30,44 +30,61 @@
 	src: url("ABCDailyScotchMonoVariableEdu-Light.woff") format("woff");
 }
 
-/* ─── SVG scan/ink filter definition ────────────── */
-/*
-  Applied to poem text and headings only.
-  feTurbulence roughens the letterforms slightly,
-  feDisplacementMap warps them as if printed on textured paper.
-  Very low scale values keep it legible.
-*/
+/* Mobile */
 
-@property --scan-seed {
-  syntax: "<integer>";
-  inherits: false;
-  initial-value: 2;
+@media (max-width: 600px) {
+	
+	html { font-size: 14px; } 
+	body { 
+	font-size: 1em !important; 
+    background: #FCFAEF !important; 
+    padding-top: 0;
+    padding-bottom: 0;
+	  }
+    .editor-wrapper {
+    width: 100% !important;     
+	padding-left: 2em !important; 
+    padding-right: 0.5em;
+    margin: 0;
+    }
+    .editable {
+    padding: 0 !important;
+    margin: 0 !important;
+    min-height: auto;
+    }
+ 	.page-sheet {
+    border: 0 !important;
+    width: 100% !important;
+	  background-image: none !important;
+    max-width: 100% !important;
+    margin: 0 !important;
+    box-sizing: border-box;
+  	}
+	.instruction {
+    padding-left: 2em !important;
+    margin-left: 0 !important;
+    }
+    .note {
+    padding-left: 2em !important;
+    margin-left: 0 !important;
+    }
+	h1, h2 {
+    padding-left: 1.4em !important;
+    margin-left: 0 !important;
+	width: 33%;
+    }
+	h2 {
+	font-size: 0.7em;
+	}
 }
 
-/* ─── Root variables ─────────────────────────────── */
+/* Root variables */
 
 :root {
 	--fatigue: 0;
-	--paper: #FAF7EB;
-	--ink: rgba(0, 0, 0, 0.72);
-	--ink-faint: rgba(0, 0, 0, 0.38);
 }
 
-/* ─── SVG grain filter (no external image needed) ── */
-
-body::before {
-	content: "";
-	position: fixed;
-	inset: 0;
-	pointer-events: none;
-	z-index: 9999;
-	opacity: 0.018;
-	background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
-	background-repeat: repeat;
-	background-size: 200px 200px;
-}
-
-/* ─── Body ───────────────────────────────────────── */
+/* Body */
 
 html, body {
 	margin: 0;
@@ -75,77 +92,174 @@ html, body {
 }
 
 body {
-	background: #8B8680; /* fallback; JS sets random on load */
+	background: black; 
 	overflow-x: hidden;
-	padding-top: 7rem;
-	padding-bottom: 7rem;
+	padding-top: 8rem;
+	padding-bottom: 0;
 	letter-spacing: 0.006em;
 	font-family: Camera, serif;
 	font-weight: 400;
 	line-height: 1.2;
-	transition: background 0.8s ease;
-	color: var(--ink);
+	transition: all 0.6s ease;
+	color: rgba(0, 0, 0, 0.7);
 }
 
-/* ─── The "Paper" ────────────────────────────────── */
-
-.page-sheet {
-	background: var(--paper);
-	/* Subtle sepia + contrast for aged feel */
-	filter: sepia(0.12) contrast(1.02);
-	/* Faint inner shadow for paper depth */
-	box-shadow:
-		inset 0 0 60px rgba(180, 160, 120, 0.10),
-		0 2px 40px rgba(0,0,0,0.13);
-	border: 0;
-	box-sizing: border-box;
-	width: min(72vw, 82ch);
-	margin: 0 auto;
-	padding: 5rem 7rem 8rem 7rem;
-	position: relative;
-}
-
-/* ─── Corner image ───────────────────────────────── */
-
-.corner-image {
-	position: absolute;
-	mix-blend-mode: multiply;
-	top: 3.5rem;
-	right: 3rem;
-	width: 160px;
-	height: auto;
-	z-index: 10;
-	opacity: 0.82;
-}
-
-/* ─── Headers ────────────────────────────────────── */
+/* Headers */
 
 h1 {
 	font-family: Camera, serif;
 	font-weight: 400;
 	text-align: left;
-	color: #1c1a16;
-	font-size: 1.3rem;
-	margin: 0 0 0.35rem 0;
-	padding: 0;
-	letter-spacing: 0.04em;
-	filter: url(#scan-ink) blur(0.2px);
+	color: black;
+	font-size: 1.6rem;
+	margin: 0;
+	padding-left: 2.3rem;
+	padding-top: 9rem;
 }
 
 h2 {
-	font-family: Gaisyr Italic, serif;
-	font-weight: 400;
-	font-size: 1rem;
-	opacity: 0.52;
+	font-family: Camera, serif;
+	font-weight: 300;
+	font-size: 1.2rem;
+	opacity: 0.8;
 	text-align: left;
-	margin: 0 0 6rem 0;
-	padding: 0;
-	letter-spacing: 0.01em;
-	color: #1c1a16;
-	filter: url(#scan-ink) blur(0.2px);
+	padding-left: 2.3rem;
+	margin-bottom: 7rem;
 }
 
-/* ─── Writing surface ────────────────────────────── */
+/* Start of poem */
+
+.poem-start {
+  opacity: 0.7;
+  margin-bottom: 2em;
+  line-height: 2.2;
+  font-size: 1.6rem;
+  font-family: Gaisyr, serif;
+  pointer-events: none; 
+}
+
+/* Ending of poem */
+
+.poem-end {
+  opacity: 0.7;
+  margin-top: 2em;
+  line-height: 2.2;
+  font-size: 1.6rem;
+  font-family: Gaisyr, serif;
+  pointer-events: none; 
+}
+
+/* Corner image */
+
+.corner-image {
+  position: absolute;
+  mix-blend-mode: multiply;
+  top: 4rem;
+  right: 1.5rem;
+  width: 197px;
+  height: auto;
+  z-index: 10;
+}
+
+/* Adjust Corner image for mobile */
+
+@media (max-width: 600px) {
+  .corner-image {
+    width: 120px;
+    right: 1rem;
+    top: 2rem;
+  }
+}
+
+/* The "Paper" */
+
+.page-sheet {
+	background: #FCFAEF;
+	background-image: url('Overlay.png'), url('Scan.png'), url('Smudge.png');
+	background-size: cover;
+	border: 7rem solid transparent;
+	border-top-width: 3rem;
+	border-left-width: 0;
+	border-right-width: 0;
+	border-bottom-width: 3.4rem;
+	box-sizing: border-box;
+	width: min(70vw, 75ch);
+	margin: 0 auto;
+	padding-top: 0;
+	padding-bottom: 0;
+  	position: relative;
+}
+
+/* Rice paper and smudge — Overlays blend through content */
+
+.page-sheet::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: url('Rice paper.png') repeat;
+	background-size: 500px 500px;
+	mix-blend-mode: multiply;
+	opacity: 0.28;
+	pointer-events: none;
+	z-index: 100;
+}
+
+/* Artwork description */ 
+
+.colophon {
+  position: absolute;
+  bottom: 4em;
+  right: 4rem;
+	width: 300px;
+  font-family: Camera, serif;
+  font-size: 0.85rem;
+  line-height: 1.4;
+  opacity: 0.6;
+  text-align: left;
+  opacity: 0.5;
+  color: black;
+}
+
+ /* Unvisited link */
+
+a:link {
+	color: black;
+	padding-bottom: var(--s);
+	background: 
+    linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
+    linear-gradient(var(--c) 0 0) 0% 100%/var(--_p,0%) var(--s) no-repeat;
+	-webkit-background-clip: text,padding-box;
+	background-clip: text,padding-box;
+	transition: 0.5s;
+}
+
+/* Links */
+
+a {
+  text-decoration: none; 
+}
+
+/* Visited link */
+
+a:visited {
+  color: black;
+}
+
+/* Mouse over link */
+
+a:hover {
+  color: black;
+ opacity: 0.25;
+}
+
+/* Selected link */
+
+a:active {
+  color: black;
+opacity: 0.6;
+} 
+
+/* Writing */
 
 .writing-surface {
 	display: flex;
@@ -153,88 +267,70 @@ h2 {
 	align-items: flex-start;
 }
 
-.editor-wrapper {
-	width: 100%;
-	max-width: 48ch;
-	padding: 0;
-	margin: 0;
-	background: transparent;
-	box-sizing: border-box;
-}
-
-/* ─── Poem fragments ─────────────────────────────── */
-
-.poem-start {
-	opacity: 0.62;
-	margin-bottom: 2.4em;
-	line-height: 2.4;
-	font-size: 1.55rem;
-	font-family: Gaisyr, serif;
-	pointer-events: none;
-	filter: url(#scan-ink) blur(0.25px);
-	color: #1c1a16;
-}
-
-.poem-end {
-	opacity: 0.62;
-	margin-top: 2.4em;
-	line-height: 2.4;
-	font-size: 1.55rem;
-	font-family: Gaisyr, serif;
-	pointer-events: none;
-	filter: url(#scan-ink) blur(0.25px);
-	color: #1c1a16;
-}
-
-/* ─── Blinking cursor ────────────────────────────── */
+/* Blinking cursor */
 
 .cursor-blink {
-	display: inline-block;
-	margin-left: 0em;
-	animation: blink 1s step-end infinite;
-	font-weight: 300;
+  display: inline-block;
+  margin-left: 0em;
+  animation: blink 1s step-end infinite;
+  font-weight: 300;
+  opacity: 1;
 }
 
 @keyframes blink {
-	0%, 100% { opacity: 0.45; }
-	50%       { opacity: 0; }
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0; }
 }
 
-/* ─── Editor ─────────────────────────────────────── */
+/* Editor */
 
 #editor {
 	display: block;
 	margin: 0;
-	word-spacing: 0.1em;
+	 word-spacing: 0.1em;
 	padding: 0;
+}
+
+.editor-wrapper, .editable {
+    box-sizing: border-box;
+}
+
+.editor-wrapper {
+    width: 90%;
+    max-width: 45ch;
+	padding-top: 7rem;
+    padding-left: 6rem;
+    padding-right: 0;
+    margin: 0;
+	text-align: left;
+    background: transparent;
 }
 
 .editable {
-	display: block;
-	font-size: 1.55rem;
+	display: block;          
+	font-size: 1.6rem;
 	padding: 0;
 	outline: none;
-	white-space: preserve-spaces;
+	white-space: preserve-spaces;    
 	text-align: left;
 	font-family: Gaisyr, serif;
 	cursor: text;
-	opacity: 0.68;
-	line-height: 1.35;
+	opacity: 0.64;
 }
 
 h1, h2, .editable {
-	line-height: 1.25;
+	line-height: 1.2;
 }
 
-/* ─── Prediction container ───────────────────────── */
+/* Prediction container */
 
 #prediction-suggestion {
 	font-family: Gaisyr, serif;
-	font-size: 1.55rem;
+	font-size: 1.6rem;
 	display: inline;
 }
 
-/* ─── Committed words ────────────────────────────── */
+/* Committed words inside editor */
 
 .editable .word.committed {
 	animation: none !important;
@@ -244,22 +340,33 @@ h1, h2, .editable {
 }
 
 .editable .word.committed.masc {
-	color: black !important;
-	transition: all 0.3s ease;
-	font-size: 1.1em;
-	line-height: 1.4;
-	font-weight: 465;
+  color: black !important;
+  transition: all 0.3s ease;
+  font-size: 1.1em;
+  line-height: 1.4;
+  font-weight: 465;
 }
 
 .editable .word.committed.fem {
-	color: #95948E;
-	font-family: Gaisyr Italic, serif !important;
-	font-size: 0.9em;
-	opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
-	transition: opacity 1.5s ease;
+  color: #95948E;
+  font-family: Gaisyr Italic, serif !important;
+  font-size: 0.9em;
+  
+/* Feminine words get fainter over time, making them harder to read */
+  
+  opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
+  transition: opacity 1.5s ease;
 }
 
-/* ─── Ghost animations ───────────────────────────── */
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+	}
+}
+
+/* Animation */
 
 .ghost {
 	display: inline;
@@ -271,30 +378,34 @@ h1, h2, .editable {
 	pointer-events: none;
 }
 
+/* Fast, intense animation for masculine */
+
 @keyframes ghostIn {
-	from {
-		opacity: 0;
-		filter: blur(4px);
-		transform: translateY(0.1em) scale(0.95);
-	}
-	to {
-		opacity: 1;
-		filter: blur(0);
-		transform: translateY(0) scale(1);
-	}
+  from {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translateY(0.1em) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translateY(0) scale(1);
+  }
 }
 
+/* Slow, gentle animation for feminine */
+
 @keyframes ghostInGentle {
-	from {
-		opacity: 0;
-		filter: blur(8px);
-		transform: translateY(0.3em);
-	}
-	to {
-		opacity: 0.7;
-		filter: blur(0);
-		transform: translateY(0);
-	}
+  from {
+    opacity: 0;
+    filter: blur(8px);
+    transform: translateY(0.3em);
+  }
+  to {
+    opacity: 0.7;
+    filter: blur(0);
+    transform: translateY(0);
+  }
 }
 
 .ghost-word {
@@ -325,44 +436,51 @@ h1, h2, .editable {
 	}
 }
 
-/* Masculine — fast, assertive */
+/* Masculine - Fast and intense */
 
 .ghost-word.masc {
 	display: inline-block;
 	animation: ghostIn 0.3s ease forwards;
 	color: black;
 	font-weight: 450;
-	font-size: 1.1em;
+  font-size: 1.1em;
 }
+
+/* Staggering for masculine words */
 
 .ghost-word.masc:nth-child(n) {
 	animation-delay: calc(var(--i, 0) * 30ms);
 }
 
 .ghost.masc .ghost-word.masc,
-.ghost.masc {
+.ghost.masc,
+.ghost.masc .ghost-word.masc {
 	font-weight: 465;
 	color: black !important;
 }
 
+/* Extra intensity for masculine */
+
 .ghost.intense.masc {
-	filter: contrast(1.1) brightness(1.05);
+  filter: contrast(1.1) brightness(1.05);
 }
 
-/* Feminine — slow, receding */
+/* Feminine - Slow and gentle */
 
 .ghost-word.fem {
-	display: inline-block;
-	animation: ghostInGentle 1.2s ease-out forwards;
-	font-family: Gaisyr Italic, serif;
-	color: #95948E;
-	font-size: 0.9em;
+  display: inline-block;      
+  animation: ghostInGentle 1.2s ease-out forwards;
+  font-family: Gaisyr Italic, serif;
+  color: #95948E;
+  font-size: 0.9em;
 }
 
+/* Stagger for feminine words - slower */
+
 .ghost-word.fem:nth-child(n) {
-	animation-delay: calc(var(--i, 0) * 120ms);
-	font-family: Gaisyr Italic, serif;
-	color: #95948E;
+  animation-delay: calc(var(--i, 0) * 120ms);
+  font-family: Gaisyr Italic, serif;
+  color: #95948E;
 }
 
 #prediction-suggestion .ghost.fem .ghost-word.fem,
@@ -374,101 +492,30 @@ h1, h2, .editable {
 	color: #95948E;
 }
 
-/* ─── Instruction + note ─────────────────────────── */
+/* Notes */
 
 .instruction {
 	font-family: Camera, serif;
-	margin-top: 5rem;
-	padding-bottom: 1rem;
-	font-size: 0.95rem;
-	font-weight: 400;
-	color: var(--ink);
-	letter-spacing: 0.02em;
+	margin-top: 1.8rem;
+  	padding-top: 5rem;
+	padding-bottom: 1.7rem;
+	padding-left: 6rem; 
+	font-size: 1rem;
+	font-weight: 345;
 	text-align: left;
-}
+} 
 
 .note {
 	font-family: Camera, serif;
-	padding-bottom: 2rem;
-	font-size: 0.85rem;
+	padding-bottom: 18rem;
+	padding-left: 6rem; 
+	font-size: 0.95rem;
 	font-weight: 345;
-	opacity: 0.45;
+	opacity: 0.65;
 	text-align: left;
-	letter-spacing: 0.01em;
-}
+} 
 
-/* ─── Colophon ───────────────────────────────────── */
-
-.colophon {
-	margin-top: 7rem;
-	font-family: Camera, serif;
-	font-size: 0.78rem;
-	line-height: 1.55;
-	opacity: 0.42;
-	color: black;
-	max-width: 36ch;
-}
-
-/* ─── Links ──────────────────────────────────────── */
-
-a:link, a:visited {
-	color: black;
-	text-decoration: none;
-}
-
-a:hover  { opacity: 0.25; }
-a:active { opacity: 0.6; }
-
-/* ─── Accessibility ──────────────────────────────── */
-
-@media (prefers-reduced-motion: reduce) {
-	* { transition: none !important; animation: none !important; }
-}
-
-/* ─── Mobile ─────────────────────────────────────── */
-
-@media (max-width: 600px) {
-
-	html { font-size: 14px; }
-
-	body {
-		font-size: 1em !important;
-		padding-top: 0;
-		padding-bottom: 0;
-	}
-
-	.page-sheet {
-		width: 100% !important;
-		padding: 3rem 2rem 5rem 2rem !important;
-		box-shadow: none;
-		filter: sepia(0.10) contrast(1.01);
-	}
-
-	h1, h2 {
-		padding-left: 0 !important;
-		margin-left: 0 !important;
-	}
-
-	h2 { font-size: 0.85em; }
-
-	.editor-wrapper {
-		width: 100% !important;
-		padding-left: 0 !important;
-	}
-
-	.corner-image {
-		width: 100px;
-		right: 1rem;
-		top: 2rem;
-	}
-
-	.instruction, .note {
-		padding-left: 0 !important;
-		margin-left: 0 !important;
-	}
-}
-
-/* ─── Prevent notes from wrapping oddly ─────────── */
+/* Prevent notes from wrapping oddly */
 
 .no-wrap {
 	float: none !important;
