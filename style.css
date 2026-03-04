@@ -115,7 +115,6 @@ h2 {
   line-height: 2.2;
   font-size: 1.4rem;
   font-family: Times New Roman, serif;
-  pointer-events: none; 
 }
 
 /* Ending of poem */
@@ -307,6 +306,7 @@ a:active {
     margin: 0;
 	  text-align: left;
     background: transparent;
+  
 }
 
 .editable {
@@ -345,15 +345,17 @@ h1, h2, .editable {
 .editable .word.committed.masc {
   color: black !important;
   transition: all 0.3s ease;
-  font-size: 1.1em;
-  line-height: 1.4;
-  font-weight: 465;
+  font-size: 1.2em;
+  line-height: 1.5;
+  font-style: bold;
+
 }
 
 .editable .word.committed.fem {
   color: #95948E;
   font-family: Times New Roman, serif !important;
   font-size: 0.9em;
+}
   
 /* Feminine words get fainter over time, making them harder to read */
   
@@ -446,7 +448,7 @@ h1, h2, .editable {
 	animation: ghostIn 0.3s ease forwards;
 	color: black;
   font-style: bold;
-	font-size: 1.1em;
+	font-size: 1.22em;
 }
 
 /* Staggering for masculine words */
