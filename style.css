@@ -212,7 +212,7 @@ h2 {
   position: absolute;
   bottom: 4em;
   right: 4rem;
-	width: 300px;
+  width: 300px;
   font-family: Camera, serif;
   font-size: 0.85rem;
   line-height: 1.4;
@@ -300,11 +300,11 @@ a:active {
 .editor-wrapper {
     width: 90%;
     max-width: 45ch;
-	  padding-top: 7rem;
+	padding-top: 7rem;
     padding-left: 6rem;
     padding-right: 0;
     margin: 0;
-	  text-align: left;
+	text-align: left;
     background: transparent;
   
 }
@@ -317,7 +317,7 @@ a:active {
 	white-space: preserve-spaces;    
 	text-align: left;
 	font-family: Times New Roman, serif;
-  caret-color: transparent;
+  	/* caret-color: transparent; */
 	cursor: text;
 	opacity: 0.64;
 }
@@ -353,7 +353,7 @@ h1, h2 {
 .editable .word.committed.fem {
     color: #95948E;
     font-family: Times New Roman, serif !important;
-    font-style: italic;
+  /* font-style: italic; */
     font-size: 0.85em;
     display: inline-block;
     opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
@@ -475,28 +475,28 @@ h1, h2 {
 /* Feminine - Slow and gentle */
 
 .ghost-word.fem {
-  display: inline-block;      
-  animation: ghostInGentle 1.2s ease-out forwards;
+	display: inline-block;      
+	animation: ghostInGentle 1.2s ease-out forwards;
 	font-family: Times New Roman, serif;
-	font-style: italic;
-  color: #95948E;
-  font-size: 0.9em;
+	/* font-style: italic; */
+	color: #95948E;
+	font-size: 0.9em;
 }
 
 /* Stagger for feminine words - slower */
 
 .ghost-word.fem:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 120ms);
+    animation-delay: calc(var(--i, 0) * 120ms);
 	font-family: Times New Roman, serif;
-	font-style: italic;
-  color: #95948E;
+    /* font-style: italic; */
+    color: #95948E;
 }
 
 #prediction-suggestion .ghost.fem .ghost-word.fem,
 #prediction-suggestion .ghost.fem,
 .ghost.fem .ghost-word.fem {
 	font-family: Times New Roman, serif;
-  font-style: italic;
+    /* font-style: italic; */
 	color: rgba(0, 0, 0, 0.6);
 	color: #95948E;
 }
