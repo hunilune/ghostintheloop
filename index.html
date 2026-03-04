@@ -5,55 +5,82 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>an /a)ppar/i)tion</title>
   <link rel="icon" href="Favicon.png">
+
   <!-- Fonts -->
-  
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fragment+Mono:ital@0;1&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Lancelot&display=swap" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&display=swap" rel="stylesheet">
+
   <!-- CSS -->
-  
   <link rel="stylesheet" href="style.css">
+
+  <!-- Random background on load -->
+  <script>
+    const BACKGROUNDS = [
+      "#7D8C7C", /* sage */
+      "#9E7B6B", /* terracotta */
+      "#8B8680", /* ash */
+      "#8C7D82", /* dusty mauve */
+      "#7A8A8C", /* warm slate */
+      "#A08C72", /* warm sand */
+      "#6E7E72", /* moss */
+      "#907878", /* muted rose */
+    ];
+    document.addEventListener("DOMContentLoaded", () => {
+      const colour = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
+      document.body.style.background = colour;
+    });
+  </script>
 </head>
+
 <body class="mode-masc">
   <div class="page-sheet">
-    <img src="Vase.png" alt="A brown vase with a short, rounded rim.'" class="corner-image">
+
+    <img src="Vase.png" alt="A vase with a short, rounded rim." class="corner-image">
     <!-- Source: https://www.metmuseum.org/art/collection/search/547137 -->
-    
+
     <!-- Headings -->
-    <h1>a poem <span style="color:#FAF7EB">|</span> <span style="font-family: Gaisyr">2026</span></h1>  
+    <h1>a poem <span style="color: var(--paper);">|</span> <span style="font-family: Gaisyr, serif;">2026</span></h1>
     <h2>translated by an apparition</h2>
-    <!-- Editable editor -->
-    
-     <div class="writing-surface">
-     <div class="editor-wrapper">
-     <div class="poem-start">
+
+    <!-- Writing surface -->
+    <div class="writing-surface">
+      <div class="editor-wrapper">
+
+        <div class="poem-start">
           <span style="margin-left: 2em;">falling</span>
-          <br></br>
+          <br>
           <span style="margin-left: 7em;">in two:</span>
-          </div>
-    
-     <div id="editor" class="editable" contenteditable="true">I am <span class="cursor-blink">|</span></div>
-    
-     <div class="poem-end"> <span style="margin-left: 7em;">but, so be it.</span> </div>
-       
-      <div class="colophon">
-        <div>"an apparition," orbit, no. 4 (2026)</div>
-        <br>
-        <div>Commissioned by The Photographers' Gallery and Goethe-Institut London</div>
+        </div>
+
+        <div id="editor" class="editable" contenteditable="true">I am <span class="cursor-blink">|</span></div>
+
+        <div class="poem-end">
+          <span style="margin-left: 7em;">but, so be it.</span>
+        </div>
+
+        <div class="colophon">
+          <div>"an apparition," orbit, no. 4 (2026)</div>
+          <br>
+          <div>Commissioned by The Photographers' Gallery and Goethe-Institut London</div>
+        </div>
+
       </div>
     </div>
-    
+
     <!-- Notes -->
-    <div class="instruction"> 
+    <div class="instruction">
       Press Enter to accept assumptions
-    </div> 
-       
-    <div class="note no-wrap"> 
+    </div>
+
+    <div class="note no-wrap">
       Prone to bias
-    </div> 
+    </div>
+
   </div>
-<script src="script.js"></script>
+
+  <script src="script.js"></script>
 </body>
 </html>
