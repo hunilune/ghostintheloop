@@ -36,9 +36,42 @@
 </head>
 
 <body class="mode-masc">
+
+  <!-- Hidden SVG filter for scan/ink effect on poem text -->
+  <svg xmlns="http://www.w3.org/2000/svg" width="0" height="0" style="position:absolute;">
+    <defs>
+      <filter id="scan-ink" x="-5%" y="-5%" width="110%" height="110%" color-interpolation-filters="sRGB">
+        <!-- Slight roughness to simulate ink on paper texture -->
+        <feTurbulence
+          type="fractalNoise"
+          baseFrequency="0.04 0.065"
+          numOctaves="4"
+          seed="3"
+          result="noise" />
+        <!-- Displace letterforms very slightly — scale is intentionally low -->
+        <feDisplacementMap
+          in="SourceGraphic"
+          in2="noise"
+          scale="1.6"
+          xChannelSelector="R"
+          yChannelSelector="G"
+          result="displaced" />
+        <!-- Micro-blur to soften displaced edges, like ink bleed -->
+        <feGaussianBlur
+          in="displaced"
+          stdDeviation="0.15"
+          result="softened" />
+        <!-- Restore contrast lost by displacement -->
+        <feComponentTransfer in="softened">
+          <feFuncA type="linear" slope="1.08" />
+        </feComponentTransfer>
+      </filter>
+    </defs>
+  </svg>
+
   <div class="page-sheet">
 
-    <img src="Vase.png" alt="A vase with a short, rounded rim." class="corner-image">
+    <img src="Vase.png" alt="A brown vase with a short, rounded rim." class="corner-image">
     <!-- Source: https://www.metmuseum.org/art/collection/search/547137 -->
 
     <!-- Headings -->
