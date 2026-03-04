@@ -129,6 +129,32 @@ h2 {
   pointer-events: none; 
 }
 
+/* Poem word hover interactions */
+
+.poem-word {
+    display: inline-block;
+    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+    cursor: default;
+}
+
+/* "falling" drops down */
+
+[data-drift="down"]:hover {
+    transform: translateY(2.8rem);
+}
+
+/* "in" drifts left */
+
+[data-drift="apart"]:hover {
+    transform: translateX(-1.2rem);
+}
+
+/* "two:" drifts right */
+
+[data-drift="apart-right"]:hover {
+    transform: translateX(1.2rem);
+}
+
 /* Corner image */
 
 .corner-image {
