@@ -316,9 +316,8 @@ a:active {
 	outline: none;
 	white-space: preserve-spaces;    
 	text-align: left;
-	font-family: Times New Roman, serif; 
-	/* Hides cursor */
-	caret-color: transparent;
+	font-family: Times New Roman, serif;
+  caret-color: transparent;
 	cursor: text;
 	opacity: 0.64;
 }
@@ -347,16 +346,14 @@ h1, h2, .editable {
 .editable .word.committed.masc {
   color: black !important;
   transition: all 0.3s ease;
-  font-size: 1.2em;
+  font-size: 1.3em;
   line-height: 1.2;
-  font-style: bold;
-
 }
 
 .editable .word.committed.fem {
   color: #95948E;
   font-family: Times New Roman, serif !important;
-  font-size: 0.9em;
+  font-size: 0.85em;
 }
   
 /* Feminine words get fainter over time, making them harder to read */
