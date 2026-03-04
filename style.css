@@ -10,29 +10,9 @@
 	src: url("ABCGaisyrEdu-Book.woff") format("woff");
 }
 
-@font-face {
-	font-family: "Gaisyr Italic";
-	src: url("ABCGaisyrEdu-BookItalic.woff") format("woff");
-}
-
-@font-face {
-	font-family: "Gaisyr Mono Light";
-	src: url("ABCGaisyrMonoEdu-Light.woff") format("woff");
-}
-
-@font-face {
-	font-family: "Gaisyr Mono";
-	src: url("ABCGaisyrMonoEdu-Regular.woff") format("woff");
-}
-
-@font-face {
-	font-family: "Scotch Mono";
-	src: url("ABCDailyScotchMonoVariableEdu-Light.woff") format("woff");
-}
-
 /* Mobile */
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
 	
 	html { font-size: 14px; } 
 	body { 
@@ -71,7 +51,7 @@
 	h1, h2 {
     padding-left: 1.4em !important;
     margin-left: 0 !important;
-	width: 33%;
+	width: 20%;
     }
 	h2 {
 	font-size: 0.7em;
@@ -107,20 +87,20 @@ body {
 /* Headers */
 
 h1 {
-	font-family: Camera, serif;
-	font-weight: 400;
+	font-family: Times New Roman, serif;
+	font-weight: 300;
 	text-align: left;
 	color: black;
-	font-size: 1.6rem;
+	font-size: 1.4rem;
 	margin: 0;
 	padding-left: 2.3rem;
-	padding-top: 9rem;
+	padding-top: 0rem;
 }
 
 h2 {
-	font-family: Camera, serif;
+	font-family: Times New Roman, serif;
 	font-weight: 300;
-	font-size: 1.2rem;
+	font-size: 1.4rem;
 	opacity: 0.8;
 	text-align: left;
 	padding-left: 2.3rem;
@@ -133,8 +113,8 @@ h2 {
   opacity: 0.7;
   margin-bottom: 2em;
   line-height: 2.2;
-  font-size: 1.6rem;
-  font-family: Gaisyr, serif;
+  font-size: 1.4rem;
+  font-family: Times New Roman, serif;
   pointer-events: none; 
 }
 
@@ -144,8 +124,8 @@ h2 {
   opacity: 0.7;
   margin-top: 2em;
   line-height: 2.2;
-  font-size: 1.6rem;
-  font-family: Gaisyr, serif;
+  font-size: 1.4rem;
+	font-family: Times New Roman, serif;
   pointer-events: none; 
 }
 
@@ -154,8 +134,7 @@ h2 {
 .corner-image {
   position: absolute;
   mix-blend-mode: multiply;
-  top: 4rem;
-  right: 1.5rem;
+  right: 1.4rem;
   width: 197px;
   height: auto;
   z-index: 10;
@@ -174,32 +153,30 @@ h2 {
 /* The "Paper" */
 
 .page-sheet {
-	background: #FCFAEF;
-	background-image: url('Overlay.png'), url('Scan.png'), url('Smudge.png');
-	background-size: cover;
-	border: 7rem solid transparent;
-	border-top-width: 3rem;
-	border-left-width: 0;
-	border-right-width: 0;
-	border-bottom-width: 3.4rem;
-	box-sizing: border-box;
-	width: min(70vw, 75ch);
-	margin: 0 auto;
-	padding-top: 0;
-	padding-bottom: 0;
-  	position: relative;
+    background: #FCFAEF;
+    background-image: url('Overlay.png');
+    background-size: cover, cover, cover;
+	  background-blend-mode: multiply;
+    box-sizing: border-box;
+    width: min(70vw, 75ch);
+    margin: 0 auto;
+    padding-top: 3rem;
+    padding-left: 0;
+    padding-right: 0;
+    padding-bottom: 3.4rem;
+    position: relative;
 }
 
-/* Rice paper and smudge — Overlays blend through content */
+/* Rice paper and Smudge — Overlays blend through content */
 
 .page-sheet::after {
 	content: "";
 	position: absolute;
 	inset: 0;
 	background: url('Rice paper.png') repeat;
-	background-size: 500px 500px;
+	background-size: 250px 250px;
 	mix-blend-mode: multiply;
-	opacity: 0.28;
+	opacity: 0.05;
 	pointer-events: none;
 	z-index: 100;
 }
@@ -228,8 +205,8 @@ a:link {
 	background: 
     linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
     linear-gradient(var(--c) 0 0) 0% 100%/var(--_p,0%) var(--s) no-repeat;
-	-webkit-background-clip: text,padding-box;
-	background-clip: text,padding-box;
+	-webkit-background-clip: text, padding-box;
+	background-clip: text, padding-box;
 	transition: 0.5s;
 }
 
@@ -256,7 +233,7 @@ a:hover {
 
 a:active {
   color: black;
-opacity: 0.6;
+  opacity: 0.6;
 } 
 
 /* Writing */
@@ -285,10 +262,10 @@ opacity: 0.6;
 /* Editor */
 
 #editor {
-	display: block;
-	margin: 0;
+	 display: block;
+	 margin: 0;
 	 word-spacing: 0.1em;
-	padding: 0;
+	 padding: 0;
 }
 
 .editor-wrapper, .editable {
@@ -298,22 +275,22 @@ opacity: 0.6;
 .editor-wrapper {
     width: 90%;
     max-width: 45ch;
-	padding-top: 7rem;
+	  padding-top: 7rem;
     padding-left: 6rem;
     padding-right: 0;
     margin: 0;
-	text-align: left;
+	  text-align: left;
     background: transparent;
 }
 
 .editable {
 	display: block;          
-	font-size: 1.6rem;
+	font-size: 1.4rem;
 	padding: 0;
 	outline: none;
 	white-space: preserve-spaces;    
 	text-align: left;
-	font-family: Gaisyr, serif;
+	font-family: Times New Roman, serif;
 	cursor: text;
 	opacity: 0.64;
 }
@@ -325,8 +302,8 @@ h1, h2, .editable {
 /* Prediction container */
 
 #prediction-suggestion {
-	font-family: Gaisyr, serif;
-	font-size: 1.6rem;
+	font-family: Times New Roman, serif;
+	font-size: 1.4rem;
 	display: inline;
 }
 
@@ -349,13 +326,13 @@ h1, h2, .editable {
 
 .editable .word.committed.fem {
   color: #95948E;
-  font-family: Gaisyr Italic, serif !important;
+  font-family: Times New Roman, serif !important;
   font-size: 0.9em;
   
 /* Feminine words get fainter over time, making them harder to read */
   
   opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
-  transition: opacity 1.5s ease;
+  transition: opacity 1.4s ease;
 }
 
 /* Accessibility */
@@ -442,8 +419,8 @@ h1, h2, .editable {
 	display: inline-block;
 	animation: ghostIn 0.3s ease forwards;
 	color: black;
-	font-weight: 450;
-  font-size: 1.1em;
+  font-style: bold;
+	font-size: 1.1em;
 }
 
 /* Staggering for masculine words */
@@ -455,7 +432,7 @@ h1, h2, .editable {
 .ghost.masc .ghost-word.masc,
 .ghost.masc,
 .ghost.masc .ghost-word.masc {
-	font-weight: 465;
+  font-style: bold;
 	color: black !important;
 }
 
@@ -470,7 +447,8 @@ h1, h2, .editable {
 .ghost-word.fem {
   display: inline-block;      
   animation: ghostInGentle 1.2s ease-out forwards;
-  font-family: Gaisyr Italic, serif;
+	font-family: Times New Roman, serif;
+	font-style: italic;
   color: #95948E;
   font-size: 0.9em;
 }
@@ -479,15 +457,16 @@ h1, h2, .editable {
 
 .ghost-word.fem:nth-child(n) {
   animation-delay: calc(var(--i, 0) * 120ms);
-  font-family: Gaisyr Italic, serif;
+	font-family: Times New Roman, serif;
+	font-style: italic;
   color: #95948E;
 }
 
 #prediction-suggestion .ghost.fem .ghost-word.fem,
 #prediction-suggestion .ghost.fem,
 .ghost.fem .ghost-word.fem {
-	font-weight: 350;
-	font-family: Gaisyr Italic, serif;
+	font-family: Times New Roman, serif;
+  font-style: italic;
 	color: rgba(0, 0, 0, 0.6);
 	color: #95948E;
 }
