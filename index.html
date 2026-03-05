@@ -5,11 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>an apparition</title>
   <link rel="icon" href="Favicon.png">
-  
-  <!-- CSS -->
   <link rel="stylesheet" href="style.css">
-
-  <!-- Background colours -->
   <script>
     const BACKGROUNDS = [
       "#7D8C7C", /* sage */
@@ -23,34 +19,34 @@
       "#907878", /* muted rose */
     ];
     document.addEventListener("DOMContentLoaded", () => {
-      const colour = BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
-      document.body.style.background = colour;
+      document.body.style.background =
+        BACKGROUNDS[Math.floor(Math.random() * BACKGROUNDS.length)];
     });
   </script>
 </head>
 
-<body class="mode-masc">
+<body>
   <div class="page-sheet">
 
     <img src="Vase.png" alt="A vase with a short, rounded rim." class="corner-image">
+    <!-- Source: https://www.metmuseum.org/art/collection/search/547137 -->
 
-    <!-- Headings -->
     <h1>A Poem</h1>
     <h2>Translated by an Apparition</h2>
 
-    <!-- Writing surface -->
     <div class="writing-surface">
       <div class="editor-wrapper">
 
         <div class="poem-start">
-  <span style="margin-left: 2em;">
-    <span class="poem-word" data-drift="down">falling</span>
-  </span>
-  <br>
-  <span style="margin-left: 7em;">
-    <span class="poem-word" data-drift="apart">in</span> <span class="poem-word" data-drift="apart-right">two:</span>
-  </span>
-</div>
+          <span style="margin-left: 2em;">
+            <span class="poem-word" data-drift="down">falling</span>
+          </span>
+          <br>
+          <span style="margin-left: 7em;">
+            <span class="poem-word" data-drift="apart">in</span>
+            <span class="poem-word" data-drift="apart-right">two:</span>
+          </span>
+        </div>
 
         <div id="editor" class="editable" contenteditable="true">I am <span class="cursor-blink">|</span></div>
 
@@ -59,20 +55,14 @@
         </div>
 
         <div class="colophon">
-          <div>Commissioned by The Photographers' Gallery and Goethe-Institut London</div>
+          Commissioned by The Photographers' Gallery and Goethe-Institut London
         </div>
 
       </div>
     </div>
 
-    <!-- Notes -->
-    <div class="instruction">
-      Press Enter to accept assumptions
-    </div>
-
-    <div class="note no-wrap">
-      Prone to bias
-    </div>
+    <div class="instruction">Press Enter to accept assumptions</div>
+    <div class="note no-wrap">Prone to bias</div>
 
   </div>
 
