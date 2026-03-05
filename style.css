@@ -368,6 +368,12 @@ h1, h2 {
     transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
 }
 
+/* Feminine words get fainter over time, making them harder to read */
+  
+  opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
+  transition: opacity 1.4s ease;
+}
+
 /* Set width for feminine text */
 				
 .fem-block {
@@ -511,13 +517,8 @@ h1, h2 {
 	color: #95948E;
 }
 
-/* Feminine words get fainter over time, making them harder to read */
-  
-  opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
-  transition: opacity 1.4s ease;
-}
 
-/* Notes */
+/* Caption */
 
 .instruction {
 	font-family: Camera, serif;
