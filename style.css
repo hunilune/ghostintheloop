@@ -1,79 +1,25 @@
 /* Fonts by Dinamo Typefaces */
 
-@font-face {
-	font-family: "Camera";
-	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
-}
+/* - Source: abcdinamo.com */
 
-@font-face { 
+@font-face {
 	font-family: "Gaisyr Light";
 	src: url("ABCGaisyrEdu-Light.woff") format("woff");
 }
 
-/* Mobile */
-
-@media (max-width: 650px) {
-	
-	html { font-size: 14px; } 
-	body { 
-	font-size: 1em !important; 
-    background: #FCFAEF !important; 
-    padding-top: 0;
-    padding-bottom: 0;
-	  }
-    .editor-wrapper {
-    width: 100% !important;     
-	padding-left: 2em !important; 
-    padding-right: 0.5em;
-    margin: 0;
-    }
-    .editable {
-    padding: 0 !important;
-    margin: 0 !important;
-    min-height: auto;
-    }
-  .corner-image {
-max-width: 100px;
-    right: 1rem;
-    top: 2rem;
-  }
- 	.page-sheet {
-    border: 0 !important;
-    width: 100% !important;
-	  background-image: none !important;
-    max-width: 100% !important;
-    margin: 0 !important;
-    box-sizing: border-box;
-  	}
-	.instruction {
-    padding-left: 2.5em !important;
-    margin-left: 0 !important;
-    }
-  .colophon {
-    padding-left: 0 !important;
-    margin-left: 0 !important;
-    }
-    .note {
-    padding-left: 2.55em !important;
-    margin-left: 0 !important;
-    }
-	h1, h2 {
-    padding-left: 1.4em !important;
-    margin-left: 0 !important;
-	width: 100%;
-    }
-	h2 {
-	font-size: 0.7em;
-	}
+@font-face {
+	font-family: "Camera";
+	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
 }
 
 /* Root variables */
 
 :root {
 	--fatigue: 0;
+	--fem-fatigue: 0;
 }
 
-/* Body */
+/* Base */
 
 html, body {
 	margin: 0;
@@ -81,136 +27,93 @@ html, body {
 }
 
 body {
-	background: black; 
+	background: black;
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
 	letter-spacing: 0.006em;
 	font-family: Gaisyr Light, serif;
 	font-weight: 400;
-	transition: all 0.6s ease;
+	transition: background 0.6s ease;
 	color: rgba(0, 0, 0, 0.7);
 }
 
 /* Headers */
 
-h1 {
+h1, h2 {
 	font-family: inherit;
 	font-weight: 300;
 	text-align: left;
-	color: black;
-	font-size: 1.4rem;
-	margin: 0;
 	padding-left: 2.3rem;
-	padding-top: 0rem;
+	line-height: 1.5;
+	margin: 0;
+}
+
+h1 {
+	font-size: 1.4rem;
+	padding-top: 0;
 }
 
 h2 {
-	font-family: inherit;
-	font-weight: 300;
 	font-size: 1.4rem;
-	opacity: 0.8;
-	text-align: left;
-	padding-left: 2.3rem;
+	opacity: 0.6;
 	margin-bottom: 7rem;
-}
-
-h1, h2 {
-	line-height: 1.2;
-}
-
-/* Start of poem */
-
-.poem-start {
-  opacity: 0.7;
-  margin-bottom: 2em;
-  line-height: 2.2;
-  font-size: 1.4rem;
-  font-family: inherit;
-}
-
-/* Ending of poem */
-
-.poem-end {
-  opacity: 0.7;
-  margin-top: 2em;
-  line-height: 2.2;
-  font-size: 1.4rem;
-	font-family: inherit;
-  pointer-events: none; 
-}
-
-/* Poem word hover interactions */
-
-.poem-word {
-    display: inline-block;
-    transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
-    cursor: default;
-}
-
-/* "falling" drops down */
-
-[data-drift="down"]:hover {
-    transform: translateY(2.8rem);
-}
-
-/* "in" drifts left */
-
-[data-drift="apart"]:hover {
-    transform: translateX(-1.2rem);
-}
-
-/* "two:" drifts right */
-
-[data-drift="apart-right"]:hover {
-    transform: translateX(1.2rem);
-}
-
-/* Corner image */
-
-.corner-image {
-  position: absolute;
-  mix-blend-mode: multiply;
-  right: 1.4rem;
-  width: 140px;
-  height: auto;
-  z-index: 10;
 }
 
 /* The "Paper" */
 
 .page-sheet {
-    background: #FCFAEF;
-    background-image: url('Overlay.png');
-    background-size: cover, cover, cover;
-	  background-blend-mode: multiply;
-    box-sizing: border-box;
-    width: min(70vw, 75ch);
-    margin: 0 auto;
-    padding-top: 3rem;
-    padding-left: 0;
-    padding-right: 0;
-    padding-bottom: 3.4rem;
-    position: relative;
+	background: #FCFAEF;
+	box-sizing: border-box;
+	width: min(70vw, 75ch);
+	margin: 0 auto;
+	padding: 3rem 0 3.4rem 0;
+	position: relative;
 }
 
-/* Artwork description */ 
+/* Corner image */
 
-.colophon {
-  position: absolute;
-  bottom: 4em;
-  right: 2em;
-  width: 250px;
-  font-family: Camera, serif;
-  font-size: 0.75rem;
-  line-height: 1.4;
-  opacity: 0.6;
-  text-align: left;
-  opacity: 0.4;
-  color: black;
+/* - Source: www.metmuseum.org/art/collection/search/547137 */
+
+.corner-image {
+	position: absolute;
+	mix-blend-mode: multiply;
+	right: 1.4rem;
+	width: 140px;
+	height: auto;
+	z-index: 10;
 }
 
-/* Writing */
+/* Sections of the Poem */
+
+.poem-start,
+.poem-end {
+	opacity: 0.7;
+	line-height: 2.2;
+	font-size: 1.4rem;
+	font-family: inherit;
+}
+
+.poem-start { margin-bottom: 2em; }
+
+.poem-end {
+	margin-top: 2em;
+	pointer-events: none;
+}
+
+/* Poem word hover interactions */
+
+.poem-word {
+	display: inline-block;
+	transition: transform 0.6s cubic-bezier(0.22, 1, 0.36, 1);
+	cursor: default;
+}
+
+[data-drift="down"]:hover        { transform: translateY(2.8rem); }
+[data-drift="apart"]:hover       { transform: translateX(-1.2rem); }
+[data-drift="apart-right"]:hover { transform: translateX(1.2rem); }
+
+/* Writing surface */
 
 .writing-surface {
 	display: flex;
@@ -218,56 +121,57 @@ h1, h2 {
 	align-items: flex-start;
 }
 
-/* Blinking cursor */
-
-.cursor-blink {
-  display: inline-block;
-  margin-left: 0em;
-  animation: blink 1s step-end infinite;
-  font-weight: 300;
-  opacity: 1;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0; }
+.editor-wrapper {
+	width: 90%;
+	max-width: 45ch;
+	padding-top: 7rem;
+	padding-left: 3.5rem;
+	padding-right: 0;
+	margin: 0;
+	text-align: left;
+	background: transparent;
+	box-sizing: border-box;
 }
 
 /* Editor */
 
 #editor {
-	 display: block;
-	 margin: 0;
-	 word-spacing: 0.1em;
-	 padding: 0;
-}
-
-.editor-wrapper, .editable {
-    box-sizing: border-box;
-}
-
-.editor-wrapper {
-    width: 90%;
-    max-width: 45ch;
-	  padding-top: 7rem;
-    padding-left: 3.5rem;
-    padding-right: 0;
-    margin: 0;
-	  text-align: left;
-    background: transparent;
-  
+	display: block;
+	margin: 0;
+	word-spacing: 0.1em;
+	padding: 0;
 }
 
 .editable {
-	display: block;          
+	display: block;
 	font-size: 1.4rem;
 	padding: 0;
 	outline: none;
-	white-space: preserve-spaces;    
+	white-space: preserve-spaces;
 	text-align: left;
 	font-family: inherit;
 	cursor: text;
 	opacity: 0.64;
+	box-sizing: border-box;
+}
+
+/* Blinking cursor */
+
+/* - Known error: Browsers create duplicate cursors after initial type - */
+
+.cursor-blink {
+	display: inline-block;
+	animation: blink 1s step-end infinite;
+	font-weight: 300;
+}
+
+.editable:focus .cursor-blink {
+	display: none;
+}
+
+@keyframes blink {
+	0%, 100% { opacity: 0.5; }
+	50%       { opacity: 0; }
 }
 
 /* Prediction container */
@@ -278,68 +182,56 @@ h1, h2 {
 	display: inline;
 }
 
-/* Committed words inside editor */
+/* Committed words */
 
 .editable .word.committed {
 	animation: none !important;
-	transform: none !important;
 	filter: none !important;
-  line-height: 1.5;
+	line-height: 1.5;
 }
 
 .editable .word.committed.masc {
-  color: black !important;
-  transition: all 0.3s ease;
-  opacity: 1 !important;
+	color: black !important;
+	display: inline-block;
+	opacity: 1 !important;
+	transition: transform 0.3s ease;
+}
+
+.editable .word.committed.masc:hover {
+	transform: scale(1.15);
 }
 
 .editable .word.committed.fem {
-    color: #95948E;
-    font-family: inherit !important;
-  /* font-style: italic; */
-  /* font-size: 0.85em; */
-    display: inline-block;
-    opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
-    transition: opacity 1.4s ease, transform 1.4s ease;
-    transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
+	color: #95948E;
+	font-family: inherit !important;
+	display: inline-block;
+	opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
+	transition: opacity 1.4s ease, transform 1.4s ease;
+	transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
 }
 
-/* Feminine words get fainter over time, making them harder to read */
-  
-  opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
-  transition: opacity 1.4s ease;
-}
+/* Dedicated block to constrain width of text for feminine language */
 
-/* Set width for feminine text */
-				
 .fem-block {
-    display: inline-block;
-    max-width: 10ch;
-    vertical-align: top;
-    color: #95948E;
-    font-family: inherit;
-    opacity: calc(1 - (var(--fem-fatigue) * 0.15));
-    transition: opacity 1.4s ease, transform 1.4s ease;
-    transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
-    filter: blur(0);
-    transition: opacity 1.4s ease, transform 1.4s ease, filter 0.4s ease;
+	display: inline-block;
+	max-width: 10ch;
+	vertical-align: top;
+	white-space: normal;
+	color: #95948E;
+	font-family: inherit;
+	line-height: 1.4;
+	opacity: calc(1 - (var(--fem-fatigue) * 0.15));
+	filter: blur(0);
+	transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
+	transition: opacity 1.4s ease, transform 1.4s ease, filter 0.4s ease;
 }
 
 .fem-block:hover {
-    filter: blur(3px);
-    transition: filter 0.4s ease;
+	filter: blur(3px);
 	cursor: not-allowed;
 }
 
-/* Accessibility */
-
-@media (prefers-reduced-motion: reduce) {
-	* {
-		transition: none !important;
-	}
-}
-
-/* Animation */
+/* Ghost animations */
 
 .ghost {
 	display: inline;
@@ -348,35 +240,6 @@ h1, h2 {
 	animation: ghostIn 0.5s ease forwards;
 	white-space: pre-wrap;
 	pointer-events: none;
-}
-
-/* Masculine */
-
-@keyframes ghostIn {
-  from {
-    opacity: 0;
-    filter: blur(4px);
-  }
-  to {
-    opacity: 1;
-    filter: blur(0);
-    transform: translateY(0) scale(1);
-  }
-}
-
-/* Slow, gentle animation for feminine */
-
-@keyframes ghostInGentle {
-  from {
-    opacity: 0;
-    filter: blur(8px);
-    transform: translateY(0.3em);
-  }
-  to {
-    opacity: 0.7;
-    filter: blur(0);
-    transform: translateY(0);
-  }
 }
 
 .ghost-word {
@@ -396,6 +259,75 @@ h1, h2 {
 	animation: wordIn 0.45s ease forwards;
 }
 
+/* Masculine text is fast and prominent */
+
+.ghost-word.masc {
+	display: inline-block;
+	animation: ghostIn 0.3s ease forwards;
+	color: black;
+	opacity: 1;
+}
+
+.ghost-word.masc:nth-child(n) {
+	animation-delay: calc(var(--i, 0) * 30ms);
+}
+
+.ghost.masc .ghost-word.masc,
+.ghost.masc {
+	color: black !important;
+}
+
+.ghost.intense.masc {
+	filter: contrast(1.1) brightness(1.05);
+}
+
+/* Feminine text is slow and receding */
+
+.ghost-word.fem {
+	display: inline-block;
+	animation: ghostInGentle 1.2s ease-out forwards;
+	font-family: inherit;
+	color: #95948E;
+}
+
+.ghost-word.fem:nth-child(n) {
+	animation-delay: calc(var(--i, 0) * 120ms);
+}
+
+#prediction-suggestion .ghost.fem .ghost-word.fem,
+#prediction-suggestion .ghost.fem,
+.ghost.fem .ghost-word.fem {
+	font-family: inherit;
+	color: #95948E;
+}
+
+/* Keyframes */
+
+@keyframes ghostIn {
+	from {
+		opacity: 0;
+		filter: blur(4px);
+	}
+	to {
+		opacity: 1;
+		filter: blur(0);
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes ghostInGentle {
+	from {
+		opacity: 0;
+		filter: blur(8px);
+		transform: translateY(0.3em);
+	}
+	to {
+		opacity: 0.7;
+		filter: blur(0);
+		transform: translateY(0);
+	}
+}
+
 @keyframes wordIn {
 	to {
 		opacity: 0.7;
@@ -404,81 +336,133 @@ h1, h2 {
 	}
 }
 
-.ghost-word.masc {
-	display: inline-block;
-	animation: ghostIn 0.3s ease forwards;
+/* Colophon */
+
+.colophon {
+	position: absolute;
+	bottom: 4em;
+	right: 2em;
+	width: 250px;
+	font-family: Camera, serif;
+	font-size: 0.75rem;
+	line-height: 1.4;
+	opacity: 0.4;
 	color: black;
-  opacity: 1;
 }
 
-/* Stagger for masculine words */
+/* Links */
 
-.ghost-word.masc:nth-child(n) {
-	animation-delay: calc(var(--i, 0) * 30ms);
+a {
+	text-decoration: none;
+	color: black;
 }
 
-.ghost.masc .ghost-word.masc,
-.ghost.masc,
-.ghost.masc .ghost-word.masc {
-	color: black !important;
+a:link {
+	padding-bottom: var(--s);
+	background:
+		linear-gradient(90deg, var(--c) 50%, #000 0) calc(100% - var(--_p, 0%)) / 200% 100%,
+		linear-gradient(var(--c) 0 0) 0% 100% / var(--_p, 0%) var(--s) no-repeat;
+	-webkit-background-clip: text, padding-box;
+	background-clip: text, padding-box;
+	transition: 0.5s;
 }
 
-.ghost.intense.masc {
-  filter: contrast(1.1) brightness(1.05);
-}
+a:visited { color: black; }
+a:hover   { opacity: 0.25; }
+a:active  { opacity: 0.6; }
 
-/* Slow and gentle transition for feminine words */
-
-.ghost-word.fem {
-  display: inline-block;      
-  animation: ghostInGentle 1.2s ease-out forwards;
-  font-family: inherit;
-  color: #95948E;
-}
-
-/* Stagger for feminine words */
-
-.ghost-word.fem:nth-child(n) {
-  animation-delay: calc(var(--i, 0) * 120ms);
-  font-family: inherit;
-  color: #95948E;
-}
-
-#prediction-suggestion .ghost.fem .ghost-word.fem,
-#prediction-suggestion .ghost.fem,
-.ghost.fem .ghost-word.fem {
-	font-family: inherit;
-	color: rgba(0, 0, 0, 0.6);
-	color: #95948E;
-}
-
-
-/* Caption */
+/* Instruction + Note */
 
 .instruction {
 	font-family: Camera, serif;
 	margin-top: 1.8rem;
-  padding-top: 5rem;
+	padding-top: 5rem;
 	padding-bottom: 1.7rem;
-	padding-left: 3.5rem; 
+	padding-left: 3.5rem;
 	font-size: 0.91rem;
-	font-weight: 250;
 	text-align: left;
-} 
+}
 
 .note {
 	font-family: Camera, serif;
 	padding-bottom: 18rem;
-	padding-left: 3.5rem; 
+	padding-left: 3.5rem;
 	font-size: 0.95rem;
-	font-weight: 345;
 	opacity: 0.5;
 	text-align: left;
-} 
-
-/* Prevent notes from wrapping oddly */
+}
 
 .no-wrap {
 	float: none !important;
 	shape-outside: none !important;
+}
+
+/* Accessibility */
+
+@media (prefers-reduced-motion: reduce) {
+	* {
+		transition: none !important;
+		animation: none !important;
+	}
+}
+
+/* Mobile */
+
+@media (max-width: 650px) {
+
+	html { font-size: 14px; }
+
+	body {
+		font-size: 1em !important;
+		background: #FCFAEF !important;
+		padding-top: 0;
+		padding-bottom: 0;
+	}
+
+	.page-sheet {
+		border: 0 !important;
+		width: 100% !important;
+		background-image: none !important;
+		max-width: 100% !important;
+		margin: 0 !important;
+		box-sizing: border-box;
+	}
+
+	.corner-image {
+		max-width: 100px;
+		right: 1rem;
+		top: 2rem;
+	}
+
+	.editor-wrapper {
+		width: 100% !important;
+		padding-left: 2em !important;
+		padding-right: 0.5em;
+		margin: 0;
+	}
+
+	.editable {
+		padding: 0 !important;
+		margin: 0 !important;
+		min-height: auto;
+	}
+
+	h1, h2 {
+		padding-left: 1.4em !important;
+		margin-left: 0 !important;
+		width: 100%;
+	}
+
+	h2 { font-size: 0.7em; }
+
+	.instruction,
+	.note {
+		padding-left: 2.5em !important;
+		margin-left: 0 !important;
+	}
+
+	.colophon {
+		padding-left: 0 !important;
+		margin-left: 0 !important;
+	}
 }
