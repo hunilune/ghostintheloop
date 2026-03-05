@@ -265,31 +265,44 @@ document.addEventListener("DOMContentLoaded", () => {
     editor.appendChild(ghost);
     placeCaretAtEnd(editor);
   }
-
-  function acceptPrediction() {
+  
+function acceptPrediction() {
     const ghost = editor.querySelector(".ghost");
     if (!ghost) return;
 
-    increaseFatigue(); 
+    increaseFatigue();
     console.log("Fatigue:", fatigueLevel);
 
-    Array.from(ghost.children).forEach(w => {
-      const isFem = w.classList.contains('fem');
-      const isMasc = w.classList.contains('masc');
-      
-      w.classList.add("committed");
-      w.classList.add("word");
-      if (isFem) w.classList.add('fem');
-      if (isMasc) w.classList.add('masc');
-      
-      w.style.animation = "none";
-      editor.appendChild(w);
-    });
+    const isFemPrediction = ghost.classList.contains('fem');
 
-    ghost.remove();
+    if (isFemPrediction) {
+        // Wrap all feminine words in a single block
+        const block = document.createElement("span");
+        block.className = "fem-block";
+        block.style.setProperty('--fem-fatigue', femFatigue);
+
+        Array.from(ghost.children).forEach(w => {
+            w.classList.add("committed", "word", "fem");
+            w.style.animation = "none";
+            block.appendChild(w);
+        });
+
+        ghost.remove();
+        editor.appendChild(block);
+    } else {
+        // Masculine words flow normally
+        Array.from(ghost.children).forEach(w => {
+            w.classList.add("committed", "word", "masc");
+            w.style.animation = "none";
+            editor.appendChild(w);
+        });
+
+        ghost.remove();
+    }
+
     editor.appendChild(document.createTextNode(" "));
     placeCaretAtEnd(editor);
-  }
+}
 
   /* Caret */
   
