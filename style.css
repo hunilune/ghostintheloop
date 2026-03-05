@@ -6,11 +6,6 @@
 }
 
 @font-face { 
-	font-family: "Gaisyr";
-	src: url("ABCGaisyrEdu-Book.woff") format("woff");
-}
-
-@font-face { 
 	font-family: "Gaisyr Light";
 	src: url("ABCGaisyrEdu-Light.woff") format("woff");
 }
@@ -37,6 +32,9 @@
     margin: 0 !important;
     min-height: auto;
     }
+  .corner-image {
+max-width: 100px;
+  }
  	.page-sheet {
     border: 0 !important;
     width: 100% !important;
@@ -86,7 +84,7 @@ body {
 	padding-top: 8rem;
 	padding-bottom: 0;
 	letter-spacing: 0.006em;
-	font-family: Camera, serif;
+	font-family: Gaisyr Light, serif;
 	font-weight: 400;
 	line-height: 1.2;
 	transition: all 0.6s ease;
@@ -96,7 +94,7 @@ body {
 /* Headers */
 
 h1 {
-	font-family: Times New Roman, serif;
+	font-family: inherit;
 	font-weight: 300;
 	text-align: left;
 	color: black;
@@ -107,7 +105,7 @@ h1 {
 }
 
 h2 {
-	font-family: Times New Roman, serif;
+	font-family: inherit;
 	font-weight: 300;
 	font-size: 1.4rem;
 	opacity: 0.8;
@@ -123,7 +121,7 @@ h2 {
   margin-bottom: 2em;
   line-height: 2.2;
   font-size: 1.4rem;
-  font-family: Times New Roman, serif;
+  font-family: inherit;
 }
 
 /* Ending of poem */
@@ -133,7 +131,7 @@ h2 {
   margin-top: 2em;
   line-height: 2.2;
   font-size: 1.4rem;
-	font-family: Times New Roman, serif;
+	font-family: inherit;
   pointer-events: none; 
 }
 
@@ -169,7 +167,7 @@ h2 {
   position: absolute;
   mix-blend-mode: multiply;
   right: 1.4rem;
-  width: 220px;
+  width: 250px;
   height: auto;
   z-index: 10;
 }
@@ -237,8 +235,8 @@ a:link {
 	color: black;
 	padding-bottom: var(--s);
 	background: 
-    linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
-    linear-gradient(var(--c) 0 0) 0% 100%/var(--_p,0%) var(--s) no-repeat;
+  linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
+  linear-gradient(var(--c) 0 0) 0% 100%/var(--_p,0%) var(--s) no-repeat;
 	-webkit-background-clip: text, padding-box;
 	background-clip: text, padding-box;
 	transition: 0.5s;
@@ -325,7 +323,7 @@ a:active {
 	outline: none;
 	white-space: preserve-spaces;    
 	text-align: left;
-	font-family: Times New Roman, serif;
+	font-family: inherit;
  /* caret-color: transparent; */
 	cursor: text;
 	opacity: 0.64;
@@ -338,7 +336,7 @@ h1, h2 {
 /* Prediction container */
 
 #prediction-suggestion {
-	font-family: Times New Roman, serif;
+	font-family: inherit;
 	font-size: 1.4rem;
 	display: inline;
 }
@@ -361,7 +359,7 @@ h1, h2 {
 
 .editable .word.committed.fem {
     color: #95948E;
-    font-family: Times New Roman, serif !important;
+    font-family: inherit !important;
   /* font-style: italic; */
   /* font-size: 0.85em; */
     display: inline-block;
@@ -486,7 +484,7 @@ h1, h2 {
 .ghost-word.fem {
   display: inline-block;      
   animation: ghostInGentle 1.2s ease-out forwards;
-  font-family: Times New Roman, serif;
+	font-family: inherit;
   /* font-style: italic; */
   color: #95948E;
   font-size: 0.9em;
@@ -497,14 +495,14 @@ h1, h2 {
 .ghost-word.fem:nth-child(n) {
   animation-delay: calc(var(--i, 0) * 120ms);
 	font-family: Times New Roman, serif;
-  /* font-style: italic; */
+	font-family: inherit;
   color: #95948E;
 }
 
 #prediction-suggestion .ghost.fem .ghost-word.fem,
 #prediction-suggestion .ghost.fem,
 .ghost.fem .ghost-word.fem {
-	font-family: Times New Roman, serif;
+	font-family: inherit;
   /* font-style: italic; */
 	color: rgba(0, 0, 0, 0.6);
 	color: #95948E;
@@ -515,11 +513,11 @@ h1, h2 {
 .instruction {
 	font-family: Camera, serif;
 	margin-top: 1.8rem;
-  	padding-top: 5rem;
+  padding-top: 5rem;
 	padding-bottom: 1.7rem;
 	padding-left: 3.5rem; 
-	font-size: 1rem;
-	font-weight: 345;
+	font-size: 0.91rem;
+	font-weight: 250;
 	text-align: left;
 } 
 
@@ -529,7 +527,7 @@ h1, h2 {
 	padding-left: 3.5rem; 
 	font-size: 0.95rem;
 	font-weight: 345;
-	opacity: 0.65;
+	opacity: 0.5;
 	text-align: left;
 } 
 
