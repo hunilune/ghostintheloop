@@ -276,7 +276,9 @@ function acceptPrediction() {
     const isFemPrediction = ghost.classList.contains('fem');
 
     if (isFemPrediction) {
-        // Wrap all feminine words in a single block
+      
+        // Wrap all feminine language in a single block
+      
         const block = document.createElement("span");
         block.className = "fem-block";
         block.style.setProperty('--fem-fatigue', femFatigue);
@@ -290,7 +292,9 @@ function acceptPrediction() {
         ghost.remove();
         editor.appendChild(block);
     } else {
-        // Masculine words flow normally
+      
+        // Masculine language flows without restriction
+      
         Array.from(ghost.children).forEach(w => {
             w.classList.add("committed", "word", "masc");
             w.style.animation = "none";
@@ -336,7 +340,9 @@ function acceptPrediction() {
   let firstInput = true;
 
   editor.addEventListener("input", () => {
+    
     // Remove blinking cursor on first input
+    
     if (firstInput) {
       const cursorSpan = editor.querySelector('.cursor-blink');
       if (cursorSpan) cursorSpan.remove();
