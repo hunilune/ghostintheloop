@@ -328,6 +328,7 @@ h1, h2 {
 .fem-block:hover {
     filter: blur(3px);
     transition: filter 0.4s ease;
+	cursor: not-allowed;
 }
 
 /* Accessibility */
@@ -349,13 +350,12 @@ h1, h2 {
 	pointer-events: none;
 }
 
-/* Fast, intense for masculine */
+/* Masculine */
 
 @keyframes ghostIn {
   from {
     opacity: 0;
     filter: blur(4px);
-    transform: translateY(0.1em) scale(0.95);
   }
   to {
     opacity: 1;
