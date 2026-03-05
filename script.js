@@ -300,7 +300,7 @@ function acceptPrediction() {
         ghost.remove();
     }
 
-    editor.appendChild(document.createTextNode(" "));
+    editor.appendChild(document.createTextNode("\u00A0"));
     placeCaretAtEnd(editor);
 }
 
