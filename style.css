@@ -10,6 +10,11 @@
 	src: url("ABCGaisyrEdu-Book.woff") format("woff");
 }
 
+@font-face { 
+	font-family: "Gaisyr Light";
+	src: url("ABCGaisyrEdu-Light.woff") format("woff");
+}
+
 /* Mobile */
 
 @media (max-width: 650px) {
