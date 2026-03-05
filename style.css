@@ -34,6 +34,8 @@
     }
   .corner-image {
 max-width: 100px;
+    right: 1rem;
+    top: 2rem;
   }
  	.page-sheet {
     border: 0 !important;
@@ -114,6 +116,10 @@ h2 {
 	margin-bottom: 7rem;
 }
 
+h1, h2 {
+	line-height: 1.2;
+}
+
 /* Start of poem */
 
 .poem-start {
@@ -172,16 +178,6 @@ h2 {
   z-index: 10;
 }
 
-/* Adjust Corner image for mobile */
-
-@media (max-width: 600px) {
-  .corner-image {
-    width: 120px;
-    right: 1rem;
-    top: 2rem;
-  }
-}
-
 /* The "Paper" */
 
 .page-sheet {
@@ -199,20 +195,6 @@ h2 {
     position: relative;
 }
 
-/* Rice paper and Smudge — Overlays blend through content */
-
-.page-sheet::after {
-	content: "";
-	position: absolute;
-	inset: 0;
-	background: url('Rice paper.png') repeat;
-	background-size: 250px 250px;
-	mix-blend-mode: multiply;
-	opacity: 0.05;
-	pointer-events: none;
-	z-index: 100;
-}
-
 /* Artwork description */ 
 
 .colophon {
@@ -228,45 +210,6 @@ h2 {
   opacity: 0.4;
   color: black;
 }
-
- /* Unvisited link */
-
-a:link {
-	color: black;
-	padding-bottom: var(--s);
-	background: 
-  linear-gradient(90deg,var(--c) 50%,#000 0) calc(100% - var(--_p,0%))/200% 100%,
-  linear-gradient(var(--c) 0 0) 0% 100%/var(--_p,0%) var(--s) no-repeat;
-	-webkit-background-clip: text, padding-box;
-	background-clip: text, padding-box;
-	transition: 0.5s;
-}
-
-/* Links */
-
-a {
-  text-decoration: none; 
-}
-
-/* Visited link */
-
-a:visited {
-  color: black;
-}
-
-/* Mouse over link */
-
-a:hover {
-  color: black;
-  opacity: 0.25;
-}
-
-/* Selected link */
-
-a:active {
-  color: black;
-  opacity: 0.6;
-} 
 
 /* Writing */
 
@@ -324,13 +267,8 @@ a:active {
 	white-space: preserve-spaces;    
 	text-align: left;
 	font-family: inherit;
- /* caret-color: transparent; */
 	cursor: text;
 	opacity: 0.64;
-}
-
-h1, h2 {
-	line-height: 1.2;
 }
 
 /* Prediction container */
@@ -353,8 +291,7 @@ h1, h2 {
 .editable .word.committed.masc {
   color: black !important;
   transition: all 0.3s ease;
-  /* font-size: 1em; */
-  opacity 1 !important;
+  opacity: 1 !important;
 }
 
 .editable .word.committed.fem {
@@ -378,11 +315,10 @@ h1, h2 {
 				
 .fem-block {
     display: inline-block;
-    max-width: 14ch;
+    max-width: 10ch;
     vertical-align: top;
     color: #95948E;
     font-family: inherit;
-    line-height: 1.4;
     opacity: calc(1 - (var(--fem-fatigue) * 0.15));
     transition: opacity 1.4s ease, transform 1.4s ease;
     transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
@@ -455,7 +391,6 @@ h1, h2 {
 	filter: blur(6px);
 	transform: translateY(0.1em);
 	animation: wordIn 0.45s ease forwards;
-	margin-right: 0.7ch;
 }
 
 @keyframes wordIn {
@@ -474,7 +409,7 @@ h1, h2 {
 	/* font-size: 1.05em; */
 }
 
-/* Quicker staggering for masculine words */
+/* Stagger for masculine words */
 
 .ghost-word.masc:nth-child(n) {
 	animation-delay: calc(var(--i, 0) * 30ms);
@@ -490,13 +425,12 @@ h1, h2 {
   filter: contrast(1.1) brightness(1.05);
 }
 
-/* Slow and gentle for feminine words */
+/* Slow and gentle transition for feminine words */
 
 .ghost-word.fem {
   display: inline-block;      
   animation: ghostInGentle 1.2s ease-out forwards;
   font-family: inherit;
-  /* font-style: italic; */
   color: #95948E;
 }
 
@@ -512,7 +446,6 @@ h1, h2 {
 #prediction-suggestion .ghost.fem,
 .ghost.fem .ghost-word.fem {
 	font-family: inherit;
-  /* font-style: italic; */
 	color: rgba(0, 0, 0, 0.6);
 	color: #95948E;
 }
