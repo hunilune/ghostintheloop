@@ -350,7 +350,7 @@ h1, h2 {
 .editable .word.committed.masc {
   color: black !important;
   transition: all 0.3s ease;
-  font-size: 1em;
+  /* font-size: 1em; */
   opacity 1 !important;
 }
 
@@ -358,7 +358,7 @@ h1, h2 {
     color: #95948E;
     font-family: Times New Roman, serif !important;
   /* font-style: italic; */
-    font-size: 0.85em;
+  /* font-size: 0.85em; */
     display: inline-block;
     opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
     transition: opacity 1.4s ease, transform 1.4s ease;
