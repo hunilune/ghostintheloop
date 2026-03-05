@@ -12,7 +12,7 @@
 
 /* Mobile */
 
-@media (max-width: 600px) {
+@media (max-width: 650px) {
 	
 	html { font-size: 14px; } 
 	body { 
@@ -20,7 +20,7 @@
     background: #FCFAEF !important; 
     padding-top: 0;
     padding-bottom: 0;
-	}
+	  }
     .editor-wrapper {
     width: 100% !important;     
 	padding-left: 2em !important; 
@@ -33,14 +33,14 @@
     min-height: auto;
     }
   .corner-image {
-	max-width: 100px;
+max-width: 100px;
     right: 1rem;
     top: 2rem;
-    }
+  }
  	.page-sheet {
     border: 0 !important;
     width: 100% !important;
-	background-image: none !important;
+	  background-image: none !important;
     max-width: 100% !important;
     margin: 0 !important;
     box-sizing: border-box;
@@ -49,7 +49,7 @@
     padding-left: 2.5em !important;
     margin-left: 0 !important;
     }
-    .colophon {
+  .colophon {
     padding-left: 0 !important;
     margin-left: 0 !important;
     }
@@ -81,6 +81,7 @@ html, body {
 }
 
 body {
+	background: black; 
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
@@ -118,7 +119,7 @@ h1, h2 {
 	line-height: 1.2;
 }
 
-/* Poem format */
+/* Start of poem */
 
 .poem-start {
   opacity: 0.7;
@@ -127,6 +128,8 @@ h1, h2 {
   font-size: 1.4rem;
   font-family: inherit;
 }
+
+/* Ending of poem */
 
 .poem-end {
   opacity: 0.7;
@@ -137,7 +140,7 @@ h1, h2 {
   pointer-events: none; 
 }
 
-/* Hover interactions */
+/* Poem word hover interactions */
 
 .poem-word {
     display: inline-block;
@@ -145,7 +148,7 @@ h1, h2 {
     cursor: default;
 }
 
-/* "Falling" drops down */
+/* "falling" drops down */
 
 [data-drift="down"]:hover {
     transform: translateY(2.8rem);
@@ -163,7 +166,7 @@ h1, h2 {
     transform: translateX(1.2rem);
 }
 
-/* Vase */
+/* Corner image */
 
 .corner-image {
   position: absolute;
@@ -191,7 +194,7 @@ h1, h2 {
     position: relative;
 }
 
-/* Commission */ 
+/* Artwork description */ 
 
 .colophon {
   position: absolute;
@@ -207,13 +210,30 @@ h1, h2 {
   color: black;
 }
 
-/* Editor */
+/* Writing */
 
 .writing-surface {
 	display: flex;
 	flex-direction: column;
 	align-items: flex-start;
 }
+
+/* Blinking cursor */
+
+.cursor-blink {
+  display: inline-block;
+  margin-left: 0em;
+  animation: blink 1s step-end infinite;
+  font-weight: 300;
+  opacity: 1;
+}
+
+@keyframes blink {
+  0%, 100% { opacity: 0.5; }
+  50% { opacity: 0; }
+}
+
+/* Editor */
 
 #editor {
 	 display: block;
@@ -250,7 +270,7 @@ h1, h2 {
 	opacity: 0.64;
 }
 
-/* Prediction */
+/* Prediction container */
 
 #prediction-suggestion {
 	font-family: inherit;
@@ -276,6 +296,8 @@ h1, h2 {
 .editable .word.committed.fem {
     color: #95948E;
     font-family: inherit !important;
+  /* font-style: italic; */
+  /* font-size: 0.85em; */
     display: inline-block;
     opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
     transition: opacity 1.4s ease, transform 1.4s ease;
@@ -299,6 +321,13 @@ h1, h2 {
     opacity: calc(1 - (var(--fem-fatigue) * 0.15));
     transition: opacity 1.4s ease, transform 1.4s ease;
     transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
+    filter: blur(0);
+    transition: opacity 1.4s ease, transform 1.4s ease, filter 0.4s ease;
+}
+
+.fem-block:hover {
+    filter: blur(3px);
+    transition: filter 0.4s ease;
 }
 
 /* Accessibility */
@@ -315,7 +344,6 @@ h1, h2 {
 	display: inline;
 	opacity: 0;
 	filter: blur(6px);
-	transform: translateY(0.1em);
 	animation: ghostIn 0.5s ease forwards;
 	white-space: pre-wrap;
 	pointer-events: none;
@@ -354,7 +382,6 @@ h1, h2 {
 .ghost-word {
 	opacity: 0;
 	filter: blur(6px);
-	transform: translateY(0.1em);
 	animation: wordIn 0.45s ease forwards;
 }
 
@@ -366,7 +393,6 @@ h1, h2 {
 	display: inline !important;
 	opacity: 0;
 	filter: blur(6px);
-	transform: translateY(0.1em);
 	animation: wordIn 0.45s ease forwards;
 }
 
@@ -382,7 +408,7 @@ h1, h2 {
 	display: inline-block;
 	animation: ghostIn 0.3s ease forwards;
 	color: black;
-	opacity: 1;
+  opacity: 1;
 }
 
 /* Stagger for masculine words */
@@ -456,19 +482,3 @@ h1, h2 {
 	float: none !important;
 	shape-outside: none !important;
 }
-
-/* Blinking cursor */
-
-.cursor-blink {
-  display: inline-block;
-  margin-left: 0em;
-  animation: blink 1s step-end infinite;
-  font-weight: 300;
-  opacity: 1;
-}
-
-@keyframes blink {
-  0%, 100% { opacity: 0.5; }
-  50% { opacity: 0; }
-}
-
