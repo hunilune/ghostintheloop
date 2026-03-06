@@ -157,7 +157,7 @@ h2 {
 
 /* Blinking cursor */
 
-/* - Known error: Browsers create duplicate cursors after initial type - */
+/* - Known error: Duplicate cursors after initial type - */
 
 .cursor-blink {
 	display: inline-block;
