@@ -159,7 +159,7 @@ h2 {
 
 /* Blinking cursor */
 
-/* - Known error: Duplicate cursors after initial type - */
+/* - Known error: Duplicate cursors after initial type in some browsers - */
 
 .cursor-blink {
 	display: inline-block;
@@ -212,7 +212,7 @@ h2 {
 	transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
 }
 
-/* Dedicated block to constrain width of text for feminine language */
+/* A dedicated block to constrain width of text for feminine language */
 
 .fem-block {
 	display: inline-block;
@@ -221,7 +221,7 @@ h2 {
 	white-space: normal;
 	color: #95948E;
 	font-family: inherit;
-	line-height: 1.4;
+	line-height: 1.5;
 	opacity: calc(1 - (var(--fem-fatigue) * 0.15));
 	filter: blur(0);
 	transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
@@ -233,7 +233,7 @@ h2 {
 	cursor: not-allowed;
 }
 
-/* Ghost animations */
+/* Ghost */
 
 .ghost {
 	display: inline;
@@ -261,7 +261,7 @@ h2 {
 	animation: wordIn 0.45s ease forwards;
 }
 
-/* Masculine text is fast and prominent */
+/* Masculine lagnuage appears promptly and with some more prominence */
 
 .ghost-word.masc {
 	display: inline-block;
@@ -283,7 +283,7 @@ h2 {
 	filter: contrast(1.1) brightness(1.05);
 }
 
-/* Feminine text is slow and receding */
+/* Feminine language appears slowly and recedes */
 
 .ghost-word.fem {
 	display: inline-block;
