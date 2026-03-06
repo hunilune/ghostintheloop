@@ -79,8 +79,9 @@ h2 {
 .corner-image {
 	position: absolute;
 	mix-blend-mode: multiply;
-	right: 1.4rem;
-	width: 140px;
+	right: 2rem;
+	top: 2.5rem;
+	width: 168px;
 	height: auto;
 	z-index: 10;
 }
@@ -368,7 +369,7 @@ a:active  { opacity: 0.6; }
 	color: #383632;
 	margin-top: 1.8rem;
 	padding-top: 5rem;
-	padding-bottom: 1.7rem;
+	padding-bottom: 1.2rem;
 	padding-left: 3.5rem;
 	text-align: left;
 }
@@ -392,23 +393,26 @@ a:active  { opacity: 0.6; }
 .colophon {
 	position: absolute;
 	bottom: 4em;
-	right: 2em;
+	right: 3.5em;
 	width: 250px;
 	font-family: Camera, serif;
 	font-size: 0.7rem;
 	line-height: 1.4;
-	opacity: 0.4;
 	color: black;
   display: flex;
   align-items: flex-start;
   gap: 0.6em;
 }
 
+
+.colophon span {
+    opacity: 0.4;
+}
+
 .colophon-icon {
-  width: 24px;
+  width: 17px;
   height: auto;
   flex-shrink: 0;
-  opacity: 0.4;
   margin-top: 0.1em;
 }
 
@@ -445,7 +449,7 @@ a:active  { opacity: 0.6; }
 
 	.corner-image {
 		max-width: 100px;
-		right: 1rem;
+		right: 1.7rem;
 		top: 2rem;
 	}
 
@@ -468,7 +472,7 @@ a:active  { opacity: 0.6; }
 		width: 100%;
 	}
 
-	h2 { font-size: 0.7em; }
+	h2 { font-size: 1.3em; }
 
 	.instruction,
 	.note {
@@ -479,5 +483,12 @@ a:active  { opacity: 0.6; }
 	.colophon {
 		padding-left: 0 !important;
 		margin-left: 0 !important;
+    margin-left: 0 !important;
+
 	}
+
+  .colophon-icon {
+  width: 14.5px;
+  }
+	
 }
