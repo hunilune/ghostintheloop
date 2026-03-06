@@ -448,7 +448,7 @@ a:active  { opacity: 0.6; }
 	}
 
 	.corner-image {
-		max-width: 100px;
+		max-width: 80px;
 		right: 1.7rem;
 		top: 2rem;
 	}
