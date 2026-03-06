@@ -52,6 +52,7 @@ h1, h2 {
 h1 {
 	font-size: 1.4rem;
 	padding-top: 0;
+	padding-bottom: 0.6rem;
 }
 
 h2 {
@@ -336,20 +337,6 @@ h2 {
 	}
 }
 
-/* Colophon */
-
-.colophon {
-	position: absolute;
-	bottom: 4em;
-	right: 2em;
-	width: 250px;
-	font-family: Camera, serif;
-	font-size: 0.75rem;
-	line-height: 1.4;
-	opacity: 0.4;
-	color: black;
-}
-
 /* Links */
 
 a {
@@ -371,15 +358,18 @@ a:visited { color: black; }
 a:hover   { opacity: 0.25; }
 a:active  { opacity: 0.6; }
 
-/* Instruction + Note */
+/* Small text */
 
 .instruction {
 	font-family: Camera, serif;
+	font-size: 0.85rem;
+	font-weight: 150;
+	opacity: 0.7;
+	color: #383632;
 	margin-top: 1.8rem;
 	padding-top: 5rem;
 	padding-bottom: 1.7rem;
 	padding-left: 3.5rem;
-	font-size: 0.91rem;
 	text-align: left;
 }
 
@@ -387,7 +377,7 @@ a:active  { opacity: 0.6; }
 	font-family: Camera, serif;
 	padding-bottom: 18rem;
 	padding-left: 3.5rem;
-	font-size: 0.95rem;
+	font-size: 0.85rem;
 	opacity: 0.5;
 	text-align: left;
 }
@@ -395,6 +385,20 @@ a:active  { opacity: 0.6; }
 .no-wrap {
 	float: none !important;
 	shape-outside: none !important;
+}
+
+/* Colophon */
+
+.colophon {
+	position: absolute;
+	bottom: 4em;
+	right: 2em;
+	width: 250px;
+	font-family: Camera, serif;
+	font-size: 0.7rem;
+	line-height: 1.4;
+	opacity: 0.4;
+	color: black;
 }
 
 /* Accessibility */
