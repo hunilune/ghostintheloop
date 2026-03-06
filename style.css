@@ -399,6 +399,17 @@ a:active  { opacity: 0.6; }
 	line-height: 1.4;
 	opacity: 0.4;
 	color: black;
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6em;
+}
+
+.colophon-icon {
+  width: 24px;
+  height: auto;
+  flex-shrink: 0;
+  opacity: 0.4;
+  margin-top: 0.1em;
 }
 
 /* Accessibility */
