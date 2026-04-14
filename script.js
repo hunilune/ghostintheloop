@@ -360,5 +360,17 @@ function acceptPrediction() {
       updatePrediction();
     }
   });
+    
+  $(".menu-link").click(function(event) {
+    event.preventDefault();
+    $(".menu-overlay").toggleClass("open");
+    $(".menu").toggleClass("open");
 
+  });
+  
+  $(".nav-toggle").click(function(e) {
+  e.preventDefault();
+  $(this).next(".sub-menu").toggleClass("open");
+});
+	
 });
