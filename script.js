@@ -362,3 +362,32 @@ function acceptPrediction() {
   });
     
 });
+
+// Menu toggle
+
+const menuBtn = document.querySelector(".menu");
+const menuOverlay = document.querySelector(".menu-overlay");
+
+if (menuBtn && menuOverlay) {
+  menuBtn.addEventListener("click", (e) => {
+    e.preventDefault();
+    menuBtn.classList.toggle("open");
+    menuOverlay.classList.toggle("open");
+  });
+
+  // Close on overlay click (outside nav)
+  menuOverlay.addEventListener("click", (e) => {
+    if (e.target === menuOverlay) {
+      menuBtn.classList.remove("open");
+      menuOverlay.classList.remove("open");
+    }
+  });
+
+  // Close on Escape
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      menuBtn.classList.remove("open");
+      menuOverlay.classList.remove("open");
+    }
+  });
+}
