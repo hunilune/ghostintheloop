@@ -523,8 +523,7 @@ a:active  { opacity: 0.6; }
 }
 
 .hamburger-bar {
-  /* White bars — readable against the black body background */
-  background-color: #FCFAEF;
+  background-color: black;
   height: 2px;
   width: 100%;
   border-radius: 2px;
@@ -558,7 +557,7 @@ a:active  { opacity: 0.6; }
 /* Menu overlay */
 
 .menu-overlay {
-  background-color: #000000;
+  background-color: black;
   height: 100%;
   width: 100%;
   position: fixed;
@@ -594,7 +593,7 @@ nav {
   top: 50%;
   transform: translateY(-50%);
   font-size: 1.8rem;
-  font-family: serif;
+  font-family: Gaisyr Light, serif;
   text-align: center;
 }
 
@@ -625,7 +624,7 @@ li {
 .menu-overlay a:visited {
   display: block;
   position: relative;
-  color: #FCFAEF;
+  color: #EED6B9;	
   text-decoration: none;
   overflow: hidden;
   background: none;
