@@ -65,6 +65,8 @@ h2 {
 
 .page-sheet {
 	background: #FCFAEF;
+	background-image: url('Smudge.png');
+	background-size: cover;
 	box-sizing: border-box;
 	width: min(70vw, 75ch);
 	margin: 0 auto;
