@@ -270,6 +270,7 @@ h2 {
 .ghost-word.masc {
 	display: inline-block;
 	animation: ghostIn 0.3s ease forwards;
+	font-family: Dot;
 	color: black;
 	opacity: 1;
 }
