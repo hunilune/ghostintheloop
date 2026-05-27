@@ -3,11 +3,6 @@
 /* - Source: abcdinamo.com */
 
 @font-face {
-	font-family: "Gaisyr Light";
-	src: url("ABCGaisyrEdu-Light.woff") format("woff");
-}
-
-@font-face {
 	font-family: "Seen";
 	src: url("CuirRomanTimes-Regular.otf") format("opentype");
 }
@@ -37,7 +32,7 @@ body {
 	padding-top: 8rem;
 	padding-bottom: 0;
 	letter-spacing: 0.006em;
-	font-family: Seen, serif;
+	font-family: Times, serif;
 	font-weight: 400;
 	transition: background 0.6s ease;
 	color: rgba(0, 0, 0, 0.7);
@@ -215,14 +210,13 @@ h2 {
 	display: inline-block;
 	opacity: calc(1 - (var(--fem-fatigue) * 0.15)) !important;
 	transition: opacity 1.4s ease, transform 1.4s ease;
-	transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
 }
 
 /* A dedicated block to constrain width of text for feminine language */
 
 .fem-block {
 	display: inline-block;
-	max-width: 10ch;
+	/* max-width: 10ch; */
 	vertical-align: top;
 	white-space: normal;
 	color: #95948E;
@@ -230,7 +224,6 @@ h2 {
 	line-height: 1.5;
 	opacity: calc(1 - (var(--fem-fatigue) * 0.15));
 	filter: blur(0);
-	transform: rotate(calc(var(--fem-fatigue) * 1.5deg)) translateY(calc(var(--fem-fatigue) * 0.2em));
 	transition: opacity 1.4s ease, transform 1.4s ease, filter 0.4s ease;
 }
 
