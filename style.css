@@ -8,6 +8,11 @@
 }
 
 @font-face {
+	font-family: "Seen";
+	src: url("Seen-Strikethrough.otf") format("opentype");
+}
+
+@font-face {
 	font-family: "Camera";
 	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
 }
@@ -32,7 +37,7 @@ body {
 	padding-top: 8rem;
 	padding-bottom: 0;
 	letter-spacing: 0.006em;
-	font-family: Gaisyr Light, serif;
+	font-family: Seen, serif;
 	font-weight: 400;
 	transition: background 0.6s ease;
 	color: rgba(0, 0, 0, 0.7);
