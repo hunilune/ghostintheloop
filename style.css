@@ -8,6 +8,11 @@
 }
 
 @font-face {
+	font-family: "Dot";
+	src: url("TimesDotRom.otf") format("opentype");
+}
+
+@font-face {
 	font-family: "Camera";
 	src: url("ABCCameraPlainVariableEdu-Regular.woff") format("woff");
 }
@@ -195,12 +200,15 @@ h2 {
 .editable .word.committed.masc {
 	color: black !important;
 	display: inline-block;
+	font-family: Dot;
 	opacity: 1 !important;
 	transition: transform 0.3s ease;
 }
 
 .editable .word.committed.masc:hover {
-	transform: scale(1.15);
+	transform: scale(1.1);
+	font-weight: bold;
+
 }
 
 .editable .word.committed.fem {
@@ -227,7 +235,6 @@ h2 {
 
 .fem-block:hover {
 	filter: blur(3px);
-	cursor: not-allowed;
 }
 
 /* Ghost */
@@ -258,7 +265,7 @@ h2 {
 	animation: wordIn 0.45s ease forwards;
 }
 
-/* Masculine lagnuage appears promptly and with some more prominence */
+/* Masculine language appears promptly and with some more prominence */
 
 .ghost-word.masc {
 	display: inline-block;
