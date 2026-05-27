@@ -31,7 +31,6 @@ body {
 	overflow-x: hidden;
 	padding-top: 8rem;
 	padding-bottom: 0;
-	letter-spacing: 0.006em;
 	font-family: Times, serif;
 	transition: background 0.6s ease;
 	color: rgba(0, 0, 0, 0.7);
