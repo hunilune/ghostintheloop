@@ -318,7 +318,7 @@ h2 {
 	from {
 		opacity: 0;
 		filter: blur(8px);
-		transform: translateY(0.3em);
+		transform: translateY(0em);
 	}
 	to {
 		opacity: 0.7;
@@ -506,49 +506,6 @@ a:active  { opacity: 0.6; }
   height: 100%;
   position: absolute;
   z-index: 2;
-}
-
-.hamburger-icon {
-  position: absolute;
-  width: 20px;
-  height: 14px;
-  margin: auto;
-  left: 0;
-  top: 0;
-  right: 0;
-  bottom: 1px;
-}
-
-.hamburger-bar {
-  background-color: black;
-  height: 2px;
-  width: 100%;
-  border-radius: 2px;
-  position: absolute;
-  left: 0;
-  transition: all 0.25s ease-in-out;
-}
-
-.hamburger-bar-2 {
-  top: 0;
-  bottom: 0;
-  margin: auto;
-}
-
-.hamburger-bar-3 {
-  bottom: 0;
-}
-
-.menu.open .hamburger-bar-1 {
-  transform: translateY(7px) translateY(-50%) rotate(45deg);
-}
-
-.menu.open .hamburger-bar-2 {
-  opacity: 0;
-}
-
-.menu.open .hamburger-bar-3 {
-  transform: translateY(-7px) translateY(50%) rotate(-45deg);
 }
 
 /* Menu overlay */
